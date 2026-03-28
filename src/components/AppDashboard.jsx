@@ -1792,9 +1792,6 @@ function DraftsTab({ pitchDrafts }) {
 
                     {/* Right */}
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium', typeBadgeClass(item.type))}>
-                        {item.type}
-                      </span>
                       <span className="inline-flex items-center gap-1 rounded-full border border-success/20 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
                         <CheckCircle2 className="h-2.5 w-2.5" />Sent
                       </span>
