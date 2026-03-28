@@ -1,8 +1,18 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
+const roles = [
+  { label: 'Solo Agent', sub: 'Fill your pipeline without cold calling.' },
+  { label: 'Team', sub: 'Scale outreach across your farm areas.' },
+  { label: 'Brokerage', sub: 'Give every agent exclusive seller leads.' },
+];
+
 export function Hero() {
+  const [activeRole, setActiveRole] = useState(0);
+
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
     visible: (delay = 0) => ({
@@ -13,21 +23,46 @@ export function Hero() {
   };
 
   return (
-    <section className="flex flex-col items-center px-4 pt-20 pb-16 md:px-6 md:pt-20 md:pb-16 bg-white text-center">
-      {/* Badge */}
+    <section className="flex flex-col items-center px-4 pt-16 pb-16 md:px-6 md:pt-20 md:pb-16 bg-white text-center">
+      {/* Role selector tabs */}
       <motion.div
-        className="inline-flex items-center px-4 py-1.5 bg-yellow/10 text-yellow-800 border border-yellow/30 rounded-full text-sm font-medium font-sans mb-8 tracking-[0.01em]"
+        className="flex items-center gap-1 rounded-full border border-gray-200 bg-light-bg p-1 mb-8"
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
         custom={0}
       >
-        Limited to 5 agents per zip code — check availability
+        {roles.map((role, i) => (
+          <button
+            key={role.label}
+            onClick={() => setActiveRole(i)}
+            className={cn(
+              'rounded-full px-5 py-2 font-sans text-sm font-medium transition-all duration-200',
+              activeRole === i
+                ? 'bg-charcoal text-white shadow-sm'
+                : 'text-gray-500 hover:text-charcoal'
+            )}
+          >
+            {role.label}
+          </button>
+        ))}
+      </motion.div>
+
+      {/* Badge */}
+      <motion.div
+        className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange/[0.06] text-orange border border-orange/20 rounded-full text-sm font-medium font-mono mb-8 tracking-wide"
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        custom={0.05}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-orange animate-pulse" />
+        Limited to 5 agents per zip code
       </motion.div>
 
       {/* Headline */}
       <motion.h1
-        className="font-heading text-4xl md:text-6xl font-bold text-dark leading-[1.1] tracking-tight max-w-3xl mb-6"
+        className="font-heading text-4xl md:text-6xl font-bold text-dark leading-[1.1] tracking-tight max-w-3xl mb-5"
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
@@ -38,17 +73,27 @@ export function Hero() {
         Your Market.
       </motion.h1>
 
-      {/* Subheadline */}
+      {/* Role-specific subheadline */}
       <motion.p
-        className="font-sans text-lg md:text-xl font-normal text-charcoal/60 leading-relaxed max-w-2xl mb-10"
+        className="font-sans text-lg md:text-xl font-normal text-charcoal/50 leading-relaxed max-w-2xl mb-4"
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        custom={0.15}
+        key={activeRole}
+      >
+        {roles[activeRole].sub}
+      </motion.p>
+
+      {/* Main subheadline */}
+      <motion.p
+        className="font-sans text-base md:text-lg font-normal text-charcoal/40 leading-relaxed max-w-xl mb-10"
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
         custom={0.2}
       >
-        We deliver motivated seller leads in your farm area within 12 hours,
-        with verified emails, property data, and AI-written pitches ready to send.
-        More listing appointments without cold calling, door knocking, or paying for shared leads.
+        Verified seller leads in 12 hours. AI-drafted pitches. We send on your behalf. Replies in your dashboard.
       </motion.p>
 
       {/* CTA */}
@@ -69,13 +114,13 @@ export function Hero() {
 
       {/* Trust line */}
       <motion.p
-        className="font-sans text-sm text-charcoal/40 leading-relaxed mt-4"
+        className="font-sans text-sm text-charcoal/30 leading-relaxed mt-4"
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
         custom={0.4}
       >
-        Limited spots per zip code. We&apos;ll notify you when your market opens.
+        No credit card. We notify you when your market opens.
       </motion.p>
     </section>
   );

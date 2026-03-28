@@ -8,6 +8,9 @@ import ProblemSection from './components/ProblemSection'
 import HowItWorks from './components/HowItWorks'
 import AIComparison from './components/AIComparison'
 import LeadTypes from './components/LeadTypes'
+import BeforeAfter from './components/BeforeAfter'
+import ScarcityBanner from './components/ScarcityBanner'
+import InlineCTA from './components/InlineCTA'
 import Pricing from './components/Pricing'
 import FAQ from './components/FAQ'
 import FinalCTA from './components/FinalCTA'
@@ -20,13 +23,17 @@ function LandingPage() {
       <Navbar />
       <main>
         <Hero />
-        <VideoPlaceholder />
-        <DashboardMockup />
         <StatStrip />
+        <VideoPlaceholder />
         <ProblemSection />
+        <InlineCTA heading="Ready to stop chasing leads?" />
         <HowItWorks />
+        <DashboardMockup />
         <AIComparison />
+        <BeforeAfter />
+        <ScarcityBanner />
         <LeadTypes />
+        <InlineCTA heading="Your market is filling up." />
         <Pricing />
         <FAQ />
         <FinalCTA />

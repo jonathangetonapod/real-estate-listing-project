@@ -42,10 +42,11 @@ function useCountUp(target, duration = 2000, shouldStart = false) {
 }
 
 const stats = [
-  { target: 12847, display: (v) => v.toLocaleString(), label: 'Leads delivered' },
-  { target: 6, display: (v) => `${v}+hrs`, label: 'Saved per agent/week' },
-  { target: 94, display: (v) => `${v}%`, label: 'Avg deliverability' },
-  { target: 12, display: (v) => `${v}hrs`, label: 'List turnaround' },
+  { target: 250, display: (v) => v.toLocaleString(), label: 'Verified leads per month' },
+  { target: 94, display: (v) => `${v}%`, label: 'Inbox placement rate' },
+  { target: 12, display: (v) => `${v}hrs`, label: 'From signup to first list' },
+  { target: 6, display: (v) => `${v}+`, label: 'Hours saved per week' },
+  { target: 99, display: (v) => `$${v}`, label: 'Per month, everything included' },
 ];
 
 function StatItem({ target, display, label, shouldAnimate }) {
