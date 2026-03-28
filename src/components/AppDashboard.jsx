@@ -1575,6 +1575,7 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
             />
           )}
         </AnimatePresence>
+        <div className="h-12" />
       </div>
     );
   }
@@ -1657,6 +1658,7 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
           </div>
         )}
       </div>
+      <div className="h-12" />
     </div>
   );
 }
