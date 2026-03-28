@@ -405,6 +405,7 @@ function FarmAreaTab() {
             </Card>
           ))}
         </div>
+        <div className="h-12" />
       </div>
     );
   }
@@ -614,6 +615,7 @@ function FarmAreaTab() {
       <p className="font-sans text-xs text-gray-400 text-center mt-3">
         Leads delivered within 12 hours. 250 verified leads included in your plan.
       </p>
+      <div className="h-12" />
     </div>
   );
 }
