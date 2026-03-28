@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +26,9 @@ import {
   MapPin,
   Plus,
   Check,
+  Home,
+  Info,
+  Inbox,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -42,14 +45,13 @@ const leads = [
 ];
 
 const navItems = [
-  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'farm', label: 'Farm Area', icon: MapPin },
-  { key: 'leads', label: 'My Leads', icon: Users },
-  { key: 'drafts', label: 'AI Drafts', icon: FileEdit },
-  { key: 'sent', label: 'Sent', icon: Send },
-  { key: 'replies', label: 'Replies', icon: MessageSquare },
-  { key: 'pipeline', label: 'Pipeline', icon: GitBranch },
-  { key: 'settings', label: 'Settings', icon: Settings },
+  { key: 'dashboard', label: 'Home', subtitle: 'Your daily snapshot', icon: LayoutDashboard },
+  { key: 'farm', label: 'My Market', subtitle: 'Where we find your sellers', icon: MapPin },
+  { key: 'leads', label: 'Seller Leads', subtitle: 'People who may want to sell', icon: Users },
+  { key: 'drafts', label: 'Email Pitches', subtitle: 'Review before we send', icon: FileEdit },
+  { key: 'replies', label: 'Responses', subtitle: 'Sellers who replied', icon: MessageSquare },
+  { key: 'pipeline', label: 'My Deals', subtitle: 'Track your progress', icon: GitBranch },
+  { key: 'settings', label: 'Settings', subtitle: null, icon: Settings },
 ];
 
 const tabMap = {
@@ -57,6 +59,7 @@ const tabMap = {
   farm: 'farm',
   leads: 'leads',
   drafts: 'drafts',
+  replies: 'replies',
   pipeline: 'pipeline',
 };
 
@@ -70,28 +73,28 @@ const leadTypes = [
 ];
 
 const activityFeed = [
-  { text: 'AI drafted 12 new pitches for your Riverside Heights leads', time: '2h ago', icon: FileEdit, highlight: false },
-  { text: '3 emails delivered to Canyon Crest FSBOs', time: '4h ago', icon: Send, highlight: false },
-  { text: 'New reply from homeowner at 4821 Oakwood Dr', time: '6h ago', icon: MessageSquare, highlight: true },
-  { text: 'Follow-up sent to 8 leads with no response', time: '1d ago', icon: ArrowRight, highlight: false },
+  { text: '12 new email pitches ready for your Riverside Heights sellers', time: '2h ago', icon: FileEdit, highlight: false },
+  { text: '3 emails delivered to Canyon Crest sellers', time: '4h ago', icon: Send, highlight: false },
+  { text: 'New response from homeowner at 4821 Oakwood Dr', time: '6h ago', icon: MessageSquare, highlight: true },
+  { text: 'Follow-up sent to 8 sellers who have not replied', time: '1d ago', icon: ArrowRight, highlight: false },
 ];
 
 const pipelineColumns = [
-  { key: 'New', count: 12, color: 'border-t-gray-400' },
-  { key: 'Drafted', count: 62, color: 'border-t-orange' },
+  { key: 'New Leads', count: 12, color: 'border-t-gray-400' },
+  { key: 'Emails Ready', count: 62, color: 'border-t-orange' },
   { key: 'Sent', count: 186, color: 'border-t-charcoal' },
-  { key: 'Opened', count: 142, color: 'border-t-blue-500' },
-  { key: 'Replied', count: 14, color: 'border-t-success' },
-  { key: 'Appointment', count: 3, color: 'border-t-orange' },
-  { key: 'Listed', count: 1, color: 'border-t-success' },
+  { key: 'Opened Your Email', count: 142, color: 'border-t-blue-500' },
+  { key: 'Responded', count: 14, color: 'border-t-success' },
+  { key: 'Meeting Set', count: 3, color: 'border-t-orange' },
+  { key: 'Got the Listing!', count: 1, color: 'border-t-success' },
 ];
 
 const pipelineLeads = {
-  New: [
+  'New Leads': [
     { name: 'Linda Chen', address: '2710 Harbor View Dr', date: 'Mar 27' },
     { name: 'Robert Williams', address: '558 Palm Ave', date: 'Mar 26' },
   ],
-  Drafted: [
+  'Emails Ready': [
     { name: 'Michael Torres', address: '4821 Oakwood Dr', date: 'Mar 28' },
     { name: 'Sarah Kim', address: '1203 Maple Ridge Ln', date: 'Mar 28' },
     { name: 'Linda Chen', address: '2710 Harbor View Dr', date: 'Mar 27' },
@@ -100,18 +103,18 @@ const pipelineLeads = {
     { name: 'David Hernandez', address: '892 Sunset Blvd', date: 'Mar 26' },
     { name: 'James Park', address: '441 Cedar St', date: 'Mar 25' },
   ],
-  Opened: [
+  'Opened Your Email': [
     { name: 'Maria Gonzalez', address: '1847 Vista Del Mar', date: 'Mar 27' },
     { name: 'Alex Nguyen', address: '320 Birch Ln', date: 'Mar 26' },
   ],
-  Replied: [
+  'Responded': [
     { name: 'Karen White', address: '1100 Elm Dr', date: 'Mar 28' },
     { name: 'Tom Bradley', address: '923 Pine Crest', date: 'Mar 27' },
   ],
-  Appointment: [
+  'Meeting Set': [
     { name: 'Jennifer Adams', address: '560 Ocean Blvd', date: 'Mar 29' },
   ],
-  Listed: [
+  'Got the Listing!': [
     { name: 'Chris Morales', address: '2200 Summit Way', date: 'Mar 25' },
   ],
 };
@@ -192,10 +195,10 @@ function FadePanel({ children, tabKey }) {
     <AnimatePresence mode="wait">
       <motion.div
         key={tabKey}
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -6 }}
-        transition={{ duration: 0.2, ease: 'easeInOut' }}
+        initial={{ opacity: 0, x: 10 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -10 }}
+        transition={{ duration: 0.22, ease: 'easeInOut' }}
         className="h-full"
       >
         {children}
@@ -298,7 +301,7 @@ function FarmAreaTab() {
                   </div>
                   <div className="hidden md:flex items-center gap-4 text-right">
                     <div>
-                      <div className="font-mono text-xs text-gray-400">AI Drafts</div>
+                      <div className="font-mono text-xs text-gray-400">Email Pitches</div>
                       <div className="font-mono text-sm font-semibold text-orange">{delivery.drafts} ready</div>
                     </div>
                     <Badge className="bg-success/10 text-success border-success/20 rounded-full text-xs">
@@ -535,52 +538,129 @@ function FarmAreaTab() {
 // Tab: Overview
 // ---------------------------------------------------------------------------
 
-function OverviewTab() {
-  const metrics = [
-    { label: 'Leads This Month', value: '248', sub: '/250', accent: 'text-orange', progress: 248 / 250 },
-    { label: 'AI Drafts Ready', value: '62', sub: null, note: 'needs review', accent: 'text-charcoal' },
-    { label: 'Sent This Week', value: '186', sub: null, accent: 'text-charcoal' },
-    { label: 'Replies', value: '14', sub: null, badge: '3 new today', accent: 'text-success' },
-  ];
+function OverviewTab({ onNavigate }) {
+  const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+
+  const farmSetUp = true;
+  const emailsReviewed = leads.some(l => l.draft === 'Sent');
+  const hasResponses = (pipelineLeads['Responded'] || []).length > 0;
 
   return (
     <div className="space-y-8">
-      {/* Metric cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {metrics.map((m) => (
-          <Card key={m.label} className="relative overflow-visible">
-            <CardContent className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{m.label}</p>
-              <div className="flex items-end gap-1">
-                <span className={cn('text-3xl font-heading font-semibold leading-none', m.accent)}>
-                  {m.value}
-                </span>
-                {m.sub && <span className="text-sm text-muted-foreground mb-0.5">{m.sub}</span>}
-                {m.badge && (
-                  <span className="ml-2 inline-flex items-center rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-medium text-success">
-                    {m.badge}
-                  </span>
-                )}
+      {/* Welcome banner for new users */}
+      {!welcomeDismissed && (
+        <div className="relative rounded-xl border border-orange/20 bg-orange/[0.03] p-6">
+          <button
+            onClick={() => setWelcomeDismissed(true)}
+            className="absolute top-4 right-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Dismiss
+          </button>
+          <h3 className="font-heading text-lg font-semibold text-charcoal mb-4">
+            Welcome to OffMarket, Sarah! Here&apos;s how to get started:
+          </h3>
+          <div className="space-y-3">
+            <button
+              onClick={() => onNavigate?.('farm')}
+              className="flex items-center gap-3 w-full text-left group"
+            >
+              <div className={cn(
+                'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+                farmSetUp ? 'bg-success/10 text-success' : 'bg-orange/10 text-orange'
+              )}>
+                {farmSetUp ? <Check className="h-3.5 w-3.5" /> : '1'}
               </div>
-              {m.note && (
-                <p className="text-xs text-muted-foreground">{m.note}</p>
-              )}
-              {m.progress != null && (
-                <div className="h-1.5 w-full rounded-full bg-orange/10">
-                  <div
-                    className="h-full rounded-full bg-orange transition-all"
-                    style={{ width: `${m.progress * 100}%` }}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              <span className={cn(
+                'text-sm group-hover:text-orange transition-colors',
+                farmSetUp ? 'text-muted-foreground line-through' : 'text-charcoal font-medium'
+              )}>
+                Set up your market area
+              </span>
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+            <button
+              onClick={() => onNavigate?.('drafts')}
+              className="flex items-center gap-3 w-full text-left group"
+            >
+              <div className={cn(
+                'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+                emailsReviewed ? 'bg-success/10 text-success' : 'bg-orange/10 text-orange'
+              )}>
+                {emailsReviewed ? <Check className="h-3.5 w-3.5" /> : '2'}
+              </div>
+              <span className={cn(
+                'text-sm group-hover:text-orange transition-colors',
+                emailsReviewed ? 'text-muted-foreground line-through' : 'text-charcoal font-medium'
+              )}>
+                Review your email pitches
+              </span>
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+            <button
+              onClick={() => onNavigate?.('replies')}
+              className="flex items-center gap-3 w-full text-left group"
+            >
+              <div className={cn(
+                'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+                hasResponses ? 'bg-success/10 text-success' : 'bg-orange/10 text-orange'
+              )}>
+                {hasResponses ? <Check className="h-3.5 w-3.5" /> : '3'}
+              </div>
+              <span className={cn(
+                'text-sm group-hover:text-orange transition-colors',
+                hasResponses ? 'text-muted-foreground line-through' : 'text-charcoal font-medium'
+              )}>
+                Check for seller responses
+              </span>
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Status story card */}
+      <Card className="rounded-xl border-orange/20 bg-orange/[0.03]">
+        <CardContent className="p-6 sm:p-8">
+          <p className="font-sans text-lg sm:text-xl text-charcoal leading-relaxed mb-1">
+            You have <span className="font-bold text-orange">62 email pitches</span> ready to review.
+          </p>
+          <p className="font-sans text-lg sm:text-xl text-charcoal leading-relaxed mb-6">
+            <span className="font-bold text-success">14 sellers</span> have responded so far.
+          </p>
+          <Button
+            onClick={() => onNavigate('drafts')}
+            className="w-full sm:w-auto h-14 rounded-xl bg-orange text-white font-sans text-base font-semibold px-8 hover:bg-orange/90 transition-colors"
+          >
+            Review Email Pitches <ArrowRight className="w-5 h-5 ml-2" />
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Responses nudge */}
+      <Card className="rounded-xl">
+        <CardContent className="p-5 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-success/10">
+              <MessageSquare className="h-5 w-5 text-success" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-charcoal">3 sellers responded today</p>
+              <p className="text-xs text-muted-foreground">See what they said and follow up</p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => onNavigate('replies')}
+            className="rounded-lg text-sm shrink-0"
+          >
+            View Responses <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Activity feed */}
       <div>
-        <h2 className="font-heading text-lg font-semibold mb-4">Recent Activity</h2>
+        <h2 className="font-heading text-lg font-semibold mb-4">What Happened Recently</h2>
         <div className="space-y-1">
           {activityFeed.map((item, i) => {
             const Icon = item.icon;
@@ -623,6 +703,15 @@ function LeadsTab() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLead, setSelectedLead] = useState(null);
+  const [approvedLeads, setApprovedLeads] = useState({});
+
+  const handleApprove = useCallback((index, e) => {
+    e.stopPropagation();
+    setApprovedLeads(prev => ({ ...prev, [index]: true }));
+    setTimeout(() => {
+      setApprovedLeads(prev => ({ ...prev, [index]: false }));
+    }, 1500);
+  }, []);
 
   const filtered = leads.filter((l) => {
     const matchesFilter = activeFilter === 'All' || l.type === activeFilter;
@@ -664,14 +753,21 @@ function LeadsTab() {
         </div>
       </div>
 
+      {/* Contextual help for new users */}
+      <div className="flex items-start gap-3 rounded-xl bg-gray-50 border border-gray-100 px-4 py-3">
+        <Info className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
+        <p className="text-sm text-gray-500">
+          These are motivated sellers in your market. We found them using property records, MLS data, and skip-traced contacts. Review their info and email pitches.
+        </p>
+      </div>
+
       {/* Table header */}
-      <div className="hidden lg:grid grid-cols-[1.4fr_1.6fr_0.9fr_0.7fr_0.7fr_0.7fr_0.5fr] gap-4 px-4 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="hidden lg:grid grid-cols-[1.4fr_1.6fr_0.9fr_0.8fr_0.7fr_0.8fr] gap-4 px-4 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
         <span>Contact</span>
         <span>Property</span>
         <span>Type</span>
-        <span>Match</span>
-        <span>AI Draft</span>
-        <span>Status</span>
+        <span>Email Status</span>
+        <span>Stage</span>
         <span />
       </div>
 
@@ -682,10 +778,10 @@ function LeadsTab() {
             <div
               onClick={() => setSelectedLead(selectedLead === i ? null : i)}
               className={cn(
-                'grid grid-cols-1 lg:grid-cols-[1.4fr_1.6fr_0.9fr_0.7fr_0.7fr_0.7fr_0.5fr] gap-2 lg:gap-4 items-center rounded-xl px-4 py-3 cursor-pointer transition-colors',
+                'grid grid-cols-1 lg:grid-cols-[1.4fr_1.6fr_0.9fr_0.8fr_0.7fr_0.8fr] gap-2 lg:gap-4 items-center rounded-xl px-4 py-3 min-h-[56px] cursor-pointer transition-all duration-150 border-l-3 border-l-transparent',
                 selectedLead === i
-                  ? 'bg-orange/5 ring-1 ring-orange/15'
-                  : 'hover:bg-muted/50'
+                  ? 'bg-orange/5 ring-1 ring-orange/15 border-l-orange'
+                  : 'hover:bg-muted/50 hover:border-l-orange'
               )}
             >
               {/* Contact */}
@@ -704,18 +800,7 @@ function LeadsTab() {
                 </span>
               </div>
 
-              {/* Match */}
-              <div className="flex items-center gap-2">
-                <div className="h-1.5 w-12 rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-orange transition-all"
-                    style={{ width: `${lead.match}%` }}
-                  />
-                </div>
-                <span className="text-sm font-mono text-muted-foreground">{lead.match}%</span>
-              </div>
-
-              {/* Draft */}
+              {/* Email Status */}
               <div>
                 <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium', draftBadgeClass(lead.draft))}>
                   {lead.draft}
@@ -729,9 +814,19 @@ function LeadsTab() {
                 </span>
               </div>
 
-              {/* Arrow */}
+              {/* Action */}
               <div className="hidden lg:flex justify-end">
-                <ChevronRight className={cn('h-4 w-4 text-muted-foreground transition-transform', selectedLead === i && 'rotate-90')} />
+                <Button
+                  size="sm"
+                  variant={lead.draft === 'Ready' ? 'default' : 'outline'}
+                  className={cn(
+                    'rounded-lg text-xs h-9 px-3',
+                    lead.draft === 'Ready' && 'bg-orange text-white hover:bg-orange/90'
+                  )}
+                  onClick={(e) => { e.stopPropagation(); setSelectedLead(selectedLead === i ? null : i); }}
+                >
+                  {lead.draft === 'Ready' ? 'Review Email' : lead.draft === 'Sent' ? 'View' : 'Pending'}
+                </Button>
               </div>
             </div>
 
@@ -747,7 +842,7 @@ function LeadsTab() {
                 >
                   <div className="mx-4 mb-2 rounded-xl border border-border bg-white p-5 space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-heading text-base font-semibold">AI Draft Preview</h3>
+                      <h3 className="font-heading text-base font-semibold">Email Pitch Preview</h3>
                       <button
                         onClick={(e) => { e.stopPropagation(); setSelectedLead(null); }}
                         className="text-muted-foreground hover:text-foreground"
@@ -781,8 +876,41 @@ function LeadsTab() {
                     <div className="flex items-center gap-2 pt-2 border-t border-border">
                       <Button variant="outline" size="sm">Skip</Button>
                       <Button variant="outline" size="sm">Edit</Button>
-                      <Button size="sm" className="bg-orange text-white hover:bg-orange-hover ml-auto">
-                        Approve & Send
+                      <Button
+                        size="sm"
+                        onClick={(e) => handleApprove(i, e)}
+                        className={cn(
+                          'ml-auto transition-all duration-300',
+                          approvedLeads[i]
+                            ? 'bg-success text-white hover:bg-success scale-105'
+                            : 'bg-orange text-white hover:bg-orange-hover'
+                        )}
+                      >
+                        {approvedLeads[i] ? (
+                          <><CheckCircle2 className="w-4 h-4 mr-1" /> Sent!</>
+                        ) : (
+                          'Approve & Send'
+                        )}
+                      </Button>
+                    </div>
+                    {/* Mobile sticky action bar for expanded preview */}
+                    <div className="md:hidden fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border px-4 py-3 flex items-center gap-2 shadow-lg">
+                      <Button variant="outline" size="default" className="flex-1">Skip</Button>
+                      <Button
+                        size="default"
+                        onClick={(e) => handleApprove(i, e)}
+                        className={cn(
+                          'flex-1 transition-all duration-300',
+                          approvedLeads[i]
+                            ? 'bg-success text-white hover:bg-success scale-105'
+                            : 'bg-orange text-white hover:bg-orange-hover'
+                        )}
+                      >
+                        {approvedLeads[i] ? (
+                          <><CheckCircle2 className="w-4 h-4 mr-1" /> Sent!</>
+                        ) : (
+                          'Approve & Send'
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -808,14 +936,22 @@ function LeadsTab() {
 
 function DraftsTab() {
   const [selectedDraft, setSelectedDraft] = useState(0);
+  const [approvedDrafts, setApprovedDrafts] = useState({});
   const selected = leads[selectedDraft];
+
+  const handleDraftApprove = useCallback(() => {
+    setApprovedDrafts(prev => ({ ...prev, [selectedDraft]: true }));
+    setTimeout(() => {
+      setApprovedDrafts(prev => ({ ...prev, [selectedDraft]: false }));
+    }, 1500);
+  }, [selectedDraft]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-12rem)]">
       {/* Left — lead list */}
       <div className="lg:w-1/3 rounded-xl border border-border bg-white overflow-hidden flex flex-col">
         <div className="px-4 py-3 border-b border-border">
-          <p className="text-sm font-medium">Drafts Queue</p>
+          <p className="text-sm font-medium">Email Pitches</p>
           <p className="text-xs text-muted-foreground">{leads.filter(l => l.draft === 'Ready').length} ready for review</p>
         </div>
         <div className="flex-1 overflow-y-auto">
@@ -904,12 +1040,46 @@ function DraftsTab() {
           </div>
         </div>
 
-        {/* Bottom action bar */}
-        <div className="px-6 py-3 border-t border-border flex items-center gap-2">
+        {/* Bottom action bar — desktop */}
+        <div className="hidden md:flex px-6 py-3 border-t border-border items-center gap-2">
           <Button variant="outline" size="default">Skip</Button>
           <Button variant="outline" size="default">Edit</Button>
-          <Button size="default" className="bg-orange text-white hover:bg-orange-hover ml-auto">
-            Approve & Send
+          <Button
+            size="default"
+            onClick={handleDraftApprove}
+            className={cn(
+              'ml-auto transition-all duration-300',
+              approvedDrafts[selectedDraft]
+                ? 'bg-success text-white hover:bg-success scale-105'
+                : 'bg-orange text-white hover:bg-orange-hover'
+            )}
+          >
+            {approvedDrafts[selectedDraft] ? (
+              <><CheckCircle2 className="w-4 h-4 mr-1" /> Sent!</>
+            ) : (
+              'Approve & Send'
+            )}
+          </Button>
+        </div>
+
+        {/* Bottom action bar — mobile sticky */}
+        <div className="md:hidden fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border px-4 py-3 flex items-center gap-2 shadow-lg">
+          <Button variant="outline" size="default" className="flex-1">Skip</Button>
+          <Button
+            size="default"
+            onClick={handleDraftApprove}
+            className={cn(
+              'flex-1 transition-all duration-300',
+              approvedDrafts[selectedDraft]
+                ? 'bg-success text-white hover:bg-success scale-105'
+                : 'bg-orange text-white hover:bg-orange-hover'
+            )}
+          >
+            {approvedDrafts[selectedDraft] ? (
+              <><CheckCircle2 className="w-4 h-4 mr-1" /> Sent!</>
+            ) : (
+              'Approve & Send'
+            )}
           </Button>
         </div>
       </div>
@@ -924,7 +1094,10 @@ function DraftsTab() {
 function PipelineTab() {
   return (
     <div className="space-y-4">
-      <h2 className="font-heading text-lg font-semibold">Pipeline</h2>
+      <div>
+        <h2 className="font-heading text-lg font-semibold">My Deals</h2>
+        <p className="text-sm text-muted-foreground mt-1">Track every seller from first contact to signed listing.</p>
+      </div>
       <div className="flex gap-3 overflow-x-auto pb-4">
         {pipelineColumns.map((col) => (
           <div
@@ -1006,7 +1179,7 @@ export default function AppDashboard() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 space-y-0.5">
+        <nav className="flex-1 px-3 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeNav === item.key;
@@ -1015,14 +1188,19 @@ export default function AppDashboard() {
                 key={item.key}
                 onClick={() => handleNavClick(item.key)}
                 className={cn(
-                  'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                  'relative flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition-all duration-150',
                   isActive
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/60 hover:bg-white/5 hover:text-white/80'
+                    ? 'bg-white/10 text-white border-l-[3px] border-l-orange pl-[9px]'
+                    : 'text-white/60 hover:bg-white/5 hover:text-white/80 border-l-[3px] border-l-transparent pl-[9px]'
                 )}
               >
-                <Icon className="h-4 w-4 shrink-0" />
-                {item.label}
+                <Icon className="h-5 w-5 shrink-0" />
+                <div className="min-w-0">
+                  <span className="text-sm font-medium block leading-tight">{item.label}</span>
+                  {item.subtitle && (
+                    <span className="text-[11px] text-white/30 block leading-tight mt-0.5">{item.subtitle}</span>
+                  )}
+                </div>
               </button>
             );
           })}
@@ -1047,25 +1225,20 @@ export default function AppDashboard() {
         {/* Header */}
         <header className="sticky top-0 z-30 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-border px-4 sm:px-6 py-3">
           <div className="flex items-center gap-3">
-            {/* Mobile hamburger */}
-            <button
-              className="md:hidden flex flex-col gap-1 justify-center"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              <span className="block h-0.5 w-5 bg-foreground" />
-              <span className="block h-0.5 w-5 bg-foreground" />
-              <span className="block h-0.5 w-5 bg-foreground" />
-            </button>
+            {/* Mobile hamburger — hidden, bottom tabs replace it */}
             <div>
               <h1 className="font-heading text-lg font-semibold">Good morning, Sarah</h1>
-              <p className="text-xs text-muted-foreground">Friday, March 28, 2026</p>
+              <p className="text-xs text-muted-foreground">You have <span className="font-semibold text-orange">62 pitches</span> to review and <span className="font-semibold text-success">3 new responses</span>.</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <button className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
               <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange" />
+              <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange" />
+              </span>
             </button>
             <div className="hidden sm:flex h-8 w-8 items-center justify-center rounded-full bg-orange text-xs font-semibold text-white">
               SJ
@@ -1074,9 +1247,9 @@ export default function AppDashboard() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-20 md:pb-6">
           <FadePanel tabKey={activeTab}>
-            {activeTab === 'overview' && <OverviewTab />}
+            {activeTab === 'overview' && <OverviewTab onNavigate={handleNavClick} />}
             {activeTab === 'farm' && <FarmAreaTab />}
             {activeTab === 'leads' && <LeadsTab />}
             {activeTab === 'drafts' && <DraftsTab />}
@@ -1084,6 +1257,33 @@ export default function AppDashboard() {
           </FadePanel>
         </main>
       </div>
+
+      {/* ---- Mobile bottom tab bar ---- */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border shadow-lg flex items-center justify-around h-14">
+        {[
+          { key: 'dashboard', label: 'Home', icon: Home },
+          { key: 'leads', label: 'Leads', icon: Users },
+          { key: 'drafts', label: 'Pitches', icon: FileEdit },
+          { key: 'replies', label: 'Responses', icon: MessageSquare },
+          { key: 'pipeline', label: 'Deals', icon: GitBranch },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeNav === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => handleNavClick(tab.key)}
+              className={cn(
+                'flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors',
+                isActive ? 'text-orange' : 'text-gray-400'
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-[10px] font-medium leading-tight">{tab.label}</span>
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 }
