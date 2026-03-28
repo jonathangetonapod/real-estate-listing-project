@@ -1330,58 +1330,63 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
       </div>
 
       {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
-        <div className="flex items-center gap-1 flex-wrap">
-          {typeFilters.map((f) => (
+      <div className="rounded-lg border border-border bg-white p-3 space-y-2.5">
+        {/* Row 1: Lead type */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium w-10 shrink-0">Type</span>
+            {typeFilters.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setActiveFilter(f.key)}
+                className={cn(
+                  'rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors whitespace-nowrap',
+                  activeFilter === f.key
+                    ? 'bg-charcoal text-white'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                {f.key}{f.key !== 'All' ? ` (${f.count})` : ''}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mr-0.5 hidden sm:inline">Order</span>
+            {orderMonths.map((month) => (
+              <button
+                key={month}
+                onClick={() => setActiveOrder(month)}
+                className={cn(
+                  'rounded-md px-2 py-1 text-[11px] font-medium transition-colors whitespace-nowrap border',
+                  activeOrder === month
+                    ? 'border-charcoal bg-charcoal/5 text-charcoal'
+                    : 'border-transparent text-muted-foreground hover:border-gray-200 hover:text-foreground'
+                )}
+              >
+                {month === 'All' ? 'All Orders' : month}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 2: Pitch status */}
+        <div className="flex items-center gap-1.5 flex-wrap border-t border-gray-100 pt-2.5">
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium w-10 shrink-0">Status</span>
+          {pitchStatusFilters.map((f) => (
             <button
               key={f.key}
-              onClick={() => setActiveFilter(f.key)}
+              onClick={() => setActivePitchStatus(f.key)}
               className={cn(
-                'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap',
-                activeFilter === f.key
-                  ? 'bg-charcoal text-white'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                'rounded-md px-2 py-1 text-[11px] font-medium transition-colors whitespace-nowrap border',
+                activePitchStatus === f.key
+                  ? 'border-charcoal bg-charcoal/5 text-charcoal'
+                  : 'border-transparent text-muted-foreground hover:border-gray-200 hover:text-foreground'
               )}
             >
               {f.key}{f.key !== 'All' ? ` (${f.count})` : ''}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-1 flex-wrap">
-          {orderMonths.map((month) => (
-            <button
-              key={month}
-              onClick={() => setActiveOrder(month)}
-              className={cn(
-                'rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors whitespace-nowrap border',
-                activeOrder === month
-                  ? 'border-charcoal bg-charcoal/5 text-charcoal'
-                  : 'border-transparent text-muted-foreground hover:border-gray-200 hover:text-foreground'
-              )}
-            >
-              {month === 'All' ? 'All Orders' : month}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Pitch Status Filter */}
-      <div className="flex items-center gap-1 flex-wrap">
-        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mr-1">Status</span>
-        {pitchStatusFilters.map((f) => (
-          <button
-            key={f.key}
-            onClick={() => setActivePitchStatus(f.key)}
-            className={cn(
-              'rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors whitespace-nowrap border',
-              activePitchStatus === f.key
-                ? 'border-charcoal bg-charcoal/5 text-charcoal'
-                : 'border-transparent text-muted-foreground hover:border-gray-200 hover:text-foreground'
-            )}
-          >
-            {f.key}{f.key !== 'All' ? ` (${f.count})` : ''}
-          </button>
-        ))}
       </div>
 
       {/* Lead Cards */}
@@ -1419,7 +1424,7 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                         {/* Name + Address */}
                         <div className="min-w-0 w-[200px] shrink-0">
                           <p className="font-sans text-sm font-semibold text-charcoal truncate">{lead.name}</p>
-                          <p className="font-sans text-xs text-gray-400 truncate">{lead.address}</p>
+                          <p className="font-sans text-xs text-gray-500 truncate">{lead.address}</p>
                         </div>
 
                         {/* Inline stats */}
@@ -1696,7 +1701,7 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
 // Tab: Pitches Sent
 // ---------------------------------------------------------------------------
 
-function DraftsTab({ pitchDrafts }) {
+function DraftsTab({ pitchDrafts, onNavigate }) {
   const [expandedPitch, setExpandedPitch] = useState(null);
   const [expandedStep, setExpandedStep] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -1741,7 +1746,13 @@ function DraftsTab({ pitchDrafts }) {
               <Send className="h-6 w-6 text-gray-400" />
             </div>
             <p className="text-sm font-medium text-charcoal mb-1">No pitches sent yet</p>
-            <p className="text-sm text-muted-foreground">Generate and send pitches from the Seller Leads tab — they&apos;ll appear here.</p>
+            <p className="text-sm text-muted-foreground mb-4">Generate and send pitches from the Seller Leads tab — they&apos;ll appear here.</p>
+            {onNavigate && (
+              <Button size="sm" className="rounded-lg bg-orange text-white hover:bg-orange-hover" onClick={() => onNavigate('leads')}>
+                <Users className="h-3.5 w-3.5 mr-1.5" />
+                Go to Seller Leads
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : sentPitches.length === 0 ? (
@@ -2186,7 +2197,7 @@ function InboxTab() {
             return (
               <div key={reply.id} className={cn(
                 'rounded-lg border transition-all duration-150',
-                reply.status === 'new' ? 'border-orange/30 bg-orange/[0.02]' : '',
+                reply.status === 'new' ? 'border-orange/30 bg-orange/[0.03] shadow-sm' : '',
                 isExpanded ? 'ring-1 ring-orange/10 border-orange/30' : 'border-border hover:border-orange/20'
               )}>
                 {/* Compact Row */}
@@ -2685,7 +2696,7 @@ export default function AppDashboard() {
             {/* Mobile hamburger — hidden, bottom tabs replace it */}
             <div>
               <h1 className="font-heading text-lg font-semibold">Good morning, Sarah</h1>
-              <p className="text-xs text-muted-foreground">You have <span className="font-semibold text-orange">62 pitches</span> to review and <span className="font-semibold text-success">3 new replies</span>.</p>
+              <p className="text-xs text-muted-foreground">You have <span className="font-semibold text-orange">{leads.length} seller leads</span> and <span className="font-semibold text-success">{sampleReplies.filter(r => r.status === 'new').length} new replies</span>.</p>
             </div>
           </div>
 
@@ -2709,7 +2720,7 @@ export default function AppDashboard() {
             {activeTab === 'overview' && <OverviewTab onNavigate={handleNavClick} />}
             {activeTab === 'farm' && <FarmAreaTab />}
             {activeTab === 'leads' && <LeadsTab pitchDrafts={pitchDrafts} setPitchDrafts={setPitchDrafts} contactedLeads={contactedLeads} setContactedLeads={setContactedLeads} />}
-            {activeTab === 'drafts' && <DraftsTab pitchDrafts={pitchDrafts} />}
+            {activeTab === 'drafts' && <DraftsTab pitchDrafts={pitchDrafts} onNavigate={handleNavClick} />}
             {activeTab === 'pipeline' && <PipelineTab />}
             {activeTab === 'replies' && <InboxTab />}
           </FadePanel>
