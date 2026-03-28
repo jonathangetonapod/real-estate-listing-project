@@ -90,7 +90,7 @@ export function Hero() {
               type="submit"
               className="w-full md:w-auto rounded-xl md:rounded-l-none bg-orange text-white font-sans text-[15px] font-semibold px-8 py-4 h-auto border-orange hover:bg-orange/90 transition-colors duration-200 whitespace-nowrap"
             >
-              See My Seller List &rarr;
+              Join the Waitlist &rarr;
             </Button>
           </form>
         ) : (
@@ -116,7 +116,7 @@ export function Hero() {
         animate="visible"
         custom={0.4}
       >
-        See your leads before you pay. No credit card. Cancel in one click.
+        Limited spots per zip code. We&apos;ll notify you when your market opens.
       </motion.p>
     </section>
   );

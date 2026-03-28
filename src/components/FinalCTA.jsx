@@ -70,7 +70,7 @@ export function FinalCTA() {
                 type="submit"
                 className="h-auto w-full whitespace-nowrap rounded-lg bg-orange px-7 py-4 font-sans text-[15px] font-semibold text-white transition-colors hover:bg-orange/90 sm:w-auto sm:rounded-l-none"
               >
-                Send Me My Seller List &rarr;
+                Join the Waitlist &rarr;
               </Button>
             </form>
           </div>

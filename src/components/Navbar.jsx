@@ -57,18 +57,12 @@ export function Navbar() {
           ))}
         </ul>
 
-        {/* Desktop CTAs */}
-        <div className="hidden md:flex items-center gap-4">
-          <Button
-            variant="outline"
-            className="rounded-full border-orange text-orange font-sans text-sm font-semibold px-6 py-2.5 hover:bg-orange hover:text-white transition-colors duration-200"
-          >
-            See a Sample List
-          </Button>
+        {/* Desktop CTA */}
+        <div className="hidden md:flex items-center">
           <Button
             className="rounded-full bg-orange text-white font-sans text-sm font-semibold px-6 py-2.5 border-orange hover:bg-orange/90 transition-colors duration-200"
           >
-            Start Free Preview
+            Join the Waitlist
           </Button>
         </div>
 
@@ -115,19 +109,11 @@ export function Navbar() {
               {link.label}
             </a>
           ))}
-          <div className="flex flex-col gap-4 w-full">
-            <Button
-              variant="outline"
-              className="w-full rounded-full border-orange text-orange font-sans text-sm font-semibold px-6 py-2.5 hover:bg-orange hover:text-white transition-colors duration-200"
-            >
-              See a Sample List
-            </Button>
-            <Button
-              className="w-full rounded-full bg-orange text-white font-sans text-sm font-semibold px-6 py-2.5 border-orange hover:bg-orange/90 transition-colors duration-200"
-            >
-              Start Free Preview
-            </Button>
-          </div>
+          <Button
+            className="w-full rounded-full bg-orange text-white font-sans text-sm font-semibold px-6 py-2.5 border-orange hover:bg-orange/90 transition-colors duration-200"
+          >
+            Join the Waitlist
+          </Button>
         </div>
       </nav>
     </motion.div>

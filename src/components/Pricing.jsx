@@ -124,7 +124,7 @@ export function Pricing() {
             <Button
               className="h-auto w-full rounded-lg bg-orange px-6 py-4 font-sans text-base font-semibold text-white transition-colors hover:bg-orange/90"
             >
-              Start Free Preview
+              Join the Waitlist
             </Button>
           </CardContent>
         </Card>
@@ -137,7 +137,7 @@ export function Pricing() {
         whileInView="visible"
         viewport={{ once: true, margin: '-40px' }}
       >
-        No contracts. Cancel anytime. See your first leads before you pay.
+        No contracts. Cancel anytime. Limited to 5 agents per zip code.
       </motion.p>
 
       <motion.p
