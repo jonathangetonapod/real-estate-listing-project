@@ -26,3 +26,5 @@ dist-ssr
 # Brainstorm sessions
 .superpowers/
 .gstack/
+video/node_modules/
+video/out/
