@@ -1183,9 +1183,110 @@ function PipelineTab() {
 // Main component
 // ---------------------------------------------------------------------------
 
+// Leads Arrived Celebration Banner
+function LeadsArrivedBanner({ onDismiss, onReview }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.1, type: 'spring', damping: 15 }}
+        className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-2xl text-center"
+      >
+        {/* Celebration icon */}
+        <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.3, type: 'spring', damping: 10 }}
+          >
+            <CheckCircle2 className="w-10 h-10 text-success" />
+          </motion.div>
+        </div>
+
+        <motion.h2
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="font-heading text-3xl font-bold text-charcoal mb-3"
+        >
+          Your leads are here!
+        </motion.h2>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="font-sans text-lg text-gray-500 mb-6"
+        >
+          248 motivated sellers in Riverside Heights, ready to go.
+        </motion.p>
+
+        {/* Breakdown */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="grid grid-cols-3 gap-3 mb-6"
+        >
+          {[
+            { label: 'Expired', count: 94 },
+            { label: 'FSBO', count: 62 },
+            { label: 'Pre-Foreclosure', count: 38 },
+          ].map((t, i) => (
+            <div key={i} className="rounded-xl bg-light-bg p-3">
+              <div className="font-mono text-xl font-bold text-charcoal">{t.count}</div>
+              <div className="font-sans text-xs text-gray-400">{t.label}</div>
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.65 }}
+          className="flex items-center justify-center gap-3 mb-6 rounded-xl bg-orange/[0.04] border border-orange/10 p-4"
+        >
+          <FileEdit className="w-5 h-5 text-orange shrink-0" />
+          <p className="font-sans text-sm text-charcoal">
+            <span className="font-semibold">248 email pitches</span> have been written and are ready for your review.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="flex flex-col gap-3"
+        >
+          <Button
+            onClick={onReview}
+            className="w-full h-14 rounded-xl bg-orange text-white font-sans text-base font-semibold hover:bg-orange/90 transition-colors"
+          >
+            Start Reviewing Pitches
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </Button>
+          <button
+            onClick={onDismiss}
+            className="font-sans text-sm text-gray-400 hover:text-charcoal transition-colors"
+          >
+            I&apos;ll review later
+          </button>
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function AppDashboard() {
   const [activeNav, setActiveNav] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLeadsArrived, setShowLeadsArrived] = useState(true);
 
   const activeTab = tabMap[activeNav] || 'overview';
 
@@ -1196,6 +1297,19 @@ export default function AppDashboard() {
 
   return (
     <div className="flex h-screen bg-light-bg">
+      {/* Leads Arrived Celebration */}
+      <AnimatePresence>
+        {showLeadsArrived && (
+          <LeadsArrivedBanner
+            onDismiss={() => setShowLeadsArrived(false)}
+            onReview={() => {
+              setShowLeadsArrived(false);
+              setActiveNav('drafts');
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* ---- Sidebar ---- */}
       {/* Mobile overlay */}
       <AnimatePresence>
