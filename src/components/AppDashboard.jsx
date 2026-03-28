@@ -2140,7 +2140,7 @@ function InboxTab() {
     { key: 'Meeting Set', count: filterCounts['Meeting Set'] || 0 },
     { key: 'Follow Up', count: filterCounts['Follow Up'] || 0 },
     { key: 'Closed', count: filterCounts['Closed'] || 0 },
-  ].filter(f => f.key === 'All' || f.count > 0);
+  ];
 
   const filtered = sampleReplies
     .filter(r => {
@@ -2190,11 +2190,14 @@ function InboxTab() {
           <button
             key={f.key}
             onClick={() => setActiveInboxFilter(f.key)}
+            disabled={f.key !== 'All' && f.count === 0}
             className={cn(
               'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap',
               activeInboxFilter === f.key
                 ? 'bg-charcoal text-white'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                : f.key !== 'All' && f.count === 0
+                  ? 'text-gray-300 cursor-default'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             )}
           >
             {f.key}{f.key !== 'All' ? ` (${f.count})` : ''}
