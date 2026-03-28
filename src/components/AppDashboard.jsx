@@ -1174,6 +1174,7 @@ function PipelineTab() {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }
@@ -1249,6 +1250,26 @@ export default function AppDashboard() {
           })}
         </nav>
 
+        {/* Setup progress indicator */}
+        {(() => {
+          const farmDone = true;
+          const emailsDone = leads.some(l => l.draft === 'Sent');
+          const repliesDone = (pipelineLeads['Responded'] || []).length > 0;
+          const stepsComplete = [farmDone, emailsDone, repliesDone].filter(Boolean).length;
+          const progressPct = (stepsComplete / 3) * 100;
+          return stepsComplete < 3 ? (
+            <div className="px-4 py-3 border-t border-white/10">
+              <p className="text-xs text-white/50 mb-2">Setup: {stepsComplete} of 3 complete</p>
+              <div className="h-1 w-full rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-orange transition-all"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+            </div>
+          ) : null;
+        })()}
+
         {/* Agent card */}
         <div className="px-4 py-5 border-t border-white/10">
           <div className="flex items-center gap-3">
@@ -1301,10 +1322,12 @@ export default function AppDashboard() {
               <div className="space-y-4">
                 <h2 className="font-heading text-lg font-semibold">Responses</h2>
                 <Card className="rounded-xl">
-                  <CardContent className="p-6 text-center text-muted-foreground">
-                    <MessageSquare className="h-8 w-8 mx-auto mb-3 text-orange" />
-                    <p className="text-sm font-medium text-foreground mb-1">3 new responses today</p>
-                    <p className="text-xs">Seller replies will appear here as they come in.</p>
+                  <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="w-12 h-12 rounded-full bg-orange/10 flex items-center justify-center mb-4">
+                      <MessageSquare className="h-6 w-6 text-orange" />
+                    </div>
+                    <p className="text-sm font-medium text-charcoal mb-1">No responses yet</p>
+                    <p className="text-sm text-muted-foreground">Once sellers reply to your emails, they&apos;ll show up here.</p>
                   </CardContent>
                 </Card>
               </div>
