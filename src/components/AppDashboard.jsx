@@ -2039,7 +2039,7 @@ const sampleReplies = [
   },
 ];
 
-function InboxTab() {
+function InboxTab({ addDeal }) {
   const [expandedReply, setExpandedReply] = useState(null);
   const [activeInboxFilter, setActiveInboxFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -2441,7 +2441,15 @@ function InboxTab() {
                             </div>
                             <div className="rounded-lg border border-border p-3 space-y-2">
                               <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Quick Actions</p>
-                              <Button variant="outline" size="sm" className="w-full justify-start rounded-lg text-sm">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full justify-start rounded-lg text-sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  addDeal({ name: reply.name, address: reply.address, email: reply.email, price: reply.price, type: reply.type, source: 'inbox' });
+                                }}
+                              >
                                 <ArrowRight className="h-3.5 w-3.5 mr-2" />
                                 Move to Deals
                               </Button>
@@ -2467,127 +2475,203 @@ function InboxTab() {
 // Tab: Pipeline
 // ---------------------------------------------------------------------------
 
-function PipelineTab() {
-  const totalPipelineItems = pipelineColumns.reduce((sum, col) => sum + col.count, 0);
-  const totalLeadCards = Object.values(pipelineLeads).flat().length;
+function PipelineTab({ deals, addDeal, moveDealStage }) {
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [searchAdd, setSearchAdd] = useState('');
 
-  // Summary stats
-  const summaryStats = [
-    { label: 'Total in Pipeline', value: totalPipelineItems, color: 'text-charcoal' },
-    { label: 'Emails Sent', value: 186, color: 'text-charcoal' },
-    { label: 'Opened', value: 142, pct: '76%', color: 'text-blue-600' },
-    { label: 'Responded', value: 14, pct: '7.5%', color: 'text-orange' },
-    { label: 'Meetings', value: 3, color: 'text-success' },
-    { label: 'Listings Won', value: 1, color: 'text-success' },
-  ];
+  const stages = ['New', 'Contacted', 'Meeting Set', 'Proposal Sent', 'Won'];
+  const stageColors = ['bg-gray-400', 'bg-orange', 'bg-blue-500', 'bg-charcoal', 'bg-success'];
+  const stageAccent = ['', '', 'bg-blue-500/[0.03]', '', 'bg-success/[0.03]'];
 
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div>
-        <h1 className="font-heading text-2xl font-bold text-charcoal">My Deals</h1>
-        <p className="text-sm text-muted-foreground mt-1">Track every seller from first contact to signed listing.</p>
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-bold text-charcoal">My Deals</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {deals.length === 0 ? 'Add leads from your Inbox or lead list to track them here.' : `${deals.length} ${deals.length === 1 ? 'deal' : 'deals'} in your pipeline.`}
+          </p>
+        </div>
+        <Button
+          size="sm"
+          className="rounded-lg bg-orange text-white hover:bg-orange-hover"
+          onClick={() => setShowAddModal(true)}
+        >
+          <Plus className="h-3.5 w-3.5 mr-1.5" />
+          Add Lead
+        </Button>
       </div>
 
-      {/* Summary bar */}
-      <div className="rounded-lg border border-border bg-white p-4">
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
-          {summaryStats.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="flex items-baseline justify-center gap-1">
-                <span className={cn('font-mono text-xl font-bold', stat.color)}>{stat.value}</span>
-                {stat.pct && <span className="text-[10px] text-gray-400 font-mono">{stat.pct}</span>}
-              </div>
-              <p className="text-[10px] uppercase tracking-wider text-gray-400 mt-0.5">{stat.label}</p>
+      {/* Summary bar — only show when deals exist */}
+      {deals.length > 0 && (
+        <div className="rounded-lg border border-border bg-white p-4">
+          <div className="grid grid-cols-5 gap-4">
+            {stages.map((stage, i) => {
+              const count = deals.filter(d => d.stage === stage).length;
+              return (
+                <div key={stage} className="text-center">
+                  <span className="font-mono text-xl font-bold text-charcoal">{count}</span>
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 mt-0.5">{stage}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {deals.length === 0 ? (
+        <Card className="rounded-xl">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <GitBranch className="h-6 w-6 text-gray-400" />
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Conversion funnel bar */}
-      <div className="rounded-lg border border-border bg-white p-3">
-        <div className="flex items-center gap-0.5 h-3 rounded-full overflow-hidden bg-gray-100">
-          {pipelineColumns.map((col, i) => {
-            const width = totalPipelineItems > 0 ? (col.count / totalPipelineItems) * 100 : 0;
-            const colors = ['bg-gray-400', 'bg-orange', 'bg-charcoal', 'bg-blue-500', 'bg-orange', 'bg-success', 'bg-success'];
-            return width > 0 ? (
-              <div key={col.key} className={cn('h-full transition-all', colors[i])} style={{ width: `${width}%` }} title={`${col.key}: ${col.count}`} />
-            ) : null;
-          })}
-        </div>
-        <div className="flex items-center justify-between mt-2">
-          {pipelineColumns.map((col, i) => {
-            const dotColors = ['bg-gray-400', 'bg-orange', 'bg-charcoal', 'bg-blue-500', 'bg-orange', 'bg-success', 'bg-success'];
+            <p className="text-sm font-medium text-charcoal mb-1">No deals yet</p>
+            <p className="text-sm text-muted-foreground mb-4">Move leads here from your Inbox, or add them manually.</p>
+            <Button
+              size="sm"
+              className="rounded-lg bg-orange text-white hover:bg-orange-hover"
+              onClick={() => setShowAddModal(true)}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
+              Add Your First Deal
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="flex gap-2.5 overflow-x-auto pb-4">
+          {stages.map((stage, stageIdx) => {
+            const stageDeals = deals.filter(d => d.stage === stage);
+            const nextStage = stages[stageIdx + 1];
             return (
-              <div key={col.key} className="flex items-center gap-1">
-                <div className={cn('w-1.5 h-1.5 rounded-full', dotColors[i])} />
-                <span className="text-[9px] text-gray-400 hidden sm:inline">{col.key}</span>
-                <span className="font-mono text-[10px] font-medium text-charcoal">{col.count}</span>
+              <div key={stage} className="min-w-[200px] flex-1 rounded-xl border border-border bg-white overflow-hidden">
+                <div className={cn('px-3 py-2.5 border-b border-border flex items-center justify-between', stageAccent[stageIdx])}>
+                  <div className="flex items-center gap-2">
+                    <div className={cn('w-1.5 h-4 rounded-full', stageColors[stageIdx])} />
+                    <span className="text-xs font-semibold text-charcoal">{stage}</span>
+                  </div>
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-[10px] font-bold text-muted-foreground font-mono">
+                    {stageDeals.length}
+                  </span>
+                </div>
+
+                <div className="p-1.5 space-y-1.5">
+                  {stageDeals.map((deal, di) => {
+                    const dealIdx = deals.indexOf(deal);
+                    return (
+                      <div key={dealIdx} className="rounded-lg border border-border bg-white p-2.5 hover:shadow-sm hover:border-orange/20 transition-all group">
+                        <p className="text-xs font-semibold text-charcoal leading-tight">{deal.name}</p>
+                        <p className="text-[11px] text-gray-500 mt-0.5 truncate">{deal.address}</p>
+                        <div className="flex items-center justify-between mt-1.5">
+                          {deal.price && <span className="font-mono text-[11px] font-bold text-charcoal">{deal.price}</span>}
+                          {deal.source && <span className="text-[9px] text-gray-400 uppercase">from {deal.source}</span>}
+                        </div>
+                        {nextStage && (
+                          <button
+                            onClick={() => moveDealStage(dealIdx, nextStage)}
+                            className="w-full mt-2 text-[10px] text-gray-400 hover:text-orange hover:bg-orange/[0.03] rounded py-1 transition-colors flex items-center justify-center gap-1"
+                          >
+                            Move to {nextStage} <ArrowRight className="h-2.5 w-2.5" />
+                          </button>
+                        )}
+                        {stage === 'Won' && (
+                          <div className="mt-2 text-[10px] text-success font-medium text-center flex items-center justify-center gap-1">
+                            <CheckCircle2 className="h-3 w-3" /> Deal closed
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {stageDeals.length === 0 && (
+                    <div className="py-8 text-center">
+                      <p className="text-[10px] text-gray-300">No deals</p>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}
         </div>
-      </div>
-
-      {totalPipelineItems === 0 ? (
-        <Card className="rounded-xl">
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <Inbox className="h-6 w-6 text-gray-400" />
-            </div>
-            <p className="text-sm font-medium text-charcoal mb-1">Your deal pipeline is empty</p>
-            <p className="text-sm text-muted-foreground">It&apos;ll fill up as you start sending emails.</p>
-          </CardContent>
-        </Card>
-      ) : (
-      <div className="flex gap-2.5 overflow-x-auto pb-4">
-        {pipelineColumns.map((col, colIdx) => {
-          const colLeads = pipelineLeads[col.key] || [];
-          const dotColors = ['bg-gray-400', 'bg-orange', 'bg-charcoal', 'bg-blue-500', 'bg-orange', 'bg-success', 'bg-success'];
-          return (
-            <div
-              key={col.key}
-              className="min-w-[170px] flex-1 rounded-xl border border-border bg-white overflow-hidden"
-            >
-              {/* Column header */}
-              <div className={cn('px-3 py-2.5 border-b border-border flex items-center justify-between', colIdx >= 5 ? 'bg-success/[0.03]' : '')}>
-                <div className="flex items-center gap-2">
-                  <div className={cn('w-1.5 h-4 rounded-full', dotColors[colIdx])} />
-                  <span className="text-xs font-semibold text-charcoal">{col.key}</span>
-                </div>
-                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-[10px] font-bold text-muted-foreground font-mono">
-                  {col.count}
-                </span>
-              </div>
-
-              {/* Cards */}
-              <div className="p-1.5 space-y-1.5">
-                {colLeads.map((lead, i) => (
-                  <div
-                    key={i}
-                    className="rounded-lg border border-border bg-white p-2.5 hover:shadow-sm hover:border-orange/20 transition-all cursor-pointer group"
-                  >
-                    <p className="text-xs font-semibold text-charcoal leading-tight group-hover:text-orange transition-colors">{lead.name}</p>
-                    <p className="text-[11px] text-gray-500 mt-0.5 truncate">{lead.address}</p>
-                    <p className="text-[10px] text-gray-400 mt-1 font-mono">{lead.date}</p>
-                  </div>
-                ))}
-                {colLeads.length === 0 && (
-                  <div className="py-6 text-center">
-                    <p className="text-[10px] text-gray-300">No deals</p>
-                  </div>
-                )}
-                {col.count > colLeads.length && (
-                  <div className="px-2 py-1.5 text-center">
-                    <span className="text-[10px] text-gray-400 font-mono">+{col.count - colLeads.length} more</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
       )}
+
+      {/* Add Lead Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-[2px]"
+              onClick={() => setShowAddModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-[101] flex items-center justify-center p-4"
+            >
+              <div className="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
+                <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+                  <h3 className="font-heading text-base font-semibold text-charcoal">Add Lead to Deals</h3>
+                  <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="px-5 py-3 border-b border-border">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search leads by name or address..."
+                      className="pl-9 h-9 text-sm"
+                      value={searchAdd}
+                      onChange={(e) => setSearchAdd(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                </div>
+                <div className="max-h-[300px] overflow-y-auto">
+                  {leads
+                    .filter(l =>
+                      searchAdd === '' ||
+                      l.name.toLowerCase().includes(searchAdd.toLowerCase()) ||
+                      l.address.toLowerCase().includes(searchAdd.toLowerCase())
+                    )
+                    .map((lead, i) => {
+                      const alreadyAdded = deals.some(d => d.name === lead.name && d.address === lead.address);
+                      return (
+                        <button
+                          key={i}
+                          disabled={alreadyAdded}
+                          onClick={() => {
+                            addDeal({ name: lead.name, address: lead.address, email: lead.email, price: lead.price, type: lead.type, source: 'manual' });
+                          }}
+                          className={cn(
+                            'w-full text-left px-5 py-3 border-b border-gray-100 flex items-center justify-between transition-colors',
+                            alreadyAdded ? 'opacity-40 cursor-default' : 'hover:bg-gray-50'
+                          )}
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-charcoal truncate">{lead.name}</p>
+                            <p className="text-xs text-gray-500 truncate">{lead.address}</p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {lead.price && <span className="font-mono text-xs font-bold text-charcoal">{lead.price}</span>}
+                            {alreadyAdded ? (
+                              <span className="text-[10px] text-gray-400">Added</span>
+                            ) : (
+                              <Plus className="h-4 w-4 text-orange" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
       <div className="h-12" />
     </div>
   );
@@ -2705,6 +2789,18 @@ export default function AppDashboard() {
   // Shared state — pitch drafts and contacted leads live here so both tabs can access them
   const [pitchDrafts, setPitchDrafts] = useState({});
   const [contactedLeads, setContactedLeads] = useState({});
+  const [deals, setDeals] = useState([]);
+
+  const addDeal = useCallback((deal) => {
+    setDeals(prev => {
+      if (prev.some(d => d.name === deal.name && d.address === deal.address)) return prev;
+      return [...prev, { ...deal, stage: 'New', addedAt: new Date().toISOString() }];
+    });
+  }, []);
+
+  const moveDealStage = useCallback((dealIdx, newStage) => {
+    setDeals(prev => prev.map((d, i) => i === dealIdx ? { ...d, stage: newStage } : d));
+  }, []);
 
   const activeTab = tabMap[activeNav] || 'overview';
 
@@ -2849,8 +2945,8 @@ export default function AppDashboard() {
             {activeTab === 'farm' && <FarmAreaTab />}
             {activeTab === 'leads' && <LeadsTab pitchDrafts={pitchDrafts} setPitchDrafts={setPitchDrafts} contactedLeads={contactedLeads} setContactedLeads={setContactedLeads} />}
             {activeTab === 'drafts' && <DraftsTab pitchDrafts={pitchDrafts} onNavigate={handleNavClick} />}
-            {activeTab === 'pipeline' && <PipelineTab />}
-            {activeTab === 'replies' && <InboxTab />}
+            {activeTab === 'pipeline' && <PipelineTab deals={deals} addDeal={addDeal} moveDealStage={moveDealStage} />}
+            {activeTab === 'replies' && <InboxTab addDeal={addDeal} />}
           </FadePanel>
         </main>
       </div>
