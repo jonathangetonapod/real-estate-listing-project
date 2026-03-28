@@ -1,0 +1,61 @@
+:root {
+  /* Colors */
+  --orange: #FF5924;
+  --orange-hover: #e04d1d;
+  --dark: #1B1B1B;
+  --charcoal: #222B27;
+  --light-bg: #F2F4EF;
+  --white: #FFFFFF;
+  --green: #019F11;
+  --red: #BC1619;
+  --yellow: #FFC800;
+  --lime: #B9E97D;
+  --text-secondary: #555555;
+  --text-muted: #888888;
+  --border: #DDDDDD;
+  --input-border: #D3D6E3;
+  --placeholder: #A8AAB8;
+
+  /* Typography */
+  --font-display: 'Libre Caslon Text', 'Georgia', serif;
+  --font-body: 'General Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  /* Spacing */
+  --section-padding: 80px;
+  --card-padding: 28px;
+  --max-width: 1100px;
+
+  /* Radius */
+  --radius-card: 16px;
+  --radius-button: 24px;
+  --radius-nav: 20px;
+  --radius-input: 14px;
+  --radius-icon: 12px;
+  --radius-badge: 20px;
+}
+
+/* Reset */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--charcoal);
+  background: var(--white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
