@@ -36,12 +36,12 @@ import {
 // ---------------------------------------------------------------------------
 
 const leads = [
-  { name: 'Michael Torres', address: '4821 Oakwood Dr, Riverside Heights', type: 'Expired', match: 94, price: '$485K', equity: '$185K', days: '47d expired', draft: 'Ready', stage: 'Drafted', email: 'mtorres@email.com' },
-  { name: 'Sarah Kim', address: '1203 Maple Ridge Ln, Canyon Crest', type: 'FSBO', match: 87, price: '$392K', equity: '$240K', days: '12d listed', draft: 'Ready', stage: 'Drafted', email: 'skim@email.com' },
-  { name: 'David Hernandez', address: '892 Sunset Blvd, Palm Canyon', type: 'Pre-Foreclosure', match: 91, price: '$520K', equity: '$310K', days: 'NOD 34d', draft: 'Sent', stage: 'Sent', email: 'dhernandez@email.com' },
-  { name: 'Linda Chen', address: '2710 Harbor View Dr, Eastlake', type: 'Expired', match: 82, price: '$415K', equity: '$195K', days: '21d expired', draft: 'Ready', stage: 'New', email: 'lchen@email.com' },
-  { name: 'Robert Williams', address: '558 Palm Ave, Northpark', type: 'FSBO', match: 78, price: '$349K', equity: '$120K', days: '45d listed', draft: 'Pending', stage: 'New', email: 'rwilliams@email.com' },
-  { name: 'Maria Gonzalez', address: '1847 Vista Del Mar, Oceanside', type: 'High Equity', match: 85, price: '$680K', equity: '$420K', days: '15yr owned', draft: 'Sent', stage: 'Opened', email: 'mgonzalez@email.com' },
+  { name: 'Michael Torres', address: '4821 Oakwood Dr, Riverside Heights', type: 'Expired', match: 94, price: '$485K', equity: '$185K', days: '47d expired', draft: 'Ready', stage: 'Drafted', email: 'mtorres@email.com', order: 'Mar 2026' },
+  { name: 'Sarah Kim', address: '1203 Maple Ridge Ln, Canyon Crest', type: 'FSBO', match: 87, price: '$392K', equity: '$240K', days: '12d listed', draft: 'Ready', stage: 'Drafted', email: 'skim@email.com', order: 'Mar 2026' },
+  { name: 'David Hernandez', address: '892 Sunset Blvd, Palm Canyon', type: 'Pre-Foreclosure', match: 91, price: '$520K', equity: '$310K', days: 'NOD 34d', draft: 'Sent', stage: 'Sent', email: 'dhernandez@email.com', order: 'Mar 2026' },
+  { name: 'Linda Chen', address: '2710 Harbor View Dr, Eastlake', type: 'Expired', match: 82, price: '$415K', equity: '$195K', days: '21d expired', draft: 'Ready', stage: 'New', email: 'lchen@email.com', order: 'Mar 2026' },
+  { name: 'Robert Williams', address: '558 Palm Ave, Northpark', type: 'FSBO', match: 78, price: '$349K', equity: '$120K', days: '45d listed', draft: 'Pending', stage: 'New', email: 'rwilliams@email.com', order: 'Feb 2026' },
+  { name: 'Maria Gonzalez', address: '1847 Vista Del Mar, Oceanside', type: 'High Equity', match: 85, price: '$680K', equity: '$420K', days: '15yr owned', draft: 'Sent', stage: 'Opened', email: 'mgonzalez@email.com', order: 'Feb 2026' },
 ];
 
 const navItems = [
@@ -892,13 +892,25 @@ function LeadsTab() {
   }, []);
 
   const filtered = leads.map((l, i) => ({ ...l, _origIndex: i })).filter((l) => {
-    const matchesType = activeFilter === 'All' || l.type === activeFilter;
+    let matchesFilter = activeFilter === 'All';
+    if (activeFilter === 'New') matchesFilter = l.stage === 'New';
+    if (activeFilter === 'Emailed') matchesFilter = l.stage === 'Sent' || l.stage === 'Drafted';
+    if (activeFilter === 'Responded') matchesFilter = l.stage === 'Opened' || l.stage === 'Replied';
     const matchesSearch =
       searchQuery === '' ||
       l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       l.address.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesType && matchesSearch;
+    return matchesFilter && matchesSearch;
   });
+
+  // Group filtered leads by order
+  const groupedByOrder = filtered.reduce((groups, lead) => {
+    const order = lead.order || 'Unknown';
+    if (!groups[order]) groups[order] = [];
+    groups[order].push(lead);
+    return groups;
+  }, {});
+  const orderGroups = Object.entries(groupedByOrder);
 
   const statusDot = (stage) => {
     if (stage === 'Opened' || stage === 'Replied') return 'bg-green-500';
@@ -1104,41 +1116,53 @@ function LeadsTab() {
           </div>
         </div>
 
-        {/* Scrollable lead cards */}
-        <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-1">
-          {filtered.map((lead) => {
-            const idx = lead._origIndex;
-            const isSelected = selectedLead === idx;
-            return (
-              <button
-                key={idx}
-                onClick={() => handleSelectLead(idx)}
-                className={cn(
-                  'w-full text-left p-3 rounded-xl border transition-all duration-150 cursor-pointer',
-                  isSelected
-                    ? 'border-orange bg-orange/[0.02] ring-1 ring-orange/15'
-                    : 'border-transparent hover:border-orange/30 hover:bg-muted/30'
-                )}
-              >
-                <div className="flex items-start gap-2.5">
-                  {/* Status dot */}
-                  <div className={cn('w-2 h-2 rounded-full shrink-0 mt-1.5', statusDot(lead.stage))} />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-sans text-sm font-semibold text-charcoal truncate">{lead.name}</p>
-                    <p className="font-sans text-xs text-gray-400 truncate">{lead.address}</p>
-                    <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                      <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium', typeBadgeClass(lead.type))}>
-                        {lead.type}
-                      </span>
-                      <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium', stageBadgeClass(lead.stage))}>
-                        {lead.stage}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+        {/* Scrollable lead cards grouped by order */}
+        <div className="flex-1 overflow-y-auto px-2 pb-2">
+          {orderGroups.map(([orderName, orderLeads]) => (
+            <div key={orderName} className="mb-3">
+              <div className="flex items-center gap-2 px-2 py-2">
+                <div className="h-px flex-1 bg-gray-200" />
+                <span className="font-mono text-[10px] font-medium text-gray-400 uppercase tracking-wider shrink-0">
+                  {orderName} Order · {orderLeads.length} leads
+                </span>
+                <div className="h-px flex-1 bg-gray-200" />
+              </div>
+              <div className="space-y-1">
+                {orderLeads.map((lead) => {
+                  const idx = lead._origIndex;
+                  const isSelected = selectedLead === idx;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleSelectLead(idx)}
+                      className={cn(
+                        'w-full text-left p-3 rounded-xl border transition-all duration-150 cursor-pointer',
+                        isSelected
+                          ? 'border-orange bg-orange/[0.02] ring-1 ring-orange/15'
+                          : 'border-transparent hover:border-orange/30 hover:bg-muted/30'
+                      )}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <div className={cn('w-2 h-2 rounded-full shrink-0 mt-1.5', statusDot(lead.stage))} />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-sans text-sm font-semibold text-charcoal truncate">{lead.name}</p>
+                          <p className="font-sans text-xs text-gray-400 truncate">{lead.address}</p>
+                          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                            <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium', typeBadgeClass(lead.type))}>
+                              {lead.type}
+                            </span>
+                            <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium', stageBadgeClass(lead.stage))}>
+                              {lead.stage}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
 
           {filtered.length === 0 && leads.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center px-4">
