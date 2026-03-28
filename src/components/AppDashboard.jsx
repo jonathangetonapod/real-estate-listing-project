@@ -353,29 +353,53 @@ function FarmAreaTab() {
           </Card>
         </div>
 
-        {/* Past Orders — below the CTA */}
+        {/* Past Orders — enriched report cards */}
         <h3 className="font-sans text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Past Orders</h3>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {[
-            { date: 'Mar 28, 2026', count: 248, types: 'Expired (94), FSBO (62), Pre-Foreclosure (38), Absentee (28), High Equity (26)', drafts: 248 },
-            { date: 'Feb 28, 2026', count: 250, types: 'Expired (98), FSBO (65), Pre-Foreclosure (41), Absentee (25), High Equity (21)', drafts: 250 },
-            { date: 'Jan 28, 2026', count: 243, types: 'Expired (89), FSBO (58), Pre-Foreclosure (44), Absentee (30), High Equity (22)', drafts: 243 },
-          ].map((delivery, i) => (
+            { date: 'Mar 28, 2026', zips: '92506, 92507', count: 248, sent: 186, opened: 142, replied: 14, appointments: 3, replyRate: '7.5%', status: 'active' },
+            { date: 'Feb 28, 2026', zips: '92506, 92507', count: 250, sent: 250, opened: 198, replied: 18, appointments: 4, replyRate: '7.2%', status: 'done' },
+            { date: 'Jan 28, 2026', zips: '92506', count: 243, sent: 243, opened: 171, replied: 12, appointments: 2, replyRate: '4.9%', status: 'done' },
+          ].map((order, i) => (
             <Card key={i} className="rounded-xl">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                      <CheckCircle2 className="w-4 h-4 text-gray-400" />
+                    <div className={cn(
+                      'w-9 h-9 rounded-lg flex items-center justify-center',
+                      order.status === 'active' ? 'bg-orange/10' : 'bg-gray-100'
+                    )}>
+                      <CheckCircle2 className={cn('w-4.5 h-4.5', order.status === 'active' ? 'text-orange' : 'text-gray-400')} />
                     </div>
                     <div>
-                      <div className="font-sans text-sm text-charcoal">{delivery.count} leads delivered</div>
-                      <div className="font-sans text-xs text-gray-400">{delivery.date}</div>
+                      <div className="font-sans text-sm font-semibold text-charcoal">{order.count} leads delivered</div>
+                      <div className="font-sans text-xs text-gray-400">{order.date} · {order.zips}</div>
                     </div>
                   </div>
-                  <Badge className="bg-gray-100 text-gray-500 border-transparent rounded-full text-xs">
-                    Completed
+                  <Badge className={cn(
+                    'rounded-full text-xs',
+                    order.status === 'active'
+                      ? 'bg-orange/10 text-orange border-orange/20'
+                      : 'bg-gray-100 text-gray-500 border-transparent'
+                  )}>
+                    {order.status === 'active' ? 'In Progress' : 'Completed'}
                   </Badge>
+                </div>
+
+                {/* Mini funnel stats */}
+                <div className="grid grid-cols-5 gap-2">
+                  {[
+                    { label: 'Sent', value: order.sent, color: 'text-charcoal' },
+                    { label: 'Opened', value: order.opened, color: 'text-charcoal' },
+                    { label: 'Replied', value: order.replied, color: 'text-orange' },
+                    { label: 'Appointments', value: order.appointments, color: 'text-success' },
+                    { label: 'Reply Rate', value: order.replyRate, color: 'text-orange' },
+                  ].map((stat, j) => (
+                    <div key={j} className="text-center rounded-lg bg-light-bg p-2">
+                      <div className={cn('font-mono text-sm font-bold', stat.color)}>{stat.value}</div>
+                      <div className="font-sans text-[10px] text-gray-400">{stat.label}</div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
