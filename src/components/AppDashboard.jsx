@@ -2453,6 +2453,7 @@ function InboxTab() {
           })}
         </div>
       )}
+      <div className="h-12" />
     </div>
   );
 }
