@@ -13,6 +13,7 @@ import FAQ from './components/FAQ'
 import FinalCTA from './components/FinalCTA'
 import Footer from './components/Footer'
 import WaitlistPage from './components/WaitlistPage'
+import AppDashboard from './components/AppDashboard'
 
 function LandingPage() {
   return (
@@ -42,6 +43,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/waitlist" element={<WaitlistPage />} />
+        <Route path="/app" element={<AppDashboard />} />
       </Routes>
     </BrowserRouter>
   )
