@@ -1406,51 +1406,20 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
 
                 return (
                   <div key={idx} className={cn('rounded-xl border transition-all duration-200', isSkipped ? 'opacity-40' : '', isExpanded ? 'border-orange/30 ring-1 ring-orange/10' : 'border-border hover:border-orange/20')}>
-                    {/* Main Row */}
+                    {/* Main Card */}
                     <button
                       onClick={() => handleToggleExpand(idx)}
                       className="w-full text-left p-5 cursor-pointer"
                     >
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                        {/* Left: Identity */}
-                        <div className="flex items-start gap-3 sm:w-[280px] shrink-0">
+                      {/* Top row: Identity + Badges */}
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-start gap-3 min-w-0">
                           <div className={cn('w-2.5 h-2.5 rounded-full shrink-0 mt-1.5', typeDotColor(lead.type))} />
                           <div className="min-w-0">
                             <p className="font-sans text-base font-semibold text-charcoal truncate">{lead.name}</p>
                             <p className="font-sans text-sm text-gray-500 truncate">{lead.address}</p>
-                            <p className="font-mono text-xs text-gray-400 truncate">{lead.email}</p>
                           </div>
                         </div>
-
-                        {/* Middle: Property Stats */}
-                        <div className="flex items-center gap-6 flex-1 flex-wrap">
-                          <div>
-                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Price</p>
-                            <p className="font-mono font-bold text-charcoal">{lead.price}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Equity</p>
-                            <p className="font-mono font-bold text-success">{lead.equity}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Time</p>
-                            <p className="font-sans text-sm text-gray-600">{lead.days}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Match</p>
-                            <div className="flex items-center gap-1.5">
-                              <div className="w-8 h-1.5 rounded-full bg-gray-200 overflow-hidden">
-                                <div
-                                  className={cn('h-full rounded-full', lead.match >= 90 ? 'bg-success' : lead.match >= 80 ? 'bg-orange' : 'bg-yellow-500')}
-                                  style={{ width: `${lead.match}%` }}
-                                />
-                              </div>
-                              <span className="font-mono text-sm font-bold text-charcoal">{lead.match}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Right: Badges + Expand */}
                         <div className="flex items-center gap-2 shrink-0">
                           <span className={cn('inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium', typeBadgeClass(lead.type))}>
                             {lead.type}
@@ -1459,14 +1428,12 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                             const status = getPitchStatus(idx);
                             if (status === 'Sent') return (
                               <span className="inline-flex items-center gap-1 rounded-full border border-success/20 bg-success/10 px-2 py-0.5 text-[11px] font-medium text-success">
-                                <CheckCircle2 className="h-3 w-3" />
-                                Sent
+                                <CheckCircle2 className="h-3 w-3" />Sent
                               </span>
                             );
                             if (status === 'Draft') return (
                               <span className="inline-flex items-center gap-1 rounded-full border border-orange/20 bg-orange/10 px-2 py-0.5 text-[11px] font-medium text-orange">
-                                <Pencil className="h-3 w-3" />
-                                Draft
+                                <Pencil className="h-3 w-3" />Draft
                               </span>
                             );
                             if (status === 'Skipped') return (
@@ -1482,6 +1449,49 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                           })()}
                           <ChevronDown className={cn('h-4 w-4 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
                         </div>
+                      </div>
+
+                      {/* Data grid */}
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-x-4 gap-y-2 pl-[22px]">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Value</p>
+                          <p className="font-mono text-sm font-bold text-charcoal">{lead.price}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Equity</p>
+                          <p className="font-mono text-sm font-bold text-success">{lead.equity}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Sq Ft</p>
+                          <p className="font-mono text-sm text-charcoal">{lead.sqft}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Built</p>
+                          <p className="font-mono text-sm text-charcoal">{lead.yearBuilt}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Time</p>
+                          <p className="font-sans text-sm text-gray-600">{lead.days}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Match</p>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-8 h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                              <div
+                                className={cn('h-full rounded-full', lead.match >= 90 ? 'bg-success' : lead.match >= 80 ? 'bg-orange' : 'bg-yellow-500')}
+                                style={{ width: `${lead.match}%` }}
+                              />
+                            </div>
+                            <span className="font-mono text-sm font-bold text-charcoal">{lead.match}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bottom row: Contact + financial snapshot */}
+                      <div className="flex items-center gap-4 mt-2 pl-[22px] text-xs text-gray-400 flex-wrap">
+                        <span className="font-mono">{lead.email}</span>
+                        {lead.lender && <span>{lead.lender} · {lead.loanAmount} @ {lead.interestRate}</span>}
+                        {lead.county && <span>{lead.county} County</span>}
                       </div>
                     </button>
 
