@@ -4,10 +4,10 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 const metrics = [
-  { label: 'Leads Delivered', value: '327', color: 'orange', change: '+43 this week', changeType: 'up' },
-  { label: 'Pitches Sent', value: '214', color: 'default', change: '65% of leads', changeType: 'neutral' },
-  { label: 'Replies', value: '18', color: 'green', change: '8.4% reply rate', changeType: 'up' },
-  { label: 'Appointments', value: '6', color: 'orange', change: '33% conversion', changeType: 'up' },
+  { label: 'Leads This Month', value: '248', color: 'orange', change: '250 limit', changeType: 'neutral' },
+  { label: 'AI Drafts Ready', value: '248', color: 'default', change: '100% drafted', changeType: 'up' },
+  { label: 'Sent', value: '186', color: 'green', change: '75% sent', changeType: 'up' },
+  { label: 'Replies', value: '14', color: 'orange', change: '7.5% reply rate', changeType: 'up' },
 ];
 
 const allLeads = [
@@ -15,7 +15,7 @@ const allLeads = [
     name: 'Michael Torres',
     address: '4821 Oakwood Dr, Riverside Heights',
     match: 94,
-    badge: 'Pitch Ready',
+    badge: 'Replied',
     badgeVariant: 'Green',
     price: '$485K',
     equity: '$185K equity',
@@ -27,7 +27,7 @@ const allLeads = [
     name: 'Sarah Kim',
     address: '1203 Maple Ridge Ln, Canyon Crest',
     match: 87,
-    badge: 'FSBO',
+    badge: 'Draft Ready',
     badgeVariant: 'Orange',
     price: '$392K',
     equity: '$240K equity',
@@ -39,8 +39,8 @@ const allLeads = [
     name: 'David Hernandez',
     address: '892 Sunset Blvd, Palm Canyon',
     match: 91,
-    badge: 'Pre-Foreclosure',
-    badgeVariant: 'Red',
+    badge: 'Sent',
+    badgeVariant: 'Green',
     price: '$520K',
     equity: '$310K equity',
     daysInfo: 'NOD filed 34d ago',
@@ -51,8 +51,8 @@ const allLeads = [
     name: 'Linda Chen',
     address: '2710 Harbor View Dr, Eastlake',
     match: 82,
-    badge: 'Expired 21d',
-    badgeVariant: 'Red',
+    badge: 'Draft Ready',
+    badgeVariant: 'Orange',
     price: '$415K',
     equity: '$195K equity',
     daysInfo: 'Expired 21d ago',
@@ -63,8 +63,8 @@ const allLeads = [
     name: 'Robert Williams',
     address: '558 Palm Ave, Northpark',
     match: 78,
-    badge: 'FSBO',
-    badgeVariant: 'Orange',
+    badge: 'Sent',
+    badgeVariant: 'Green',
     price: '$349K',
     equity: '$120K equity',
     daysInfo: 'Listed 45d ago',
@@ -73,13 +73,14 @@ const allLeads = [
   },
 ];
 
-const tabFilters = ['All', 'Expired', 'FSBO', 'Pre-Foreclosure'];
+const tabFilters = ['All', 'Draft Ready', 'Sent', 'Replied'];
 
 const sidebarItems = [
   { label: 'Dashboard' },
   { label: 'My Leads' },
-  { label: 'Pitches' },
-  { label: 'Pipeline' },
+  { label: 'AI Drafts' },
+  { label: 'Sent' },
+  { label: 'Replies' },
   { label: 'Settings' },
 ];
 
@@ -119,7 +120,7 @@ export function DashboardMockup() {
 
   const filteredLeads = activeTab === 'All'
     ? allLeads
-    : allLeads.filter(l => l.type === activeTab);
+    : allLeads.filter(l => l.badge === activeTab);
 
   return (
     <div className="flex justify-center px-6 py-16">
@@ -192,7 +193,7 @@ export function DashboardMockup() {
                     Good morning, Sarah
                   </div>
                   <div className="mt-0.5 font-sans text-[13px] text-gray-500">
-                    Your Riverside Heights farm is performing well
+                    248 of 250 leads delivered this month. 14 replies waiting.
                   </div>
                 </div>
                 <div className="hidden gap-2 md:flex">
