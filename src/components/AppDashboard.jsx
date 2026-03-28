@@ -1084,6 +1084,7 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
   const [activeOrder, setActiveOrder] = useState('All');
   const [skippedLeads, setSkippedLeads] = useState({});
   const [pitchSlideOverIndex, setPitchSlideOverIndex] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   // Extended property data for each lead (keyed by index in the leads array)
   const extendedLeadData = [
@@ -1309,6 +1310,274 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
   }, {});
   const orderGroups = Object.entries(groupedByOrder);
 
+  // If an order is selected, show the leads for that order
+  if (selectedOrder) {
+    const orderLeads = filtered.filter(l => l.order === selectedOrder);
+    return (
+      <div className="space-y-6">
+        {/* Back + Order Header */}
+        <div>
+          <button
+            onClick={() => { setSelectedOrder(null); setExpandedLead(null); }}
+            className="text-sm text-gray-400 hover:text-charcoal transition-colors mb-3 flex items-center gap-1"
+          >
+            <ArrowRight className="w-3 h-3 rotate-180" /> Back to All Orders
+          </button>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <h1 className="font-heading text-2xl font-bold text-charcoal">{selectedOrder}</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                <span className="font-semibold text-charcoal">{orderLeads.length}</span> leads in this order
+              </p>
+            </div>
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search leads..."
+                className="pl-9 h-9 text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Filters for this order */}
+        <div className="rounded-lg border border-border bg-white p-3 space-y-2.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium w-10 shrink-0">Type</span>
+            {typeFilters.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setActiveFilter(f.key)}
+                className={cn(
+                  'rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors whitespace-nowrap',
+                  activeFilter === f.key
+                    ? 'bg-charcoal text-white'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                {f.key}{f.key !== 'All' ? ` (${f.count})` : ''}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap border-t border-gray-100 pt-2.5">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium w-10 shrink-0">Status</span>
+            {pitchStatusFilters.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setActivePitchStatus(f.key)}
+                className={cn(
+                  'rounded-md px-2 py-1 text-[11px] font-medium transition-colors whitespace-nowrap border',
+                  activePitchStatus === f.key
+                    ? 'border-charcoal bg-charcoal/5 text-charcoal'
+                    : f.key !== 'All' && f.count === 0
+                      ? 'border-transparent text-gray-300 cursor-default'
+                      : 'border-transparent text-muted-foreground hover:border-gray-200 hover:text-foreground'
+                )}
+                disabled={f.key !== 'All' && f.count === 0}
+              >
+                {f.key}{f.key !== 'All' ? ` (${f.count})` : ''}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Lead list */}
+        <div className="rounded-xl border border-border bg-white overflow-hidden">
+          <div className="divide-y divide-gray-100">
+            {orderLeads.map((lead) => {
+              const idx = lead._origIndex;
+              const isExpanded = expandedLead === idx;
+              const isContacted = contactedLeads[idx];
+              const isSkipped = skippedLeads[idx];
+
+              return (
+                <div key={idx} className={cn(
+                  'transition-all duration-200 group',
+                  isSkipped ? 'opacity-40' : '',
+                  isExpanded ? 'bg-orange/[0.02]' : 'hover:bg-gray-50'
+                )}>
+                  <button
+                    onClick={() => handleToggleExpand(idx)}
+                    className="w-full text-left px-4 py-3.5 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="relative shrink-0">
+                        <div className={cn('w-2.5 h-2.5 rounded-full', typeDotColor(lead.type))} />
+                      </div>
+                      <div className="min-w-0 w-[220px] shrink-0">
+                        <p className="font-sans text-sm font-semibold text-charcoal truncate group-hover:text-orange transition-colors">{lead.name}</p>
+                        <p className="font-sans text-xs text-gray-500 truncate">{lead.address}</p>
+                      </div>
+                      <div className="hidden sm:flex items-center gap-6 flex-1 min-w-0">
+                        <div className="shrink-0">
+                          <p className="font-mono text-base font-bold text-charcoal leading-tight">{lead.price}</p>
+                          <p className="text-[9px] uppercase text-gray-400 tracking-wider">Value</p>
+                        </div>
+                        <div className="shrink-0">
+                          <p className="font-mono text-xs font-medium text-gray-700">{lead.sqft} <span className="text-gray-400">ft²</span></p>
+                          <p className="text-[9px] uppercase text-gray-400 tracking-wider">Size</p>
+                        </div>
+                        <div className="shrink-0">
+                          <p className="font-mono text-xs font-medium text-gray-700">{lead.yearBuilt}</p>
+                          <p className="text-[9px] uppercase text-gray-400 tracking-wider">Built</p>
+                        </div>
+                        <div className="shrink-0">
+                          <p className="font-sans text-xs font-medium text-gray-600">{lead.days}</p>
+                          <p className="text-[9px] uppercase text-gray-400 tracking-wider">Status</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className={cn('inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-medium', typeBadgeClass(lead.type))}>
+                          {lead.type}
+                        </span>
+                        {(() => {
+                          const status = getPitchStatus(idx);
+                          if (status === 'Sent') return (
+                            <span className="inline-flex items-center gap-1 rounded-md border border-success/20 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
+                              <CheckCircle2 className="h-2.5 w-2.5" />Sent
+                            </span>
+                          );
+                          if (status === 'Draft') return (
+                            <span className="inline-flex items-center gap-1 rounded-md border border-orange/20 bg-orange/10 px-1.5 py-0.5 text-[10px] font-medium text-orange">
+                              <Pencil className="h-2.5 w-2.5" />Draft
+                            </span>
+                          );
+                          if (status === 'Skipped') return (
+                            <span className="inline-flex items-center rounded-md border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-400">
+                              Skipped
+                            </span>
+                          );
+                          return null;
+                        })()}
+                        <ChevronDown className={cn('h-3.5 w-3.5 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Expandable Detail Panel */}
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                          <div className="px-5 pb-5 pt-0">
+                            <div className="border-t border-gray-100 pt-4">
+                              {/* Hero CTA + AI Insight row */}
+                              <div className="flex flex-col md:flex-row gap-4 mb-5">
+                                <div className="md:w-[200px] shrink-0 space-y-2">
+                                  <Button
+                                    size="sm"
+                                    className={cn(
+                                      'w-full rounded-lg text-sm font-medium h-10',
+                                      pitchDrafts[idx]?.status === 'sent'
+                                        ? 'bg-charcoal text-white hover:bg-charcoal/90'
+                                        : 'bg-orange text-white hover:bg-orange-hover'
+                                    )}
+                                    onClick={(e) => { e.stopPropagation(); handleOpenPitchSlideOver(idx); }}
+                                  >
+                                    {pitchDrafts[idx]?.status === 'sent' ? (
+                                      <><Eye className="h-4 w-4 mr-2" />View Sent Pitch</>
+                                    ) : pitchDrafts[idx]?.status === 'draft' ? (
+                                      <><Pencil className="h-4 w-4 mr-2" />Edit Draft</>
+                                    ) : (
+                                      <><FileEdit className="h-4 w-4 mr-2" />Generate Pitch</>
+                                    )}
+                                  </Button>
+                                  {!isContacted && pitchDrafts[idx]?.status !== 'sent' && (
+                                    <div className="flex gap-2">
+                                      <Button variant="outline" size="sm" className="flex-1 rounded-lg text-xs" onClick={(e) => handleMarkContacted(idx, e)}>
+                                        <Check className="h-3 w-3 mr-1" /> Contacted
+                                      </Button>
+                                      <button onClick={(e) => handleSkipLead(idx, e)} className="px-2 py-1 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors">
+                                        {isSkipped ? 'Undo' : 'Skip'}
+                                      </button>
+                                    </div>
+                                  )}
+                                  {isContacted && (
+                                    <div className="flex items-center gap-1.5 text-xs text-success">
+                                      <CheckCircle2 className="h-3.5 w-3.5" /><span className="font-medium">Contacted</span>
+                                    </div>
+                                  )}
+                                </div>
+                                {extendedLeadData[idx] && (
+                                  <div className="flex-1 rounded-lg border-l-[3px] border-l-orange bg-orange/[0.03] px-4 py-3">
+                                    <div className="flex items-center gap-1.5 mb-1.5">
+                                      <Info className="h-3.5 w-3.5 text-orange" />
+                                      <span className="text-[10px] uppercase tracking-wider text-orange font-semibold">Why This Seller</span>
+                                    </div>
+                                    <p className="text-sm leading-relaxed text-gray-600">{extendedLeadData[idx].insight}</p>
+                                  </div>
+                                )}
+                              </div>
+                              {/* Data columns */}
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="rounded-lg border border-border p-3.5">
+                                  <h4 className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" />Property</h4>
+                                  <div className="space-y-1.5">
+                                    {[{ label: 'Type', value: lead.propertyType },{ label: 'Sq Ft', value: lead.sqft },{ label: 'Built', value: lead.yearBuilt },{ label: 'Lot', value: lead.lotSizeAcres ? `${lead.lotSizeAcres} ac` : null },{ label: 'Zoning', value: lead.zoningCode },{ label: 'County', value: lead.county }].filter(i => i.value != null).map(i => (
+                                      <div key={i.label} className="flex justify-between items-center"><span className="text-[11px] text-gray-400">{i.label}</span><span className="text-xs font-medium text-charcoal font-mono">{i.value}</span></div>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="rounded-lg border border-border p-3.5">
+                                  <h4 className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5"><DollarSign className="h-3.5 w-3.5" />Financial</h4>
+                                  <div className="space-y-1.5">
+                                    {[{ label: 'Value', value: lead.price, bold: true },{ label: 'Sold', value: lead.soldPrice },{ label: 'Lender', value: lead.lender },{ label: 'Loan', value: lead.loanAmount },{ label: 'Rate', value: lead.interestRate },{ label: 'Tax', value: lead.taxBill ? `${lead.taxBill}/yr` : null }].filter(i => i.value != null && i.value !== 'N/A').map(i => (
+                                      <div key={i.label} className="flex justify-between items-center"><span className="text-[11px] text-gray-400">{i.label}</span><span className={cn('text-xs font-mono', i.bold ? 'font-bold text-charcoal' : 'font-medium text-charcoal')}>{i.value}</span></div>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="rounded-lg border border-border p-3.5">
+                                  <h4 className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" />Contact</h4>
+                                  <div className="space-y-2">
+                                    <div><span className="text-[11px] text-gray-400">Owner</span><p className="text-xs font-medium text-charcoal">{lead.ownerName}</p></div>
+                                    {lead.phones?.length > 0 && <div><span className="text-[11px] text-gray-400">Phone</span>{lead.phones.map((p, pi) => <p key={pi} className="text-xs font-mono text-charcoal">{p}</p>)}</div>}
+                                    {lead.emails?.length > 0 && <div><span className="text-[11px] text-gray-400">Email</span>{lead.emails.map((em, ei) => <p key={ei} className="text-xs font-mono text-charcoal truncate">{em}</p>)}</div>}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+          {orderLeads.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+              <Search className="h-5 w-5 text-gray-400 mb-2" />
+              <p className="text-sm text-muted-foreground">No leads match your filters</p>
+            </div>
+          )}
+        </div>
+
+        {/* Pitch Slide-Over */}
+        <AnimatePresence>
+          {pitchSlideOverIndex !== null && (
+            <PitchSlideOver
+              lead={leads[pitchSlideOverIndex]}
+              draft={pitchDrafts[pitchSlideOverIndex]}
+              onSave={(steps) => handleSaveDraft(pitchSlideOverIndex, steps)}
+              onSend={(steps) => handleSendPitch(pitchSlideOverIndex, steps)}
+              onRegenerate={() => handleRegeneratePitch(pitchSlideOverIndex)}
+              onDiscard={() => handleDiscardPitch(pitchSlideOverIndex)}
+              onClose={() => setPitchSlideOverIndex(null)}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // Order overview — show order groups as clickable cards
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -1333,376 +1602,59 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
         </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="rounded-lg border border-border bg-white p-3 space-y-2.5">
-        {/* Row 1: Lead type */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium w-10 shrink-0">Type</span>
-            {typeFilters.map((f) => (
-              <button
-                key={f.key}
-                onClick={() => setActiveFilter(f.key)}
-                className={cn(
-                  'rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors whitespace-nowrap',
-                  activeFilter === f.key
-                    ? 'bg-charcoal text-white'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                )}
-              >
-                {f.key}{f.key !== 'All' ? ` (${f.count})` : ''}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mr-0.5 hidden sm:inline">Order</span>
-            {orderMonths.map((month) => (
-              <button
-                key={month}
-                onClick={() => setActiveOrder(month)}
-                className={cn(
-                  'rounded-md px-2 py-1 text-[11px] font-medium transition-colors whitespace-nowrap border',
-                  activeOrder === month
-                    ? 'border-charcoal bg-charcoal/5 text-charcoal'
-                    : 'border-transparent text-muted-foreground hover:border-gray-200 hover:text-foreground'
-                )}
-              >
-                {month === 'All' ? 'All Orders' : month}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Row 2: Pitch status */}
-        <div className="flex items-center gap-1.5 flex-wrap border-t border-gray-100 pt-2.5">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium w-10 shrink-0">Status</span>
-          {pitchStatusFilters.map((f) => (
+      {/* Order Cards — click to view leads */}
+      <div className="space-y-4">
+        {orderGroups.map(([orderName, orderLeads]) => {
+          const sentCount = orderLeads.filter(l => pitchDrafts[l._origIndex]?.status === 'sent').length;
+          const draftCount = orderLeads.filter(l => pitchDrafts[l._origIndex]?.status === 'draft').length;
+          const notContactedCount = orderLeads.length - sentCount - draftCount;
+          return (
             <button
-              key={f.key}
-              onClick={() => setActivePitchStatus(f.key)}
-              className={cn(
-                'rounded-md px-2 py-1 text-[11px] font-medium transition-colors whitespace-nowrap border',
-                activePitchStatus === f.key
-                  ? 'border-charcoal bg-charcoal/5 text-charcoal'
-                  : f.key !== 'All' && f.count === 0
-                    ? 'border-transparent text-gray-300 cursor-default'
-                    : 'border-transparent text-muted-foreground hover:border-gray-200 hover:text-foreground'
-              )}
-              disabled={f.key !== 'All' && f.count === 0}
+              key={orderName}
+              onClick={() => setSelectedOrder(orderName)}
+              className="w-full text-left rounded-xl border border-border bg-white hover:border-orange/20 hover:shadow-md hover:-translate-y-[1px] transition-all duration-200 overflow-hidden group"
             >
-              {f.key}{f.key !== 'All' ? ` (${f.count})` : ''}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Lead Cards */}
-      <div className="space-y-5">
-        {orderGroups.map(([orderName, orderLeads]) => (
-          <div key={orderName} className="rounded-xl border border-border bg-white overflow-hidden">
-            {/* Order Group Header */}
-            <div className="px-4 py-3 bg-charcoal/[0.02] border-b border-border flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-1.5 h-5 rounded-full bg-orange" />
-                <span className="font-heading text-sm font-semibold text-charcoal">
-                  {orderName} Order
-                </span>
-              </div>
-              <span className="text-xs text-muted-foreground font-mono">
-                {orderLeads.length} {orderLeads.length === 1 ? 'lead' : 'leads'}
-              </span>
-            </div>
-
-            <div className="divide-y divide-gray-100">
-              {orderLeads.map((lead) => {
-                const idx = lead._origIndex;
-                const isExpanded = expandedLead === idx;
-                const ext = extendedLeadData[idx];
-                const isContacted = contactedLeads[idx];
-                const isSkipped = skippedLeads[idx];
-
-                return (
-                  <div key={idx} className={cn(
-                    'transition-all duration-200 group',
-                    isSkipped ? 'opacity-40' : '',
-                    isExpanded
-                      ? 'bg-orange/[0.02]'
-                      : 'hover:bg-gray-50'
-                  )}>
-                    {/* Compact Row */}
-                    <button
-                      onClick={() => handleToggleExpand(idx)}
-                      className="w-full text-left px-4 py-3.5 cursor-pointer"
-                    >
-                      <div className="flex items-center gap-3">
-                        {/* Type dot with pulse for new leads */}
-                        <div className="relative shrink-0">
-                          <div className={cn('w-2.5 h-2.5 rounded-full', typeDotColor(lead.type))} />
-                        </div>
-
-                        {/* Name + Address */}
-                        <div className="min-w-0 w-[220px] shrink-0">
-                          <p className="font-sans text-sm font-semibold text-charcoal truncate group-hover:text-orange transition-colors">{lead.name}</p>
-                          <p className="font-sans text-xs text-gray-500 truncate">{lead.address}</p>
-                        </div>
-
-                        {/* Inline stats */}
-                        <div className="hidden sm:flex items-center gap-6 flex-1 min-w-0">
-                          <div className="shrink-0">
-                            <p className="font-mono text-base font-bold text-charcoal leading-tight">{lead.price}</p>
-                            <p className="text-[9px] uppercase text-gray-400 tracking-wider">Value</p>
-                          </div>
-                          <div className="shrink-0">
-                            <p className="font-mono text-xs font-medium text-gray-700">{lead.sqft} <span className="text-gray-400">ft²</span></p>
-                            <p className="text-[9px] uppercase text-gray-400 tracking-wider">Size</p>
-                          </div>
-                          <div className="shrink-0">
-                            <p className="font-mono text-xs font-medium text-gray-700">{lead.yearBuilt}</p>
-                            <p className="text-[9px] uppercase text-gray-400 tracking-wider">Built</p>
-                          </div>
-                          <div className="shrink-0">
-                            <p className="font-sans text-xs font-medium text-gray-600">{lead.days}</p>
-                            <p className="text-[9px] uppercase text-gray-400 tracking-wider">Status</p>
-                          </div>
-                        </div>
-
-                        {/* Badges */}
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className={cn('inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-medium', typeBadgeClass(lead.type))}>
-                            {lead.type}
-                          </span>
-                          {(() => {
-                            const status = getPitchStatus(idx);
-                            if (status === 'Sent') return (
-                              <span className="inline-flex items-center gap-1 rounded-md border border-success/20 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
-                                <CheckCircle2 className="h-2.5 w-2.5" />Sent
-                              </span>
-                            );
-                            if (status === 'Draft') return (
-                              <span className="inline-flex items-center gap-1 rounded-md border border-orange/20 bg-orange/10 px-1.5 py-0.5 text-[10px] font-medium text-orange">
-                                <Pencil className="h-2.5 w-2.5" />Draft
-                              </span>
-                            );
-                            if (status === 'Skipped') return (
-                              <span className="inline-flex items-center rounded-md border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-400">
-                                Skipped
-                              </span>
-                            );
-                            return null;
-                          })()}
-                          <ChevronDown className={cn('h-3.5 w-3.5 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
-                        </div>
-                      </div>
-                    </button>
-
-                    {/* Expandable Detail Panel */}
-                    <AnimatePresence initial={false}>
-                      {isExpanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.25, ease: 'easeInOut' }}
-                          className="overflow-hidden"
-                        >
-                          <div className="px-5 pb-5 pt-0">
-                            <div className="border-t border-gray-100 pt-4">
-
-                              {/* Hero CTA + AI Insight row */}
-                              <div className="flex flex-col md:flex-row gap-4 mb-5">
-                                {/* Primary action — the thing the agent came here to do */}
-                                <div className="md:w-[200px] shrink-0 space-y-2">
-                                  <Button
-                                    size="sm"
-                                    className={cn(
-                                      'w-full rounded-lg text-sm font-medium h-10',
-                                      pitchDrafts[idx]?.status === 'sent'
-                                        ? 'bg-charcoal text-white hover:bg-charcoal/90'
-                                        : 'bg-orange text-white hover:bg-orange-hover'
-                                    )}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleOpenPitchSlideOver(idx);
-                                    }}
-                                  >
-                                    {pitchDrafts[idx]?.status === 'sent' ? (
-                                      <><Eye className="h-4 w-4 mr-2" />View Sent Pitch</>
-                                    ) : pitchDrafts[idx]?.status === 'draft' ? (
-                                      <><Pencil className="h-4 w-4 mr-2" />Edit Draft</>
-                                    ) : (
-                                      <><FileEdit className="h-4 w-4 mr-2" />Generate Pitch</>
-                                    )}
-                                  </Button>
-                                  {!isContacted && pitchDrafts[idx]?.status !== 'sent' && (
-                                    <div className="flex gap-2">
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="flex-1 rounded-lg text-xs"
-                                        onClick={(e) => handleMarkContacted(idx, e)}
-                                      >
-                                        <Check className="h-3 w-3 mr-1" /> Contacted
-                                      </Button>
-                                      <button
-                                        onClick={(e) => handleSkipLead(idx, e)}
-                                        className="px-2 py-1 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
-                                      >
-                                        {isSkipped ? 'Undo' : 'Skip'}
-                                      </button>
-                                    </div>
-                                  )}
-                                  {isContacted && (
-                                    <div className="flex items-center gap-1.5 text-xs text-success">
-                                      <CheckCircle2 className="h-3.5 w-3.5" />
-                                      <span className="font-medium">Contacted</span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* AI Insight */}
-                                {extendedLeadData[idx] && (
-                                  <div className="flex-1 rounded-lg border-l-[3px] border-l-orange bg-orange/[0.03] px-4 py-3">
-                                    <div className="flex items-center gap-1.5 mb-1.5">
-                                      <Info className="h-3.5 w-3.5 text-orange" />
-                                      <span className="text-[10px] uppercase tracking-wider text-orange font-semibold">Why This Seller</span>
-                                    </div>
-                                    <p className="text-sm leading-relaxed text-gray-600">{extendedLeadData[idx].insight}</p>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Data columns */}
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {/* Property Details */}
-                                <div className="rounded-lg border border-border p-3.5">
-                                  <h4 className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
-                                    <Building2 className="h-3.5 w-3.5" />
-                                    Property
-                                  </h4>
-                                  <div className="space-y-1.5">
-                                    {[
-                                      { label: 'Type', value: lead.propertyType },
-                                      { label: 'Sq Ft', value: lead.sqft },
-                                      { label: 'Built', value: lead.yearBuilt },
-                                      { label: 'Lot', value: lead.lotSizeAcres ? `${lead.lotSizeAcres} ac` : null },
-                                      { label: 'Zoning', value: lead.zoningCode },
-                                      { label: 'County', value: lead.county },
-                                    ].filter(item => item.value != null).map((item) => (
-                                      <div key={item.label} className="flex justify-between items-center">
-                                        <span className="text-[11px] text-gray-400">{item.label}</span>
-                                        <span className="text-xs font-medium text-charcoal font-mono">{item.value}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                {/* Financial */}
-                                <div className="rounded-lg border border-border p-3.5">
-                                  <h4 className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
-                                    <DollarSign className="h-3.5 w-3.5" />
-                                    Financial
-                                  </h4>
-                                  <div className="space-y-1.5">
-                                    {[
-                                      { label: 'Value', value: lead.price, bold: true },
-                                      { label: 'Sold Price', value: lead.soldPrice },
-                                      { label: 'Lender', value: lead.lender },
-                                      { label: 'Loan', value: lead.loanAmount },
-                                      { label: 'Rate', value: lead.interestRate },
-                                      { label: 'Tax', value: lead.taxBill ? `${lead.taxBill}/yr` : null },
-                                    ].filter(item => item.value != null && item.value !== 'N/A').map((item) => (
-                                      <div key={item.label} className="flex justify-between items-center">
-                                        <span className="text-[11px] text-gray-400">{item.label}</span>
-                                        <span className={cn('text-xs font-mono', item.bold ? 'font-bold text-charcoal' : 'font-medium text-charcoal')}>{item.value}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                {/* Owner & Contact */}
-                                <div className="rounded-lg border border-border p-3.5">
-                                  <h4 className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
-                                    <Phone className="h-3.5 w-3.5" />
-                                    Contact
-                                  </h4>
-                                  <div className="space-y-2">
-                                    <div>
-                                      <span className="text-[11px] text-gray-400">Owner</span>
-                                      <p className="text-xs font-medium text-charcoal">{lead.ownerName}</p>
-                                    </div>
-                                    {lead.mailingAddress && (
-                                      <div>
-                                        <span className="text-[11px] text-gray-400">Address</span>
-                                        <p className="text-[11px] text-charcoal leading-tight">{lead.mailingAddress}</p>
-                                      </div>
-                                    )}
-                                    {lead.phones?.length > 0 && (
-                                      <div>
-                                        <span className="text-[11px] text-gray-400">Phone</span>
-                                        {lead.phones.map((p, pi) => (
-                                          <p key={pi} className="text-xs font-mono text-charcoal">{p}</p>
-                                        ))}
-                                      </div>
-                                    )}
-                                    {lead.emails?.length > 0 && (
-                                      <div>
-                                        <span className="text-[11px] text-gray-400">Email</span>
-                                        {lead.emails.map((em, ei) => (
-                                          <p key={ei} className="text-xs font-mono text-charcoal truncate">{em}</p>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+              <div className="px-5 py-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-1.5 h-6 rounded-full bg-orange" />
+                    <div>
+                      <h3 className="font-heading text-base font-semibold text-charcoal group-hover:text-orange transition-colors">{orderName}</h3>
+                    </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-lg font-bold text-charcoal">{orderLeads.length}</span>
+                    <span className="text-xs text-muted-foreground">leads</span>
+                    <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-orange transition-colors" />
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden flex">
+                    {sentCount > 0 && <div className="h-full bg-success" style={{ width: `${(sentCount / orderLeads.length) * 100}%` }} />}
+                    {draftCount > 0 && <div className="h-full bg-orange" style={{ width: `${(draftCount / orderLeads.length) * 100}%` }} />}
+                  </div>
+                  <div className="flex items-center gap-3 text-[10px] text-gray-400 shrink-0">
+                    {sentCount > 0 && <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-success" />{sentCount} sent</span>}
+                    {draftCount > 0 && <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-orange" />{draftCount} draft</span>}
+                    <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-gray-300" />{notContactedCount} remaining</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          );
+        })}
 
-        {/* Empty States */}
-        {filtered.length === 0 && leads.length === 0 && (
+        {orderGroups.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center px-4">
             <div className="w-12 h-12 rounded-full bg-orange/10 flex items-center justify-center mb-4">
               <Clock className="h-6 w-6 text-orange" />
             </div>
-            <p className="text-sm font-medium text-charcoal mb-1">Leads are being prepared</p>
-            <p className="text-sm text-muted-foreground">Check back in a few hours.</p>
-          </div>
-        )}
-        {filtered.length === 0 && leads.length > 0 && (
-          <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <Search className="h-6 w-6 text-gray-400" />
-            </div>
-            <p className="text-sm font-medium text-charcoal mb-1">No leads match your filters</p>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filter criteria.</p>
+            <p className="text-sm font-medium text-charcoal mb-1">No orders yet</p>
+            <p className="text-sm text-muted-foreground">Order new leads to get started.</p>
           </div>
         )}
       </div>
-
-      {/* Pitch Slide-Over */}
-      <AnimatePresence>
-        {pitchSlideOverIndex !== null && (
-          <PitchSlideOver
-            lead={leads[pitchSlideOverIndex]}
-
-            draft={pitchDrafts[pitchSlideOverIndex]}
-            onSave={(steps) => handleSaveDraft(pitchSlideOverIndex, steps)}
-            onSend={(steps) => handleSendPitch(pitchSlideOverIndex, steps)}
-            onRegenerate={() => handleRegeneratePitch(pitchSlideOverIndex)}
-            onDiscard={() => handleDiscardPitch(pitchSlideOverIndex)}
-            onClose={() => setPitchSlideOverIndex(null)}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
