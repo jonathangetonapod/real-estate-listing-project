@@ -244,48 +244,8 @@ function FarmAreaTab() {
           <p className="font-sans text-sm text-gray-500">Get fresh sellers delivered to your dashboard.</p>
         </div>
 
-        {/* Lead delivery history */}
-        <h3 className="font-sans text-base font-semibold text-charcoal mb-4">Past Orders</h3>
-        <div className="space-y-3">
-          {[
-            { date: 'Mar 28, 2026', count: 248, types: 'Expired (94), FSBO (62), Pre-Foreclosure (38), Absentee (28), High Equity (26)', status: 'delivered', drafts: 248 },
-            { date: 'Feb 28, 2026', count: 250, types: 'Expired (98), FSBO (65), Pre-Foreclosure (41), Absentee (25), High Equity (21)', status: 'delivered', drafts: 250 },
-            { date: 'Jan 28, 2026', count: 243, types: 'Expired (89), FSBO (58), Pre-Foreclosure (44), Absentee (30), High Equity (22)', status: 'delivered', drafts: 243 },
-          ].map((delivery, i) => (
-            <Card key={i} className="rounded-xl">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
-                      <CheckCircle2 className="w-5 h-5 text-success" />
-                    </div>
-                    <div>
-                      <div className="font-sans text-sm font-semibold text-charcoal">
-                        {delivery.count} leads delivered
-                      </div>
-                      <div className="font-sans text-xs text-gray-400 mt-0.5">{delivery.date}</div>
-                    </div>
-                  </div>
-                  <div className="hidden md:flex items-center gap-4 text-right">
-                    <div>
-                      <div className="font-mono text-xs text-gray-400">Email Pitches</div>
-                      <div className="font-mono text-sm font-semibold text-orange">{delivery.drafts} ready</div>
-                    </div>
-                    <Badge className="bg-success/10 text-success border-success/20 rounded-full text-xs">
-                      Delivered
-                    </Badge>
-                  </div>
-                </div>
-                <div className="mt-3 font-sans text-xs text-gray-400">
-                  {delivery.types}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* New Order CTA — the exciting part */}
-        <div className="mt-8">
+        {/* New Order CTA — the exciting part, FIRST */}
+        <div className="mb-8">
           <Card className="rounded-xl overflow-hidden border-2 border-orange/20">
             <CardContent className="p-0">
               <div className="bg-gradient-to-r from-orange/[0.06] to-orange/[0.02] p-6 md:p-8">
@@ -352,6 +312,35 @@ function FarmAreaTab() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Past Orders — below the CTA */}
+        <h3 className="font-sans text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Past Orders</h3>
+        <div className="space-y-3">
+          {[
+            { date: 'Mar 28, 2026', count: 248, types: 'Expired (94), FSBO (62), Pre-Foreclosure (38), Absentee (28), High Equity (26)', drafts: 248 },
+            { date: 'Feb 28, 2026', count: 250, types: 'Expired (98), FSBO (65), Pre-Foreclosure (41), Absentee (25), High Equity (21)', drafts: 250 },
+            { date: 'Jan 28, 2026', count: 243, types: 'Expired (89), FSBO (58), Pre-Foreclosure (44), Absentee (30), High Equity (22)', drafts: 243 },
+          ].map((delivery, i) => (
+            <Card key={i} className="rounded-xl">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-gray-400" />
+                    </div>
+                    <div>
+                      <div className="font-sans text-sm text-charcoal">{delivery.count} leads delivered</div>
+                      <div className="font-sans text-xs text-gray-400">{delivery.date}</div>
+                    </div>
+                  </div>
+                  <Badge className="bg-gray-100 text-gray-500 border-transparent rounded-full text-xs">
+                    Completed
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     );
