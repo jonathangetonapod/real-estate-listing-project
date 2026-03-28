@@ -1,20 +1,8 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 export function Hero() {
-  const [email, setEmail] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (email.trim()) {
-      setSubmitted(true);
-    }
-  };
-
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
     visible: (delay = 0) => ({
@@ -52,7 +40,7 @@ export function Hero() {
 
       {/* Subheadline */}
       <motion.p
-        className="font-sans text-lg md:text-xl font-normal text-charcoal/60 leading-relaxed max-w-2xl mb-8"
+        className="font-sans text-lg md:text-xl font-normal text-charcoal/60 leading-relaxed max-w-2xl mb-10"
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
@@ -63,54 +51,25 @@ export function Hero() {
         More listing appointments without cold calling, door knocking, or paying for shared leads.
       </motion.p>
 
-      {/* Email form / success */}
+      {/* CTA */}
       <motion.div
-        className="w-full flex flex-col items-center"
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
         custom={0.3}
       >
-        {!submitted ? (
-          <form
-            className="flex flex-col md:flex-row items-center gap-4 md:gap-0 w-full max-w-lg mb-4"
-            onSubmit={handleSubmit}
+        <Link to="/waitlist">
+          <Button
+            className="h-auto rounded-xl bg-orange text-white font-sans text-base font-semibold px-10 py-4 border-orange hover:bg-orange/90 transition-colors duration-200"
           >
-            <div className="flex-1 w-full">
-              <Input
-                type="email"
-                className="w-full h-auto px-4 py-4 font-sans text-[15px] text-charcoal bg-white border-border md:rounded-r-none md:border-r-0 rounded-xl focus-visible:border-orange focus-visible:ring-orange/50"
-                placeholder="Enter your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full md:w-auto rounded-xl md:rounded-l-none bg-orange text-white font-sans text-[15px] font-semibold px-8 py-4 h-auto border-orange hover:bg-orange/90 transition-colors duration-200 whitespace-nowrap"
-            >
-              Join the Waitlist &rarr;
-            </Button>
-          </form>
-        ) : (
-          <motion.div
-            className="flex items-center gap-4 px-6 py-4 bg-success/10 border border-success/30 rounded-xl mb-4 max-w-lg"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            <span className="text-xl flex-shrink-0 text-success">&#10003;</span>
-            <span className="font-sans text-[15px] font-medium text-green-800 text-left">
-              You&apos;re in! We&apos;ll reach out within 12 hours to set up your farm area.
-            </span>
-          </motion.div>
-        )}
+            Join the Waitlist &rarr;
+          </Button>
+        </Link>
       </motion.div>
 
       {/* Trust line */}
       <motion.p
-        className="font-sans text-sm text-charcoal/40 leading-relaxed"
+        className="font-sans text-sm text-charcoal/40 leading-relaxed mt-4"
         variants={fadeInUp}
         initial="hidden"
         animate="visible"

@@ -70,7 +70,7 @@ function FAQItem({ q, a, index }) {
   const [open, setOpen] = useState(false);
   return (
     <motion.div
-      className="border-b border-white/[0.06]"
+      className="border-b border-gray-200"
       initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -80,7 +80,7 @@ function FAQItem({ q, a, index }) {
         className="flex w-full items-center justify-between py-5 text-left"
         onClick={() => setOpen(!open)}
       >
-        <span className="font-heading text-[17px] font-bold text-white/90 leading-snug pr-8">
+        <span className="font-heading text-[17px] font-bold text-charcoal leading-snug pr-8">
           {q}
         </span>
         <span className={cn(
@@ -99,7 +99,7 @@ function FAQItem({ q, a, index }) {
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
-            <p className="pb-5 font-sans text-[15px] leading-relaxed text-white/50">
+            <p className="pb-5 font-sans text-[15px] leading-relaxed text-gray-500">
               {a}
             </p>
           </motion.div>
@@ -147,14 +147,14 @@ export function WaitlistPage() {
   };
 
   return (
-    <div className="min-h-screen bg-dark text-white">
+    <div className="min-h-screen bg-white text-charcoal">
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 mx-auto max-w-5xl">
         <div className="font-heading text-xl font-bold">
-          <span className="text-white">List</span>
+          <span className="text-charcoal">List</span>
           <span className="text-orange">Signal</span>
         </div>
-        <span className="hidden sm:block font-mono text-xs text-white/30 tracking-wider uppercase">
+        <span className="hidden sm:block font-mono text-xs text-gray-400 tracking-wider uppercase">
           Early Access
         </span>
       </nav>
@@ -181,7 +181,7 @@ export function WaitlistPage() {
           </motion.h1>
 
           <motion.p
-            className="font-sans text-lg md:text-xl text-white/50 leading-relaxed mb-10 max-w-xl mx-auto"
+            className="font-sans text-lg md:text-xl text-gray-500 leading-relaxed mb-10 max-w-xl mx-auto"
             variants={fadeUp} initial="hidden" animate="visible" custom={0.2}
           >
             ListSignal finds homeowners ready to sell, drafts personalized outreach with AI, and sends it with your name. You wake up to replies.
@@ -200,7 +200,7 @@ export function WaitlistPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="h-auto flex-1 rounded-xl sm:rounded-r-none bg-white/[0.06] border-white/[0.08] px-5 py-4 font-sans text-[15px] text-white placeholder:text-white/30 focus-visible:border-orange focus-visible:ring-orange/30"
+                    className="h-auto flex-1 rounded-xl sm:rounded-r-none bg-light-bg border-gray-200 px-5 py-4 font-sans text-[15px] text-charcoal placeholder:text-gray-400 focus-visible:border-orange focus-visible:ring-orange/30"
                   />
                   <Button
                     type="submit"
@@ -209,7 +209,7 @@ export function WaitlistPage() {
                     Join the Waitlist &rarr;
                   </Button>
                 </div>
-                <p className="mt-4 font-sans text-sm text-white/25">
+                <p className="mt-4 font-sans text-sm text-gray-400">
                   No credit card. We&apos;ll notify you when your market opens.
                 </p>
               </form>
@@ -223,7 +223,7 @@ export function WaitlistPage() {
                   <p className="font-sans text-base font-medium text-success mb-1">
                     You&apos;re on the list.
                   </p>
-                  <p className="font-sans text-sm text-white/40">
+                  <p className="font-sans text-sm text-gray-400">
                     One more thing: tell us your market so we can check availability.
                   </p>
                 </div>
@@ -234,7 +234,7 @@ export function WaitlistPage() {
                     value={zipCode}
                     onChange={(e) => setZipCode(e.target.value)}
                     maxLength={5}
-                    className="h-auto flex-1 rounded-xl bg-white/[0.06] border-white/[0.08] px-5 py-4 font-sans text-[15px] text-white placeholder:text-white/30 focus-visible:border-orange focus-visible:ring-orange/30"
+                    className="h-auto flex-1 rounded-xl bg-light-bg border-gray-200 px-5 py-4 font-sans text-[15px] text-charcoal placeholder:text-gray-400 focus-visible:border-orange focus-visible:ring-orange/30"
                   />
                   <Button
                     type="submit"
@@ -254,18 +254,18 @@ export function WaitlistPage() {
                   <p className="font-mono text-sm text-orange mb-1">
                     {zipCode} — 11 of {SPOTS_PER_MARKET} spots claimed
                   </p>
-                  <p className="font-heading text-2xl font-bold text-white mb-2">
+                  <p className="font-heading text-2xl font-bold text-charcoal mb-2">
                     You&apos;re #{Math.floor(Math.random() * 200) + 100} on the waitlist
                   </p>
-                  <p className="font-sans text-sm text-white/40 mb-4">
+                  <p className="font-sans text-sm text-gray-400 mb-4">
                     Founding members get priority access at ${FOUNDING_PRICE}/mo for life (regular ${REGULAR_PRICE}/mo).
                   </p>
-                  <div className="pt-4 border-t border-white/[0.06]">
-                    <p className="font-sans text-xs text-white/30 mb-2">
+                  <div className="pt-4 border-t border-gray-200">
+                    <p className="font-sans text-xs text-gray-400 mb-2">
                       Know an agent in a different market? You both lock in founding pricing.
                     </p>
-                    <div className="flex items-center gap-2 rounded-lg bg-white/[0.04] border border-white/[0.06] px-4 py-3">
-                      <span className="flex-1 font-mono text-xs text-white/50 truncate">
+                    <div className="flex items-center gap-2 rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">
+                      <span className="flex-1 font-mono text-xs text-gray-500 truncate">
                         listsignal.com/ref/{email.split('@')[0]}
                       </span>
                       <button
@@ -284,25 +284,25 @@ export function WaitlistPage() {
       </section>
 
       {/* Social proof counter */}
-      <section ref={counterRef} className="border-y border-white/[0.06] py-6">
+      <section ref={counterRef} className="border-y border-gray-200 py-6">
         <div className="mx-auto max-w-5xl px-6 flex flex-wrap items-center justify-center gap-8 md:gap-16">
           <div className="text-center">
             <span className="font-mono text-2xl font-bold text-orange">
               {waitlistCount.toLocaleString()}
             </span>
-            <span className="block font-sans text-xs text-white/30 mt-1">agents on waitlist</span>
+            <span className="block font-sans text-xs text-gray-400 mt-1">agents on waitlist</span>
           </div>
           <div className="text-center">
-            <span className="font-mono text-2xl font-bold text-white/80">127</span>
-            <span className="block font-sans text-xs text-white/30 mt-1">markets requested</span>
+            <span className="font-mono text-2xl font-bold text-charcoal">127</span>
+            <span className="block font-sans text-xs text-gray-400 mt-1">markets requested</span>
           </div>
           <div className="text-center">
-            <span className="font-mono text-2xl font-bold text-white/80">12hrs</span>
-            <span className="block font-sans text-xs text-white/30 mt-1">lead turnaround</span>
+            <span className="font-mono text-2xl font-bold text-charcoal">12hrs</span>
+            <span className="block font-sans text-xs text-gray-400 mt-1">lead turnaround</span>
           </div>
           <div className="text-center">
-            <span className="font-mono text-2xl font-bold text-white/80">$99</span>
-            <span className="block font-sans text-xs text-white/30 mt-1">per month</span>
+            <span className="font-mono text-2xl font-bold text-charcoal">$99</span>
+            <span className="block font-sans text-xs text-gray-400 mt-1">per month</span>
           </div>
         </div>
       </section>
@@ -326,23 +326,23 @@ export function WaitlistPage() {
             transition={{ duration: 0.5 }}
           >
             Everything you need to fill your pipeline.{' '}
-            <span className="text-white/40">Nothing you don&apos;t.</span>
+            <span className="text-gray-400">Nothing you don&apos;t.</span>
           </motion.h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {benefits.map((b, i) => (
               <motion.div
                 key={b.title}
-                className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 transition-colors duration-200 hover:border-orange/20"
+                className="rounded-xl border border-gray-200 bg-white p-6 transition-colors duration-200 hover:border-orange/20"
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.08 }}
               >
-                <h3 className="font-sans text-[15px] font-semibold text-white mb-2">
+                <h3 className="font-sans text-[15px] font-semibold text-charcoal mb-2">
                   {b.title}
                 </h3>
-                <p className="font-sans text-sm text-white/40 leading-relaxed">
+                <p className="font-sans text-sm text-gray-400 leading-relaxed">
                   {b.detail}
                 </p>
               </motion.div>
@@ -354,21 +354,21 @@ export function WaitlistPage() {
       {/* Zillow comparison */}
       <section className="px-6 pb-20">
         <motion.div
-          className="mx-auto max-w-xl overflow-hidden rounded-xl border border-white/[0.06]"
+          className="mx-auto max-w-xl overflow-hidden rounded-xl border border-gray-200"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
           <div className="grid grid-cols-2">
-            <div className="border-r border-white/[0.06] p-6 text-center bg-white/[0.01]">
-              <span className="block font-sans text-xs font-medium uppercase tracking-wide text-white/30 mb-2">
+            <div className="border-r border-gray-200 p-6 text-center bg-gray-50">
+              <span className="block font-sans text-xs font-medium uppercase tracking-wide text-gray-400 mb-2">
                 Zillow Leads
               </span>
-              <span className="block font-mono text-2xl font-bold text-white/20 line-through">
+              <span className="block font-mono text-2xl font-bold text-gray-300 line-through">
                 $1,200+/mo
               </span>
-              <span className="block font-sans text-xs text-white/20 mt-1">
+              <span className="block font-sans text-xs text-gray-300 mt-1">
                 Shared with dozens of agents
               </span>
             </div>
@@ -379,7 +379,7 @@ export function WaitlistPage() {
               <span className="block font-mono text-2xl font-bold text-orange">
                 $99/mo
               </span>
-              <span className="block font-sans text-xs text-white/40 mt-1">
+              <span className="block font-sans text-xs text-gray-400 mt-1">
                 Exclusive to your zip code
               </span>
             </div>
@@ -399,11 +399,11 @@ export function WaitlistPage() {
           <span className="inline-block font-mono text-xs font-medium uppercase tracking-widest text-orange mb-3">
             Founding Member Offer
           </span>
-          <h3 className="font-heading text-2xl md:text-3xl font-bold text-white mb-2">
-            <span className="line-through text-white/30 mr-2">${REGULAR_PRICE}/mo</span>
+          <h3 className="font-heading text-2xl md:text-3xl font-bold text-charcoal mb-2">
+            <span className="line-through text-gray-400 mr-2">${REGULAR_PRICE}/mo</span>
             ${FOUNDING_PRICE}/mo for life
           </h3>
-          <p className="font-sans text-sm text-white/40 mb-6 max-w-sm mx-auto">
+          <p className="font-sans text-sm text-gray-400 mb-6 max-w-sm mx-auto">
             First 500 agents lock in founding pricing forever. Join the waitlist to reserve your spot.
           </p>
           <Button
@@ -433,7 +433,7 @@ export function WaitlistPage() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="border-t border-white/[0.06] px-6 py-20">
+      <section className="border-t border-gray-200 px-6 py-20">
         <div className="mx-auto max-w-2xl text-center">
           <motion.h2
             className="font-heading text-3xl md:text-4xl font-bold mb-4"
@@ -444,7 +444,7 @@ export function WaitlistPage() {
             Your market won&apos;t stay open forever.
           </motion.h2>
           <motion.p
-            className="font-sans text-lg text-white/40 mb-8"
+            className="font-sans text-lg text-gray-400 mb-8"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -461,12 +461,12 @@ export function WaitlistPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.06] px-6 py-8">
+      <footer className="border-t border-gray-200 px-6 py-8">
         <div className="mx-auto max-w-5xl flex flex-col items-center gap-3">
           <div className="font-heading text-base font-bold">
             List<span className="text-orange">Signal</span>
           </div>
-          <p className="font-sans text-xs text-white/20">
+          <p className="font-sans text-xs text-gray-300">
             &copy; 2026 ListSignal. Not affiliated with any MLS or brokerage.
           </p>
         </div>

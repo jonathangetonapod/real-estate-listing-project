@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -59,11 +60,13 @@ export function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center">
-          <Button
-            className="rounded-full bg-orange text-white font-sans text-sm font-semibold px-6 py-2.5 border-orange hover:bg-orange/90 transition-colors duration-200"
-          >
-            Join the Waitlist
-          </Button>
+          <Link to="/waitlist">
+            <Button
+              className="rounded-full bg-orange text-white font-sans text-sm font-semibold px-6 py-2.5 border-orange hover:bg-orange/90 transition-colors duration-200"
+            >
+              Join the Waitlist
+            </Button>
+          </Link>
         </div>
 
         {/* Hamburger */}
@@ -109,11 +112,13 @@ export function Navbar() {
               {link.label}
             </a>
           ))}
-          <Button
-            className="w-full rounded-full bg-orange text-white font-sans text-sm font-semibold px-6 py-2.5 border-orange hover:bg-orange/90 transition-colors duration-200"
-          >
-            Join the Waitlist
-          </Button>
+          <Link to="/waitlist" onClick={() => setMobileOpen(false)}>
+            <Button
+              className="w-full rounded-full bg-orange text-white font-sans text-sm font-semibold px-6 py-2.5 border-orange hover:bg-orange/90 transition-colors duration-200"
+            >
+              Join the Waitlist
+            </Button>
+          </Link>
         </div>
       </nav>
     </motion.div>

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -121,11 +122,13 @@ export function Pricing() {
               ))}
             </ul>
 
-            <Button
-              className="h-auto w-full rounded-lg bg-orange px-6 py-4 font-sans text-base font-semibold text-white transition-colors hover:bg-orange/90"
-            >
-              Join the Waitlist
-            </Button>
+            <Link to="/waitlist">
+              <Button
+                className="h-auto w-full rounded-lg bg-orange px-6 py-4 font-sans text-base font-semibold text-white transition-colors hover:bg-orange/90"
+              >
+                Join the Waitlist
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </motion.div>
