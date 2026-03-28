@@ -1096,6 +1096,7 @@ const filterOptions = ['All', 'Expired', 'FSBO', 'Pre-Foreclosure', 'High Equity
 function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLeads }) {
   const [expandedLead, setExpandedLead] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
+  const [activePitchStatus, setActivePitchStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeOrder, setActiveOrder] = useState('All');
   const [skippedLeads, setSkippedLeads] = useState({});
@@ -1287,16 +1288,33 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
     setPitchSlideOverIndex(null);
   }, []);
 
-  // Filter by lead type and search query
+  // Pitch status helper
+  const getPitchStatus = (idx) => {
+    if (skippedLeads[idx]) return 'Skipped';
+    if (pitchDrafts[idx]?.status === 'sent') return 'Sent';
+    if (pitchDrafts[idx]?.status === 'draft') return 'Draft';
+    return 'Not Contacted';
+  };
+
+  const pitchStatusFilters = [
+    { key: 'All', count: leads.length },
+    { key: 'Not Contacted', count: leads.filter((_, i) => getPitchStatus(i) === 'Not Contacted').length },
+    { key: 'Draft', count: leads.filter((_, i) => getPitchStatus(i) === 'Draft').length },
+    { key: 'Sent', count: leads.filter((_, i) => getPitchStatus(i) === 'Sent').length },
+    { key: 'Skipped', count: leads.filter((_, i) => getPitchStatus(i) === 'Skipped').length },
+  ];
+
+  // Filter by lead type, pitch status, and search query
   const filtered = leads.map((l, i) => ({ ...l, _origIndex: i })).filter((l) => {
     const matchesType = activeFilter === 'All' || l.type === activeFilter;
     const matchesOrder = activeOrder === 'All' || l.order === activeOrder;
+    const matchesPitchStatus = activePitchStatus === 'All' || getPitchStatus(l._origIndex) === activePitchStatus;
     const matchesSearch =
       searchQuery === '' ||
       l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       l.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
       l.email.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesType && matchesOrder && matchesSearch;
+    return matchesType && matchesOrder && matchesPitchStatus && matchesSearch;
   });
 
   // Group filtered leads by order
@@ -1361,6 +1379,25 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Pitch Status Filter */}
+      <div className="flex items-center gap-1 flex-wrap">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mr-1">Status</span>
+        {pitchStatusFilters.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setActivePitchStatus(f.key)}
+            className={cn(
+              'rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors whitespace-nowrap border',
+              activePitchStatus === f.key
+                ? 'border-charcoal bg-charcoal/5 text-charcoal'
+                : 'border-transparent text-muted-foreground hover:border-gray-200 hover:text-foreground'
+            )}
+          >
+            {f.key}{f.key !== 'All' ? ` (${f.count})` : ''}
+          </button>
+        ))}
       </div>
 
       {/* Lead Cards */}
