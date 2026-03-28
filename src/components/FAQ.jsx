@@ -16,8 +16,8 @@ const faqData = [
     a: 'Zillow leads are shared with up to 50 agents. ListingPitch emails go directly from you to the homeowner. No competition, no bidding, no sharing. And at $199/mo vs $1,200+/mo, the math speaks for itself.',
   },
   {
-    q: 'Do I need PropStream?',
-    a: 'No. We handle all data sourcing, skip-tracing, and email verification. With PropStream you pull the data, export CSVs, skip-trace contacts, and write emails yourself. That\u2019s 5+ hours every week. With ListingPitch, you open your dashboard and the pitches are ready.',
+    q: 'Do I need any other tools?',
+    a: 'No. We handle all data sourcing, skip-tracing, and email verification. No exporting CSVs, no manual lookups, no separate subscriptions. You open your dashboard and the pitches are ready.',
   },
   {
     q: "Can homeowners tell it's AI-written?",

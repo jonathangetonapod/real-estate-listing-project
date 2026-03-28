@@ -13,7 +13,7 @@ const steps = [
     number: 2,
     title: 'Skip-Traced and Verified',
     description:
-      'Every lead comes with skip-traced email addresses, property details, equity estimates, days on market, and original listing price. The same data that costs $99/month on PropStream \u2014 included free.',
+      'Every lead comes with skip-traced email addresses, property details, equity estimates, days on market, and original listing price. Data that would take hours to compile yourself \u2014 delivered ready to go.',
     detail: 'Verified emails',
   },
   {
