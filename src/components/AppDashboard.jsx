@@ -46,7 +46,7 @@ const leads = [
 
 const navItems = [
   { key: 'dashboard', label: 'Home', subtitle: 'Your daily snapshot', icon: LayoutDashboard },
-  { key: 'farm', label: 'My Market', subtitle: 'Where we find your sellers', icon: MapPin },
+  { key: 'farm', label: 'Order New Leads', subtitle: 'Get fresh sellers delivered', icon: MapPin },
   { key: 'leads', label: 'Seller Leads', subtitle: 'People who may want to sell', icon: Users },
   { key: 'drafts', label: 'Email Pitches', subtitle: 'Review before we send', icon: FileEdit },
   { key: 'replies', label: 'Responses', subtitle: 'Sellers who replied', icon: MessageSquare },
@@ -240,8 +240,8 @@ function FarmAreaTab() {
     return (
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <h2 className="font-heading text-2xl font-bold text-charcoal mb-1">My Market</h2>
-          <p className="font-sans text-sm text-gray-500">Order leads and track your deliveries.</p>
+          <h2 className="font-heading text-2xl font-bold text-charcoal mb-1">Order New Leads</h2>
+          <p className="font-sans text-sm text-gray-500">Get fresh sellers delivered to your dashboard.</p>
         </div>
 
         {/* Lead delivery history */}
@@ -390,7 +390,7 @@ function FarmAreaTab() {
     <div className="max-w-3xl mx-auto">
       <div className="mb-8">
         <button onClick={() => setFarmState('delivered')} className="font-sans text-sm text-gray-400 hover:text-charcoal transition-colors mb-4 flex items-center gap-1">
-          <ArrowRight className="w-3 h-3 rotate-180" /> Back to My Market
+          <ArrowRight className="w-3 h-3 rotate-180" /> Back to Orders
         </button>
         <h2 className="font-heading text-2xl font-bold text-charcoal mb-2">Order New Leads</h2>
         <p className="font-sans text-base text-gray-500">
