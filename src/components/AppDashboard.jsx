@@ -2479,9 +2479,9 @@ function PipelineTab({ deals, addDeal, moveDealStage }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchAdd, setSearchAdd] = useState('');
 
-  const stages = ['New', 'Contacted', 'Meeting Set', 'Proposal Sent', 'Won'];
-  const stageColors = ['bg-gray-400', 'bg-orange', 'bg-blue-500', 'bg-charcoal', 'bg-success'];
-  const stageAccent = ['', '', 'bg-blue-500/[0.03]', '', 'bg-success/[0.03]'];
+  const stages = ['Positive Reply', 'Following Up', 'Meeting Scheduled', 'Nurturing', 'Closed'];
+  const stageColors = ['bg-success', 'bg-orange', 'bg-blue-500', 'bg-charcoal', 'bg-success'];
+  const stageAccent = ['bg-success/[0.03]', '', 'bg-blue-500/[0.03]', '', 'bg-success/[0.03]'];
 
   return (
     <div className="space-y-5">
@@ -2574,7 +2574,7 @@ function PipelineTab({ deals, addDeal, moveDealStage }) {
                             Move to {nextStage} <ArrowRight className="h-2.5 w-2.5" />
                           </button>
                         )}
-                        {stage === 'Won' && (
+                        {stage === 'Closed' && (
                           <div className="mt-2 text-[10px] text-success font-medium text-center flex items-center justify-center gap-1">
                             <CheckCircle2 className="h-3 w-3" /> Deal closed
                           </div>
@@ -2794,7 +2794,7 @@ export default function AppDashboard() {
   const addDeal = useCallback((deal) => {
     setDeals(prev => {
       if (prev.some(d => d.name === deal.name && d.address === deal.address)) return prev;
-      return [...prev, { ...deal, stage: 'New', addedAt: new Date().toISOString() }];
+      return [...prev, { ...deal, stage: 'Positive Reply', addedAt: new Date().toISOString() }];
     });
   }, []);
 
