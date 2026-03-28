@@ -1696,21 +1696,43 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
 // ---------------------------------------------------------------------------
 
 function DraftsTab({ pitchDrafts }) {
+  const [expandedPitch, setExpandedPitch] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Filter to only leads with sent pitches
   const sentPitches = leads.map((lead, i) => ({ ...lead, _idx: i, pitch: pitchDrafts[i] }))
-    .filter(item => item.pitch?.status === 'sent');
-
-  const [selectedIdx, setSelectedIdx] = useState(0);
-  const selected = sentPitches[selectedIdx];
+    .filter(item => item.pitch?.status === 'sent')
+    .filter(item =>
+      searchQuery === '' ||
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="font-heading text-lg font-semibold">Pitches Sent</h2>
-        <p className="text-sm text-muted-foreground mt-1">Emails you&apos;ve sent to sellers. Track delivery and engagement.</p>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-bold text-charcoal">Pitches Sent</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {sentPitches.length} {sentPitches.length === 1 ? 'sequence' : 'sequences'} delivered to sellers.
+          </p>
+        </div>
+        {sentPitches.length > 0 && (
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search sent pitches..."
+              className="pl-9 h-9 text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        )}
       </div>
 
-      {sentPitches.length === 0 ? (
+      {sentPitches.length === 0 && Object.values(pitchDrafts).filter(d => d?.status === 'sent').length === 0 ? (
         <Card className="rounded-xl">
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
@@ -1720,106 +1742,131 @@ function DraftsTab({ pitchDrafts }) {
             <p className="text-sm text-muted-foreground">Generate and send pitches from the Seller Leads tab — they&apos;ll appear here.</p>
           </CardContent>
         </Card>
-      ) : (
-        <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-16rem)]">
-          {/* Left — sent list */}
-          <div className="lg:w-1/3 rounded-xl border border-border bg-white overflow-hidden flex flex-col">
-            <div className="px-4 py-3 border-b border-border">
-              <p className="text-sm font-medium">Sent Emails</p>
-              <p className="text-xs text-muted-foreground">{sentPitches.length} {sentPitches.length === 1 ? 'email' : 'emails'} delivered</p>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              {sentPitches.map((item, i) => (
-                <button
-                  key={item._idx}
-                  onClick={() => setSelectedIdx(i)}
-                  className={cn(
-                    'w-full text-left px-4 py-3 border-b border-border transition-colors',
-                    selectedIdx === i ? 'bg-orange/5' : 'hover:bg-muted/50'
-                  )}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-medium truncate">{item.name}</p>
-                    <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium shrink-0 ml-2 bg-success/10 text-success border-success/20">
-                      Sent
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground truncate">{item.address}</p>
-                  {item.pitch.lastEdited && (
-                    <p className="text-[10px] text-gray-400 mt-1">
-                      {new Date(item.pitch.lastEdited).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                    </p>
-                  )}
-                </button>
-              ))}
-            </div>
+      ) : sentPitches.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <Search className="h-6 w-6 text-gray-400" />
           </div>
+          <p className="text-sm font-medium text-charcoal mb-1">No results match your search</p>
+          <p className="text-sm text-muted-foreground">Try adjusting your search criteria.</p>
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          {sentPitches.map((item) => {
+            const isExpanded = expandedPitch === item._idx;
+            return (
+              <div key={item._idx} className={cn('rounded-lg border transition-all duration-150', isExpanded ? 'border-success/30 ring-1 ring-success/10' : 'border-border hover:border-success/20')}>
+                {/* Compact Row */}
+                <button
+                  onClick={() => setExpandedPitch(prev => prev === item._idx ? null : item._idx)}
+                  className="w-full text-left px-4 py-3 cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-success shrink-0" />
 
-          {/* Right — email preview (read-only) */}
-          {selected && (
-            <div className="lg:w-2/3 rounded-xl border border-border bg-white overflow-hidden flex flex-col">
-              <div className="px-6 py-4 border-b border-border">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-heading text-base font-semibold">Sent Email</h3>
-                  <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium bg-success/10 text-success border-success/20">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Delivered
-                  </span>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex gap-2 items-center">
-                    <span className="font-medium text-muted-foreground w-16 shrink-0">From:</span>
-                    <span>Sarah Johnson via OffMarket</span>
+                    {/* Name + Address */}
+                    <div className="min-w-0 w-[200px] shrink-0">
+                      <p className="font-sans text-sm font-semibold text-charcoal truncate">{item.name}</p>
+                      <p className="font-sans text-xs text-gray-400 truncate">{item.address}</p>
+                    </div>
+
+                    {/* Inline stats */}
+                    <div className="hidden sm:flex items-center gap-5 flex-1 min-w-0">
+                      <div className="text-center shrink-0">
+                        <p className="font-mono text-sm font-bold text-charcoal">{item.price}</p>
+                        <p className="text-[9px] uppercase text-gray-400">Value</p>
+                      </div>
+                      <div className="text-center shrink-0">
+                        <p className="font-mono text-sm font-bold text-success">{item.equity}</p>
+                        <p className="text-[9px] uppercase text-gray-400">Equity</p>
+                      </div>
+                      <div className="shrink-0 min-w-0 max-w-[180px]">
+                        <p className="text-xs text-charcoal truncate">{item.pitch.steps?.[0]?.subject}</p>
+                        <p className="text-[9px] uppercase text-gray-400">Subject</p>
+                      </div>
+                      <div className="text-center shrink-0">
+                        <p className="text-xs text-gray-600">3 steps</p>
+                        <p className="text-[9px] uppercase text-gray-400">Sequence</p>
+                      </div>
+                    </div>
+
+                    {/* Right */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium', typeBadgeClass(item.type))}>
+                        {item.type}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full border border-success/20 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
+                        <CheckCircle2 className="h-2.5 w-2.5" />Sent
+                      </span>
+                      {item.pitch.lastEdited && (
+                        <span className="text-[10px] text-gray-400 hidden md:inline">
+                          {new Date(item.pitch.lastEdited).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </span>
+                      )}
+                      <ChevronDown className={cn('h-3.5 w-3.5 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
+                    </div>
                   </div>
-                  <div className="flex gap-2 items-center">
-                    <span className="font-medium text-muted-foreground w-16 shrink-0">To:</span>
-                    <span>{selected.email}</span>
-                  </div>
-                  <div className="flex gap-2 items-center">
-                    <span className="font-medium text-muted-foreground w-16 shrink-0">Subject:</span>
-                    <span className="font-medium">{selected.pitch.steps?.[0]?.subject}</span>
-                  </div>
-                </div>
+                </button>
+
+                {/* Expandable Detail */}
+                <AnimatePresence initial={false}>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 pb-4 pt-0">
+                        <div className="border-t border-gray-100 pt-4">
+                          {/* Email header */}
+                          <div className="flex items-center gap-4 text-xs text-gray-500 mb-4 flex-wrap">
+                            <span><span className="font-medium text-gray-400">From:</span> Sarah Johnson via OffMarket</span>
+                            <span><span className="font-medium text-gray-400">To:</span> {item.email}</span>
+                            <span><span className="font-medium text-gray-400">Subject:</span> {item.pitch.steps?.[0]?.subject}</span>
+                          </div>
+
+                          {/* 3-step sequence */}
+                          <div className="space-y-3">
+                            {item.pitch.steps?.map((step, si) => (
+                              <div key={si}>
+                                <div className="flex items-center gap-2 mb-1.5">
+                                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-charcoal text-white text-[10px] font-bold">{si + 1}</span>
+                                  <span className="text-xs font-medium text-charcoal">{['Initial Outreach', 'Follow-Up (Day 3)', 'Final Touch (Day 7)'][si]}</span>
+                                </div>
+                                <div className="rounded-lg bg-light-bg border border-gray-100 p-3 ml-7">
+                                  <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">{step.body}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Property context */}
+                          <div className="mt-4 rounded-lg border border-border p-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm">
+                              {[
+                                { label: 'Value', value: item.price },
+                                { label: 'Equity', value: item.equity, className: 'text-success' },
+                                { label: 'Sq Ft', value: item.sqft },
+                                { label: 'Built', value: item.yearBuilt },
+                                { label: 'County', value: item.county },
+                              ].filter(f => f.value).map((f) => (
+                                <div key={f.label}>
+                                  <p className="text-[9px] uppercase text-gray-400">{f.label}</p>
+                                  <p className={cn('font-mono text-xs font-medium', f.className)}>{f.value}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-
-              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-                {selected.pitch.steps?.map((step, si) => (
-                  <div key={si} className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-charcoal text-white text-[10px] font-bold">{si + 1}</span>
-                      <span className="text-xs font-medium text-charcoal">{['Initial Outreach', 'Follow-Up (Day 3)', 'Final Touch (Day 7)'][si]}</span>
-                    </div>
-                    <div className="rounded-xl bg-light-bg border border-gray-100 p-4">
-                      <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">{step.body}</p>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Property context */}
-                <div className="rounded-xl border border-border p-4 space-y-2">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Property Context</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Address</p>
-                      <p className="font-medium truncate">{selected.address.split(',')[0]}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Price</p>
-                      <p className="font-medium">{selected.price}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Equity</p>
-                      <p className="font-medium text-success">{selected.equity}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Type</p>
-                      <p className="font-medium">{selected.type}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+            );
+          })}
         </div>
       )}
     </div>
