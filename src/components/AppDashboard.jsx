@@ -1561,7 +1561,7 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                                       { label: 'Parcel Value', value: lead.totalParcelValue },
                                       { label: 'Improvement', value: lead.improvementValue },
                                       { label: 'Land', value: lead.landValue },
-                                      { label: `Tax Bill (${lead.taxYear})`, value: lead.taxBill ? `$${lead.taxBill}/yr` : null },
+                                      { label: `Tax Bill (${lead.taxYear})`, value: lead.taxBill ? `${lead.taxBill}/yr` : null },
                                     ].filter(item => item.value != null && item.value !== 'N/A').map((item) => (
                                       <div key={item.label} className="flex justify-between items-center">
                                         <span className="text-xs text-muted-foreground">{item.label}</span>
