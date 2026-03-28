@@ -53,7 +53,7 @@ const navItems = [
   { key: 'dashboard', label: 'Home', subtitle: 'Your daily snapshot', icon: LayoutDashboard },
   { key: 'farm', label: 'Order New Leads', subtitle: 'Get fresh sellers delivered', icon: MapPin },
   { key: 'leads', label: 'Seller Leads', subtitle: 'People who may want to sell', icon: Users },
-  { key: 'drafts', label: 'Email Pitches', subtitle: 'Review before we send', icon: FileEdit },
+  { key: 'drafts', label: 'Pitches Sent', subtitle: 'Emails you\'ve sent', icon: Send },
   { key: 'replies', label: 'Responses', subtitle: 'Sellers who replied', icon: MessageSquare },
   { key: 'pipeline', label: 'My Deals', subtitle: 'Track your progress', icon: GitBranch },
   { key: 'settings', label: 'Settings', subtitle: null, icon: Settings },
@@ -1514,7 +1514,7 @@ function DraftsTab() {
       <div className="flex items-start gap-3 rounded-xl bg-gray-50 border border-gray-100 px-4 py-3">
         <Info className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
         <p className="text-sm text-gray-500">
-          We wrote a personalized email for each seller based on their property details. Read it, edit if you want, then approve to send.
+          A record of personalized emails sent to sellers. Track delivery and engagement from here.
         </p>
       </div>
 
@@ -1522,8 +1522,8 @@ function DraftsTab() {
       {/* Left — lead list */}
       <div className="lg:w-1/3 rounded-xl border border-border bg-white overflow-hidden flex flex-col">
         <div className="px-4 py-3 border-b border-border">
-          <p className="text-sm font-medium">Email Pitches</p>
-          <p className="text-xs text-muted-foreground">{leads.filter(l => l.draft === 'Ready').length} ready for review</p>
+          <p className="text-sm font-medium">Pitches Sent</p>
+          <p className="text-xs text-muted-foreground">{leads.filter(l => l.draft === 'Sent').length} emails delivered</p>
         </div>
         <div className="flex-1 overflow-y-auto">
           {leads.map((lead, i) => (
@@ -2006,7 +2006,7 @@ export default function AppDashboard() {
         {[
           { key: 'dashboard', label: 'Home', icon: Home },
           { key: 'leads', label: 'Leads', icon: Users },
-          { key: 'drafts', label: 'Pitches', icon: FileEdit },
+          { key: 'drafts', label: 'Sent', icon: Send },
           { key: 'replies', label: 'Responses', icon: MessageSquare },
           { key: 'pipeline', label: 'Deals', icon: GitBranch },
         ].map((tab) => {
