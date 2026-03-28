@@ -11,7 +11,7 @@ export function Footer() {
     <footer className="border-t border-white/10 bg-dark px-5 py-10">
       <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-5 text-center md:flex-row md:text-left">
         <div className="font-heading text-lg font-bold text-white">
-          Listing<span className="text-orange">Pitch</span>
+          List<span className="text-orange">Signal</span>
         </div>
 
         <nav className="flex flex-wrap items-center justify-center gap-6">
@@ -28,7 +28,7 @@ export function Footer() {
       </div>
 
       <p className="mt-6 text-center font-sans text-[13px] text-[#666]">
-        &copy; 2026 ListingPitch. Not affiliated with any MLS or brokerage.
+        &copy; 2026 ListSignal. Not affiliated with any MLS or brokerage.
       </p>
     </footer>
   );

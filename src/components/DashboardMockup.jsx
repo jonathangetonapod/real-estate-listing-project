@@ -140,7 +140,7 @@ export function DashboardMockup() {
           </div>
           <div className="mx-auto flex max-w-[400px] flex-1 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1">
             <span className="text-[11px] text-gray-400">https://</span>
-            <span className="font-sans text-xs text-gray-500">app.listingpitch.com/dashboard</span>
+            <span className="font-sans text-xs text-gray-500">app.listsignal.com/dashboard</span>
           </div>
           <div className="w-[50px] shrink-0" />
         </div>
@@ -154,7 +154,7 @@ export function DashboardMockup() {
                   LP
                 </span>
                 <span className="font-heading text-sm font-bold text-white">
-                  ListingPitch
+                  ListSignal
                 </span>
               </div>
 

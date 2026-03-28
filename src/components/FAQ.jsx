@@ -9,11 +9,11 @@ import {
 const faqData = [
   {
     q: 'Will this hurt my email reputation?',
-    a: 'We never touch your personal email. Every email goes out from our managed infrastructure with your name and brand in the from field. We handle warm-up, rotation, and deliverability. Replies come into your ListingPitch dashboard.',
+    a: 'We never touch your personal email. Every email goes out from our managed infrastructure with your name and brand in the from field. We handle warm-up, rotation, and deliverability. Replies come into your ListSignal dashboard.',
   },
   {
     q: 'How is this different from buying Zillow leads?',
-    a: 'Zillow leads are shared with up to 50 agents. ListingPitch emails go directly from you to the homeowner. No competition, no bidding, no sharing. And at $99/mo vs $1,200+/mo, the math speaks for itself.',
+    a: 'Zillow leads are shared with up to 50 agents. ListSignal emails go directly from you to the homeowner. No competition, no bidding, no sharing. And at $99/mo vs $1,200+/mo, the math speaks for itself.',
   },
   {
     q: 'Do I need any other tools?',
@@ -29,7 +29,7 @@ const faqData = [
   },
   {
     q: 'How many listings can I expect?',
-    a: 'Our benchmark is 3-5 listing conversations per month from 250 leads. At a 6% commission on a $400K home, one closed deal is $12,000 in GCI. A single listing from ListingPitch pays for the entire year.',
+    a: 'Our benchmark is 3-5 listing conversations per month from 250 leads. At a 6% commission on a $400K home, one closed deal is $12,000 in GCI. A single listing from ListSignal pays for the entire year.',
   },
   {
     q: 'How long until I see results?',
@@ -45,11 +45,11 @@ const faqData = [
   },
   {
     q: 'What happens after a homeowner replies?',
-    a: 'Their reply shows up in your ListingPitch dashboard instantly. You respond directly from the platform. Your $99/mo plan includes a visual pipeline to track every conversation from first reply to listing signed.',
+    a: 'Their reply shows up in your ListSignal dashboard instantly. You respond directly from the platform. Your $99/mo plan includes a visual pipeline to track every conversation from first reply to listing signed.',
   },
   {
     q: "I\u2019ve tried lead gen services before and they didn\u2019t work.",
-    a: 'Most lead gen gives you a name and a phone number and says \u201Cgo call them.\u201D ListingPitch is different \u2014 we give you verified emails, property-specific data, and AI-drafted pitches that reference real comps. You\u2019re not cold-prospecting. You\u2019re reaching out with market intel they don\u2019t have.',
+    a: 'Most lead gen gives you a name and a phone number and says \u201Cgo call them.\u201D ListSignal is different \u2014 we give you verified emails, property-specific data, and AI-drafted pitches that reference real comps. You\u2019re not cold-prospecting. You\u2019re reaching out with market intel they don\u2019t have.',
   },
   {
     q: 'What if I want to cancel?',

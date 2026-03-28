@@ -244,7 +244,7 @@ export function AIComparison() {
                   ✓
                 </span>
                 <span className="font-sans text-[15px] font-semibold text-charcoal">
-                  ListingPitch AI
+                  ListSignal AI
                 </span>
                 <Badge variant="outline" className="ml-auto font-mono text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-[#e6f9e9] text-success border-transparent">
                   3-5x higher reply rate

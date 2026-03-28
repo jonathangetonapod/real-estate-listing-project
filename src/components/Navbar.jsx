@@ -39,8 +39,8 @@ export function Navbar() {
       >
         {/* Logo */}
         <div className="font-heading text-[22px] font-bold leading-none cursor-pointer select-none">
-          <span className="text-charcoal">Listing</span>
-          <span className="text-orange">Pitch</span>
+          <span className="text-charcoal">List</span>
+          <span className="text-orange">Signal</span>
         </div>
 
         {/* Desktop links */}

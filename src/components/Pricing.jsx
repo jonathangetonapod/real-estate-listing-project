@@ -45,7 +45,7 @@ export function Pricing() {
         One plan. Everything included. No upsells, no feature gates.
       </motion.p>
 
-      {/* Zillow vs ListingPitch anchor */}
+      {/* Zillow vs ListSignal anchor */}
       <motion.div
         className="mx-auto mb-10 flex max-w-xl items-center overflow-hidden rounded-xl border border-gray-300 bg-white"
         variants={fadeIn}
@@ -71,7 +71,7 @@ export function Pricing() {
 
         <div className="flex-1 bg-green-50 px-6 py-5 text-center">
           <span className="block font-sans text-xs font-semibold uppercase tracking-wide text-gray-400">
-            ListingPitch
+            ListSignal
           </span>
           <span className="block font-mono text-2xl font-bold text-green-600">
             $99/mo
@@ -93,7 +93,7 @@ export function Pricing() {
         <Card className="rounded-xl bg-white py-0 ring-2 ring-orange">
           <CardContent className="flex flex-col p-8">
             <span className="font-sans text-sm font-semibold uppercase tracking-wide text-orange">
-              ListingPitch
+              ListSignal
             </span>
 
             <div className="mt-3 mb-2 flex items-baseline gap-1">
@@ -148,7 +148,7 @@ export function Pricing() {
         viewport={{ once: true, margin: '-40px' }}
       >
         The average agent spends $1,200/month on shared Zillow leads.
-        ListingPitch delivers exclusive, verified seller data with AI-drafted pitches
+        ListSignal delivers exclusive, verified seller data with AI-drafted pitches
         for less than one showing&apos;s worth of gas money.
       </motion.p>
     </section>
