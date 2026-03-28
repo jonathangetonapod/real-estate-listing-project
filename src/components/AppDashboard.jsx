@@ -828,7 +828,7 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
 
   const isReadOnly = draft?.status === 'sent';
   const stepLabels = ['Initial Outreach', 'Follow-Up', 'Final Touch'];
-  const stepTimings = ['Sends immediately', 'Sends Day 3', 'Sends Day 7'];
+  const stepTimings = ['Sends immediately', 'Sends on business day 3', 'Sends on business day 7'];
 
   return (
     <>
@@ -892,9 +892,12 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
 
         {/* Timing indicator */}
         <div className="px-6 py-2 bg-light-bg border-b border-border">
-          <div className="flex items-center gap-2">
-            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">{stepTimings[activeStep]}</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">{stepTimings[activeStep]}</span>
+            </div>
+            <span className="text-[10px] text-gray-400">Weekdays only, no weekends</span>
           </div>
         </div>
 
