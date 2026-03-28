@@ -7,7 +7,7 @@ const features = [
   '1 farm area (up to 3 zip codes)',
   'AI-drafted email pitches for every lead',
   'All lead types: expireds, FSBOs, pre-foreclosure, absentee, high equity, probate',
-  'Sending from your own protected domain',
+  'We send on your behalf with your name and brand',
   'Automated warm-up and deliverability (94% inbox rate)',
   'Reply management in-platform',
   'Follow-up sequences',

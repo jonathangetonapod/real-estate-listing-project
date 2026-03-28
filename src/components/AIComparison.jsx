@@ -278,7 +278,7 @@ export function AIComparison() {
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" /> Matches your writing voice
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" /> Reply lands in your inbox instantly
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" /> Reply lands in your dashboard instantly
                 </span>
               </div>
             </motion.div>

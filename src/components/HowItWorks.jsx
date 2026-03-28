@@ -18,9 +18,9 @@ const steps = [
   },
   {
     number: 3,
-    title: 'Sends From Your Brand',
+    title: 'We Send on Your Behalf',
     description:
-      'Every email goes out from a protected domain with your name and brand. Warm-up, rotation, and deliverability are handled automatically. Homeowners see you, not us.',
+      'Every email goes out with your name and brand in the "from" field. We handle warm-up, rotation, and deliverability behind the scenes. Homeowners see you, not us. You set up nothing.',
     detail: '94% inbox rate',
   },
   {
