@@ -2466,20 +2466,64 @@ function InboxTab() {
 
 function PipelineTab() {
   const totalPipelineItems = pipelineColumns.reduce((sum, col) => sum + col.count, 0);
+  const totalLeadCards = Object.values(pipelineLeads).flat().length;
+
+  // Summary stats
+  const summaryStats = [
+    { label: 'Total in Pipeline', value: totalPipelineItems, color: 'text-charcoal' },
+    { label: 'Emails Sent', value: 186, color: 'text-charcoal' },
+    { label: 'Opened', value: 142, pct: '76%', color: 'text-blue-600' },
+    { label: 'Responded', value: 14, pct: '7.5%', color: 'text-orange' },
+    { label: 'Meetings', value: 3, color: 'text-success' },
+    { label: 'Listings Won', value: 1, color: 'text-success' },
+  ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Header */}
       <div>
-        <h2 className="font-heading text-lg font-semibold">My Deals</h2>
+        <h1 className="font-heading text-2xl font-bold text-charcoal">My Deals</h1>
         <p className="text-sm text-muted-foreground mt-1">Track every seller from first contact to signed listing.</p>
       </div>
 
-      {/* Contextual help for new users */}
-      <div className="flex items-start gap-3 rounded-xl bg-gray-50 border border-gray-100 px-4 py-3">
-        <Info className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
-        <p className="text-sm text-gray-500">
-          This shows where each seller is in your outreach process. As sellers open your emails and respond, they move forward automatically.
-        </p>
+      {/* Summary bar */}
+      <div className="rounded-lg border border-border bg-white p-4">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
+          {summaryStats.map((stat) => (
+            <div key={stat.label} className="text-center">
+              <div className="flex items-baseline justify-center gap-1">
+                <span className={cn('font-mono text-xl font-bold', stat.color)}>{stat.value}</span>
+                {stat.pct && <span className="text-[10px] text-gray-400 font-mono">{stat.pct}</span>}
+              </div>
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 mt-0.5">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Conversion funnel bar */}
+      <div className="rounded-lg border border-border bg-white p-3">
+        <div className="flex items-center gap-0.5 h-3 rounded-full overflow-hidden bg-gray-100">
+          {pipelineColumns.map((col, i) => {
+            const width = totalPipelineItems > 0 ? (col.count / totalPipelineItems) * 100 : 0;
+            const colors = ['bg-gray-400', 'bg-orange', 'bg-charcoal', 'bg-blue-500', 'bg-orange', 'bg-success', 'bg-success'];
+            return width > 0 ? (
+              <div key={col.key} className={cn('h-full transition-all', colors[i])} style={{ width: `${width}%` }} title={`${col.key}: ${col.count}`} />
+            ) : null;
+          })}
+        </div>
+        <div className="flex items-center justify-between mt-2">
+          {pipelineColumns.map((col, i) => {
+            const dotColors = ['bg-gray-400', 'bg-orange', 'bg-charcoal', 'bg-blue-500', 'bg-orange', 'bg-success', 'bg-success'];
+            return (
+              <div key={col.key} className="flex items-center gap-1">
+                <div className={cn('w-1.5 h-1.5 rounded-full', dotColors[i])} />
+                <span className="text-[9px] text-gray-400 hidden sm:inline">{col.key}</span>
+                <span className="font-mono text-[10px] font-medium text-charcoal">{col.count}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {totalPipelineItems === 0 ? (
@@ -2493,40 +2537,55 @@ function PipelineTab() {
           </CardContent>
         </Card>
       ) : (
-      <div className="flex gap-3 overflow-x-auto pb-4">
-        {pipelineColumns.map((col) => (
-          <div
-            key={col.key}
-            className={cn(
-              'min-w-[180px] flex-1 rounded-xl border border-border bg-white border-t-[3px]',
-              col.color
-            )}
-          >
-            {/* Column header */}
-            <div className="px-3 py-3 border-b border-border flex items-center justify-between">
-              <span className="text-sm font-medium">{col.key}</span>
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-xs font-medium text-muted-foreground">
-                {col.count}
-              </span>
-            </div>
-
-            {/* Cards */}
-            <div className="p-2 space-y-2">
-              {(pipelineLeads[col.key] || []).map((lead, i) => (
-                <div
-                  key={i}
-                  className="rounded-lg border border-border bg-white p-3 hover:shadow-sm transition-shadow"
-                >
-                  <p className="text-sm font-medium leading-tight">{lead.name}</p>
-                  <p className="text-xs text-muted-foreground mt-1 truncate">{lead.address}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1.5">{lead.date}</p>
+      <div className="flex gap-2.5 overflow-x-auto pb-4">
+        {pipelineColumns.map((col, colIdx) => {
+          const colLeads = pipelineLeads[col.key] || [];
+          const dotColors = ['bg-gray-400', 'bg-orange', 'bg-charcoal', 'bg-blue-500', 'bg-orange', 'bg-success', 'bg-success'];
+          return (
+            <div
+              key={col.key}
+              className="min-w-[170px] flex-1 rounded-xl border border-border bg-white overflow-hidden"
+            >
+              {/* Column header */}
+              <div className={cn('px-3 py-2.5 border-b border-border flex items-center justify-between', colIdx >= 5 ? 'bg-success/[0.03]' : '')}>
+                <div className="flex items-center gap-2">
+                  <div className={cn('w-1.5 h-4 rounded-full', dotColors[colIdx])} />
+                  <span className="text-xs font-semibold text-charcoal">{col.key}</span>
                 </div>
-              ))}
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-[10px] font-bold text-muted-foreground font-mono">
+                  {col.count}
+                </span>
+              </div>
+
+              {/* Cards */}
+              <div className="p-1.5 space-y-1.5">
+                {colLeads.map((lead, i) => (
+                  <div
+                    key={i}
+                    className="rounded-lg border border-border bg-white p-2.5 hover:shadow-sm hover:border-orange/20 transition-all cursor-pointer group"
+                  >
+                    <p className="text-xs font-semibold text-charcoal leading-tight group-hover:text-orange transition-colors">{lead.name}</p>
+                    <p className="text-[11px] text-gray-500 mt-0.5 truncate">{lead.address}</p>
+                    <p className="text-[10px] text-gray-400 mt-1 font-mono">{lead.date}</p>
+                  </div>
+                ))}
+                {colLeads.length === 0 && (
+                  <div className="py-6 text-center">
+                    <p className="text-[10px] text-gray-300">No deals</p>
+                  </div>
+                )}
+                {col.count > colLeads.length && (
+                  <div className="px-2 py-1.5 text-center">
+                    <span className="text-[10px] text-gray-400 font-mono">+{col.count - colLeads.length} more</span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       )}
+      <div className="h-12" />
     </div>
   );
 }
