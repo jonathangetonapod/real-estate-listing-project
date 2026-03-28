@@ -957,7 +957,6 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
             <div className="grid grid-cols-2 gap-3 text-sm">
               {[
                 { label: 'Value', value: lead.price },
-                { label: 'Equity', value: lead.equity, className: 'text-success' },
                 { label: 'Sq Ft', value: lead.sqft },
                 { label: 'Year Built', value: lead.yearBuilt },
                 { label: 'Lot', value: lead.lotSizeAcres ? `${lead.lotSizeAcres} ac` : null },
@@ -1434,10 +1433,6 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                             <p className="text-[9px] uppercase text-gray-400">Value</p>
                           </div>
                           <div className="text-center shrink-0">
-                            <p className="font-mono text-sm font-bold text-success">{lead.equity}</p>
-                            <p className="text-[9px] uppercase text-gray-400">Equity</p>
-                          </div>
-                          <div className="text-center shrink-0">
                             <p className="font-mono text-xs text-charcoal">{lead.sqft}</p>
                             <p className="text-[9px] uppercase text-gray-400">Sq Ft</p>
                           </div>
@@ -1537,7 +1532,6 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                                   <div className="space-y-2">
                                     {[
                                       { label: 'Estimated Value', value: lead.price },
-                                      { label: 'Estimated Equity', value: lead.equity, className: 'text-success font-bold' },
                                       { label: 'Last Sold Price', value: lead.soldPrice },
                                       { label: 'Lender', value: lead.lender },
                                       { label: 'Loan Amount', value: lead.loanAmount },
@@ -1789,10 +1783,6 @@ function DraftsTab({ pitchDrafts, onNavigate }) {
                         <p className="font-mono text-sm font-bold text-charcoal">{item.price}</p>
                         <p className="text-[9px] uppercase text-gray-400">Value</p>
                       </div>
-                      <div className="text-center shrink-0">
-                        <p className="font-mono text-sm font-bold text-success">{item.equity}</p>
-                        <p className="text-[9px] uppercase text-gray-400">Equity</p>
-                      </div>
                       <div className="shrink-0 min-w-0 max-w-[180px]">
                         <p className="text-xs text-charcoal truncate">{item.pitch.steps?.[0]?.subject}</p>
                         <p className="text-[9px] uppercase text-gray-400">Subject</p>
@@ -1963,7 +1953,6 @@ function DraftsTab({ pitchDrafts, onNavigate }) {
                               <div className="grid grid-cols-3 gap-x-4 gap-y-2">
                                 {[
                                   { label: 'Value', value: item.price, bold: true },
-                                  { label: 'Equity', value: item.equity, className: 'text-success', bold: true },
                                   { label: 'Sq Ft', value: item.sqft },
                                   { label: 'Built', value: item.yearBuilt },
                                   { label: 'Lot', value: item.lotSizeAcres ? `${item.lotSizeAcres} ac` : null },
@@ -2226,10 +2215,6 @@ function InboxTab() {
                         <p className="font-mono text-sm font-bold text-charcoal">{reply.price}</p>
                         <p className="text-[9px] uppercase text-gray-400">Value</p>
                       </div>
-                      <div className="text-center">
-                        <p className="font-mono text-sm font-bold text-success">{reply.equity}</p>
-                        <p className="text-[9px] uppercase text-gray-400">Equity</p>
-                      </div>
                     </div>
 
                     {/* Badges */}
@@ -2362,7 +2347,6 @@ function InboxTab() {
                                   { label: 'Address', value: reply.address.split(',')[0] },
                                   { label: 'Type', value: reply.type },
                                   { label: 'Value', value: reply.price, bold: true },
-                                  { label: 'Equity', value: reply.equity, className: 'text-success', bold: true },
                                 ].map((f) => (
                                   <div key={f.label}>
                                     <p className="text-[9px] uppercase text-gray-400">{f.label}</p>
