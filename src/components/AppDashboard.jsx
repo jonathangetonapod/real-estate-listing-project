@@ -2363,10 +2363,6 @@ function InboxTab() {
                             <div className="rounded-lg border border-border p-3 space-y-2">
                               <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Quick Actions</p>
                               <Button variant="outline" size="sm" className="w-full justify-start rounded-lg text-sm">
-                                <Phone className="h-3.5 w-3.5 mr-2" />
-                                Schedule Call
-                              </Button>
-                              <Button variant="outline" size="sm" className="w-full justify-start rounded-lg text-sm">
                                 <ArrowRight className="h-3.5 w-3.5 mr-2" />
                                 Move to Deals
                               </Button>
