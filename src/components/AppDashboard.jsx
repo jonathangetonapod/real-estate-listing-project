@@ -209,12 +209,13 @@ function FadePanel({ children, tabKey }) {
 // ---------------------------------------------------------------------------
 
 function FarmAreaTab() {
-  const [zipCodes, setZipCodes] = useState(['92506']);
+  // 'form' | 'pending' | 'delivered'
+  const [farmState, setFarmState] = useState('delivered');
+  const [zipCodes, setZipCodes] = useState(['92506', '92507']);
   const [newZip, setNewZip] = useState('');
   const [selectedTypes, setSelectedTypes] = useState(['expired', 'fsbo', 'preforeclosure']);
   const [priceMin, setPriceMin] = useState('200000');
   const [priceMax, setPriceMax] = useState('800000');
-  const [submitted, setSubmitted] = useState(false);
 
   const addZip = () => {
     if (newZip.length === 5 && !zipCodes.includes(newZip)) {
@@ -231,15 +232,109 @@ function FarmAreaTab() {
     );
   };
 
-  if (submitted) {
+  // State: Delivered — leads are in the system
+  if (farmState === 'delivered') {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="font-heading text-2xl font-bold text-charcoal mb-1">Your Farm Area</h2>
+            <p className="font-sans text-sm text-gray-500">Riverside Heights, CA</p>
+          </div>
+          <Button variant="outline" className="rounded-lg text-sm" onClick={() => setFarmState('form')}>
+            Edit Farm Area
+          </Button>
+        </div>
+
+        {/* Current farm summary */}
+        <Card className="rounded-xl mb-6">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div>
+                <div className="font-sans text-xs text-gray-400 uppercase tracking-wide mb-1">Zip Codes</div>
+                <div className="flex gap-1.5">
+                  {zipCodes.map(z => (
+                    <span key={z} className="font-mono text-sm font-semibold text-charcoal bg-light-bg rounded-md px-2 py-0.5">{z}</span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="font-sans text-xs text-gray-400 uppercase tracking-wide mb-1">Lead Types</div>
+                <div className="font-sans text-sm font-semibold text-charcoal">{selectedTypes.length} types active</div>
+              </div>
+              <div>
+                <div className="font-sans text-xs text-gray-400 uppercase tracking-wide mb-1">Price Range</div>
+                <div className="font-mono text-sm font-semibold text-charcoal">${Number(priceMin).toLocaleString()} — ${Number(priceMax).toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="font-sans text-xs text-gray-400 uppercase tracking-wide mb-1">Status</div>
+                <Badge className="bg-success/10 text-success border-success/20 rounded-full text-xs">Active</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Lead delivery history */}
+        <h3 className="font-sans text-base font-semibold text-charcoal mb-4">Lead Deliveries</h3>
+        <div className="space-y-3">
+          {[
+            { date: 'Mar 28, 2026', count: 248, types: 'Expired (94), FSBO (62), Pre-Foreclosure (38), Absentee (28), High Equity (26)', status: 'delivered', drafts: 248 },
+            { date: 'Feb 28, 2026', count: 250, types: 'Expired (98), FSBO (65), Pre-Foreclosure (41), Absentee (25), High Equity (21)', status: 'delivered', drafts: 250 },
+            { date: 'Jan 28, 2026', count: 243, types: 'Expired (89), FSBO (58), Pre-Foreclosure (44), Absentee (30), High Equity (22)', status: 'delivered', drafts: 243 },
+          ].map((delivery, i) => (
+            <Card key={i} className="rounded-xl">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+                      <CheckCircle2 className="w-5 h-5 text-success" />
+                    </div>
+                    <div>
+                      <div className="font-sans text-sm font-semibold text-charcoal">
+                        {delivery.count} leads delivered
+                      </div>
+                      <div className="font-sans text-xs text-gray-400 mt-0.5">{delivery.date}</div>
+                    </div>
+                  </div>
+                  <div className="hidden md:flex items-center gap-4 text-right">
+                    <div>
+                      <div className="font-mono text-xs text-gray-400">AI Drafts</div>
+                      <div className="font-mono text-sm font-semibold text-orange">{delivery.drafts} ready</div>
+                    </div>
+                    <Badge className="bg-success/10 text-success border-success/20 rounded-full text-xs">
+                      Delivered
+                    </Badge>
+                  </div>
+                </div>
+                <div className="mt-3 font-sans text-xs text-gray-400">
+                  {delivery.types}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Request new leads */}
+        <div className="mt-8 rounded-xl border border-dashed border-gray-300 p-6 text-center">
+          <p className="font-sans text-sm text-gray-400 mb-3">Next delivery available in 2 days</p>
+          <Button variant="outline" className="rounded-lg" disabled>
+            <Clock className="w-4 h-4 mr-2" /> Request New Leads (available Apr 1)
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // State: Pending — request submitted, waiting for admin
+  if (farmState === 'pending') {
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         className="max-w-2xl mx-auto text-center py-20"
       >
-        <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6">
-          <Check className="w-8 h-8 text-success" />
+        <div className="w-16 h-16 rounded-full bg-orange/10 flex items-center justify-center mx-auto mb-6">
+          <Clock className="w-8 h-8 text-orange" />
         </div>
         <h2 className="font-heading text-3xl font-bold text-charcoal mb-3">Lead Request Submitted</h2>
         <p className="font-sans text-lg text-gray-500 mb-2">
@@ -422,7 +517,7 @@ function FarmAreaTab() {
       </div>
 
       <Button
-        onClick={() => setSubmitted(true)}
+        onClick={() => setFarmState('pending')}
         disabled={zipCodes.length === 0 || selectedTypes.length === 0}
         className="w-full h-auto rounded-xl bg-orange text-white font-sans text-base font-semibold py-4 hover:bg-orange/90 transition-colors disabled:opacity-50"
       >
