@@ -30,7 +30,7 @@ import {
   Info,
   Inbox,
   ChevronDown,
-  ExternalLink,
+
   XCircle,
   Pencil,
   RefreshCw,
@@ -790,7 +790,7 @@ function OverviewTab({ onNavigate }) {
 // Pitch Slide-Over Panel
 // ---------------------------------------------------------------------------
 
-function PitchSlideOver({ lead, ext, draft, onSave, onSend, onRegenerate, onDiscard, onClose }) {
+function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, onClose }) {
   const [subject, setSubject] = useState(draft?.subject || '');
   const [body, setBody] = useState(draft?.body || '');
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
@@ -1104,7 +1104,7 @@ function LeadsTab() {
     setSkippedLeads(prev => ({ ...prev, [index]: !prev[index] }));
   }, []);
 
-  const generatePitch = useCallback((lead, ext) => {
+  const generatePitch = useCallback((lead) => {
     const firstName = lead.name.split(' ')[0];
     const street = lead.address.split(',')[0];
     const neighborhood = lead.address.split(',')[1]?.trim() || '';
@@ -1137,8 +1137,7 @@ function LeadsTab() {
   const handleOpenPitchSlideOver = useCallback((idx) => {
     if (!pitchDrafts[idx]) {
       const lead = leads[idx];
-      const ext = extendedLeadData[idx];
-      setPitchDrafts(prev => ({ ...prev, [idx]: generatePitch(lead, ext) }));
+      setPitchDrafts(prev => ({ ...prev, [idx]: generatePitch(lead) }));
     }
     setPitchSlideOverIndex(idx);
   }, [pitchDrafts, generatePitch]);
@@ -1161,8 +1160,7 @@ function LeadsTab() {
 
   const handleRegeneratePitch = useCallback((idx) => {
     const lead = leads[idx];
-    const ext = extendedLeadData[idx];
-    setPitchDrafts(prev => ({ ...prev, [idx]: generatePitch(lead, ext) }));
+    setPitchDrafts(prev => ({ ...prev, [idx]: generatePitch(lead) }));
   }, [generatePitch]);
 
   const handleDiscardPitch = useCallback((idx) => {
@@ -1490,7 +1488,7 @@ function LeadsTab() {
         {pitchSlideOverIndex !== null && (
           <PitchSlideOver
             lead={leads[pitchSlideOverIndex]}
-            ext={extendedLeadData[pitchSlideOverIndex]}
+
             draft={pitchDrafts[pitchSlideOverIndex]}
             onSave={(subject, body) => handleSaveDraft(pitchSlideOverIndex, subject, body)}
             onSend={(subject, body) => handleSendPitch(pitchSlideOverIndex, subject, body)}
