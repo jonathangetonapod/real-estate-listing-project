@@ -1249,9 +1249,10 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
   }, []);
 
   const handleSendPitch = useCallback((idx, steps) => {
+    const now = new Date().toISOString();
     setPitchDrafts(prev => ({
       ...prev,
-      [idx]: { ...prev[idx], steps, status: 'sent', lastEdited: new Date().toISOString() },
+      [idx]: { ...prev[idx], steps, status: 'sent', lastEdited: now, sentAt: now },
     }));
     setContactedLeads(prev => ({ ...prev, [idx]: true }));
     setPitchSlideOverIndex(null);
@@ -1796,9 +1797,9 @@ function DraftsTab({ pitchDrafts }) {
                       <span className="inline-flex items-center gap-1 rounded-full border border-success/20 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
                         <CheckCircle2 className="h-2.5 w-2.5" />Sent
                       </span>
-                      {item.pitch.lastEdited && (
+                      {(item.pitch.sentAt || item.pitch.lastEdited) && (
                         <span className="text-[10px] text-gray-400 hidden md:inline">
-                          {new Date(item.pitch.lastEdited).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          {new Date(item.pitch.sentAt || item.pitch.lastEdited).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                         </span>
                       )}
                       <ChevronDown className={cn('h-3.5 w-3.5 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
@@ -1820,30 +1821,55 @@ function DraftsTab({ pitchDrafts }) {
                         <div className="border-t border-gray-100 pt-4">
 
                           {/* Sequence Timeline */}
-                          <div className="mb-5">
-                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-3">Sequence Timeline</p>
-                            <div className="flex items-center gap-0">
-                              {['Sent', 'Day 3', 'Day 7'].map((label, si) => (
-                                <div key={si} className="flex items-center flex-1">
-                                  <div className="flex flex-col items-center">
-                                    <div className={cn(
-                                      'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold',
-                                      si === 0 ? 'bg-success text-white' : 'bg-gray-100 text-gray-400'
-                                    )}>
-                                      {si === 0 ? <CheckCircle2 className="h-4 w-4" /> : si + 1}
+                          {(() => {
+                            const sentDate = new Date(item.pitch.sentAt || item.pitch.lastEdited);
+                            const day3 = new Date(sentDate);
+                            const day7 = new Date(sentDate);
+                            // Add business days (skip weekends)
+                            let added = 0;
+                            const addBizDays = (date, days) => {
+                              const d = new Date(date);
+                              let a = 0;
+                              while (a < days) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) a++; }
+                              return d;
+                            };
+                            const d3 = addBizDays(sentDate, 3);
+                            const d7 = addBizDays(sentDate, 7);
+                            const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            const fmtFull = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+
+                            return (
+                              <div className="mb-5">
+                                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-3">Sequence Timeline</p>
+                                <div className="flex items-center gap-0">
+                                  {[
+                                    { label: 'Initial Outreach', status: 'Delivered', date: fmtFull(sentDate), done: true },
+                                    { label: 'Follow-Up', status: 'Queued', date: fmt(d3), done: false },
+                                    { label: 'Final Touch', status: 'Queued', date: fmt(d7), done: false },
+                                  ].map((s, si) => (
+                                    <div key={si} className="flex items-center flex-1">
+                                      <div className="flex flex-col items-center">
+                                        <div className={cn(
+                                          'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold',
+                                          s.done ? 'bg-success text-white' : 'bg-gray-100 text-gray-400'
+                                        )}>
+                                          {s.done ? <CheckCircle2 className="h-4 w-4" /> : si + 1}
+                                        </div>
+                                        <span className="text-[10px] text-gray-500 mt-1 font-medium">{s.label}</span>
+                                        <span className={cn('text-[9px]', s.done ? 'text-success' : 'text-gray-400')}>{s.status}</span>
+                                        <span className="text-[9px] text-gray-400 font-mono">{s.date}</span>
+                                      </div>
+                                      {si < 2 && <div className={cn('flex-1 h-px mx-2 mt-[-28px]', s.done ? 'bg-success' : 'bg-gray-200')} />}
                                     </div>
-                                    <span className="text-[10px] text-gray-500 mt-1 font-medium">{['Initial Outreach', 'Follow-Up', 'Final Touch'][si]}</span>
-                                    <span className="text-[9px] text-gray-400">{si === 0 ? 'Delivered' : `Queued · ${label}`}</span>
-                                  </div>
-                                  {si < 2 && <div className={cn('flex-1 h-px mx-2 mt-[-20px]', si === 0 ? 'bg-success' : 'bg-gray-200')} />}
+                                  ))}
                                 </div>
-                              ))}
-                            </div>
-                          </div>
+                              </div>
+                            );
+                          })()}
 
                           {/* Email header */}
                           <div className="rounded-lg bg-gray-50 border border-gray-100 p-3 mb-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                               <div>
                                 <span className="text-gray-400 font-medium">From</span>
                                 <p className="text-charcoal">Sarah Johnson via OffMarket</p>
@@ -1855,6 +1881,12 @@ function DraftsTab({ pitchDrafts }) {
                               <div>
                                 <span className="text-gray-400 font-medium">Subject</span>
                                 <p className="text-charcoal font-medium truncate">{item.pitch.steps?.[0]?.subject}</p>
+                              </div>
+                              <div>
+                                <span className="text-gray-400 font-medium">Sent</span>
+                                <p className="text-charcoal font-mono">
+                                  {new Date(item.pitch.sentAt || item.pitch.lastEdited).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                </p>
                               </div>
                             </div>
                           </div>
@@ -2169,7 +2201,7 @@ function LeadsArrivedBanner({ onDismiss, onReview }) {
 export default function AppDashboard() {
   const [activeNav, setActiveNav] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showLeadsArrived, setShowLeadsArrived] = useState(true);
+  const [showLeadsArrived, setShowLeadsArrived] = useState(false);
 
   // Shared state — pitch drafts and contacted leads live here so both tabs can access them
   const [pitchDrafts, setPitchDrafts] = useState({});
