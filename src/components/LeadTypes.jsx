@@ -96,7 +96,7 @@ export function LeadTypes() {
           transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
         >
           Every list includes verified emails, property data, and seller
-          motivation signals. Sourced from 155M+ properties, refreshed daily.
+          motivation signals. Sourced from 160M+ properties, refreshed daily.
         </motion.p>
 
         <motion.div
@@ -141,7 +141,7 @@ export function LeadTypes() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          All data sourced from 155M+ property records, updated daily.
+          All data sourced from 160M+ property records, updated daily.
           Skip-traced and verified emails included.
         </motion.p>
       </div>

@@ -6,7 +6,7 @@ const steps = [
     number: 1,
     title: 'Tell Us Your Farm Area',
     description:
-      'Pick your zip codes. Within 12 hours, we deliver a curated list of motivated sellers \u2014 expireds, FSBOs, pre-foreclosures, absentee owners \u2014 sourced from 155M+ property records.',
+      'Pick your zip codes. Within 12 hours, we deliver a curated list of motivated sellers \u2014 expireds, FSBOs, pre-foreclosures, absentee owners \u2014 sourced from 160M+ property records.',
     detail: '12hr turnaround',
   },
   {
