@@ -241,7 +241,8 @@ function HelpCard({ value, label, tip }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-30 top-full left-0 right-0 mt-2 rounded-xl bg-charcoal text-white p-4 shadow-xl"
+            className="fixed z-50 left-4 right-4 sm:absolute sm:left-0 sm:right-0 sm:top-full mt-2 rounded-xl bg-charcoal text-white p-4 shadow-xl"
+            style={{ maxWidth: 'calc(100vw - 32px)' }}
           >
             <div className="font-sans text-sm leading-relaxed">{tip}</div>
             <div className="absolute -top-1.5 left-6 w-3 h-3 bg-charcoal rotate-45" />
@@ -287,9 +288,9 @@ function FarmAreaTab() {
 
         {/* New Order CTA — the exciting part, FIRST */}
         <div className="mb-8">
-          <Card className="rounded-xl overflow-hidden border-2 border-orange/20">
-            <CardContent className="p-0">
-              <div className="bg-gradient-to-r from-orange/[0.06] to-orange/[0.02] p-6 md:p-8">
+          <Card className="rounded-xl overflow-visible border-2 border-orange/20">
+            <CardContent className="p-0 overflow-visible">
+              <div className="bg-gradient-to-r from-orange/[0.06] to-orange/[0.02] p-6 md:p-8 overflow-visible rounded-xl">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-3">
@@ -334,9 +335,9 @@ function FarmAreaTab() {
                 </div>
 
                 {/* What you'll get preview */}
-                <div className="mt-6 pt-6 border-t border-orange/10">
+                <div className="mt-6 pt-6 border-t border-orange/10 overflow-visible">
                   <p className="font-sans text-xs text-gray-400 uppercase tracking-wide mb-3">What you&apos;ll get</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 overflow-visible">
                     {[
                       { label: 'Verified seller leads', value: '250', tip: 'Expireds, FSBOs, pre-foreclosures, absentee owners, high equity, and probate leads in your zip codes. Every contact is verified against public records.' },
                       { label: 'Email pitches written', value: '250', tip: 'Our AI writes a unique email for every seller based on their property address, asking price, nearby comps, and how long they\'ve been on market. No templates.' },
