@@ -2,59 +2,72 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './AIComparison.module.css';
 
+// Data sources we actually have access to:
+// - Owner name (public records / skip-trace)
+// - Property address, lot size, bed/bath, sqft (public records)
+// - Listing price, days on market, listing status (MLS)
+// - Estimated equity (public records + AVM)
+// - Nearby comps: address, sale price, date (MLS)
+// - Neighborhood median price trends (MLS aggregates)
+// We do NOT have: interior details, personal info, or anything requiring a visit
+
 const examples = [
   {
     type: 'Expired Listing',
     property: '4821 Oakwood Dr, Riverside Heights',
     daysExpired: 47,
+    dataUsed: ['MLS listing history', 'Days expired', 'Nearby sold comps', 'Original list price'],
     generic: {
       subject: 'Your Home at 4821 Oakwood Dr',
       body: 'Hi [First Name], I noticed your home at [Address] is no longer on the market. I\'d love to discuss how I can help you sell your home. Please call me at your convenience. Best regards, [Agent Name]',
     },
     ai: {
-      subject: 'That corner lot on Oakwood — buyers are circling',
-      body: 'Hey Michael, I drove past your place on Oakwood last week and honestly, your corner lot with the updated kitchen is exactly what buyers in Riverside Heights are fighting over right now. The Hendersons two streets over just closed at $485K, which is $30K over their original list. I know the last experience didn\'t pan out, but I think with the right pricing strategy and staging, we could move fast. Worth a 10-minute chat?',
-      highlights: ['corner lot with the updated kitchen', '$485K', '$30K over their original list', 'right pricing strategy and staging'],
+      subject: 'Oakwood Dr comp just closed at $485K',
+      body: 'Hi there, your listing at 4821 Oakwood Dr came off the MLS about 47 days ago at $459K. I wanted to reach out because a 3-bed on the same block just closed at $485K last week, and another on Elm sold for $30K over asking. The market in Riverside Heights has shifted since your listing went up. I think there\'s a real pricing window right now. I put together a quick comp analysis. Want me to send it over?',
+      highlights: ['47 days ago at $459K', 'just closed at $485K last week', '$30K over asking', 'pricing window right now', 'quick comp analysis'],
     },
   },
   {
     type: 'FSBO',
     property: '1203 Maple Ridge Ln, Canyon Crest',
     daysListed: 68,
+    dataUsed: ['FSBO listing data', 'Days listed', 'Comparable sales', 'Asking price vs market'],
     generic: {
       subject: 'Interested in Helping You Sell',
       body: 'Hello, I saw that your property at [Address] is for sale by owner. I specialize in your area and would love the opportunity to help you get the best price. Let me know if you\'d like to schedule a call.',
     },
     ai: {
-      subject: 'Maple Ridge is hot right now — here\'s what I\'m seeing',
-      body: 'Hi Sarah, I noticed you\'ve had your place on Maple Ridge listed for about 2 months now. Totally get wanting to save on commission, but here\'s what I\'m seeing in Canyon Crest right now: the 3 beds that closed this month all had professional staging and went under contract in 9 days. Your layout with the open kitchen and that backyard? That\'s exactly what young families are paying a premium for. I think we could net you more even after my fee. Want me to run the numbers for you? No pressure.',
-      highlights: ['listed for about 2 months', '3 beds that closed this month', 'under contract in 9 days', 'open kitchen and that backyard', 'net you more even after my fee'],
+      subject: 'Canyon Crest 3-beds are moving fast. Yours hasn\'t.',
+      body: 'Hi, I see your place at 1203 Maple Ridge has been listed FSBO for about 68 days now at $389K. Here\'s what caught my eye: three similar 3-bed homes in Canyon Crest closed in the last 30 days, all between $395-$415K, and all in under 2 weeks. The difference? Professional staging photos and MLS exposure. Your home is priced competitively but not getting the visibility it needs. I can show you what a full MLS listing strategy would look like. No commitment. Want me to run the numbers?',
+      highlights: ['68 days now at $389K', '$395-$415K', 'under 2 weeks', 'staging photos and MLS exposure', 'run the numbers'],
     },
   },
   {
     type: 'Pre-Foreclosure',
     property: '892 Sunset Blvd, Palm Canyon',
+    dataUsed: ['NOD filing date', 'Estimated equity', 'Property value (AVM)', 'Lot size'],
     generic: {
       subject: 'Can I Help With Your Property?',
       body: 'Dear Homeowner, I understand you may be going through a difficult time. I am a real estate professional who helps homeowners explore their options. Please don\'t hesitate to reach out if you\'d like to discuss your situation.',
     },
     ai: {
-      subject: 'A few options for 892 Sunset — no strings attached',
-      body: 'David, I\'m reaching out because I work with a lot of homeowners in Palm Canyon, and I wanted to make sure you know your options. Your place on Sunset has solid equity right now. Homes on your block are trading between $520-560K, and with your lot size, you\'re on the higher end. Whether you want to sell quickly, explore a short sale, or just understand your timeline, I can walk you through it in 15 minutes. No sales pitch. Just info so you can make the best decision for your family.',
-      highlights: ['solid equity right now', '$520-560K', 'your lot size', 'sell quickly, explore a short sale', 'No sales pitch. Just info'],
+      subject: 'Options for 892 Sunset before the timeline runs out',
+      body: 'Hi, I\'m reaching out about your property at 892 Sunset Blvd. I know this may be a sensitive time, so I\'ll keep it brief. Based on recent sales in Palm Canyon, your home is valued around $520-540K, and public records show significant equity. Homes on your street are selling in 20-30 days right now. There are a few paths forward: a traditional sale, a short sale, or a lease-back arrangement. I work with homeowners in this situation regularly and can walk you through your options in 15 minutes. Completely confidential, no pressure.',
+      highlights: ['valued around $520-540K', 'significant equity', 'selling in 20-30 days', 'traditional sale, a short sale, or a lease-back', 'Completely confidential'],
     },
   },
   {
     type: 'Absentee Owner',
     property: '3347 Elm Street, Northpark',
+    dataUsed: ['Owner mailing address (out-of-area)', 'Property type', 'Tax records', 'Area sale trends'],
     generic: {
       subject: 'Considering Selling Your Investment Property?',
       body: 'Hi [Name], Are you considering selling your investment property at [Address]? The market is favorable right now and I can provide a free market analysis. Please contact me at your earliest convenience.',
     },
     ai: {
-      subject: 'Your Elm Street rental — the numbers might surprise you',
-      body: 'Hi Jennifer, I noticed you own the duplex at 3347 Elm in Northpark. I work with a few investors in the area and wanted to flag something: Northpark duplexes are selling at a 12% premium over last year. Your unit is in the sweet spot — the 2/1 + 2/1 layout is exactly what out-of-state investors are competing for. One just closed at $620K on Pine Street, fully tenant-occupied. If you\'ve been thinking about cashing out or doing a 1031, this might be your window. Want me to send over a quick valuation?',
-      highlights: ['duplex at 3347 Elm', '12% premium over last year', '2/1 + 2/1 layout', '$620K on Pine Street', 'cashing out or doing a 1031'],
+      subject: 'Northpark multifamily is up 12% YoY. Your Elm St property.',
+      body: 'Hi, I noticed from county records that you own the property at 3347 Elm St in Northpark. Multifamily properties in this zip code are trading at a 12% premium over last year. A comparable unit on Pine Street just closed at $620K. I work with several out-of-area owners in Northpark and wanted to flag the current market. Whether you\'re considering selling, exploring a 1031 exchange, or just want to know what the property is worth today, I can send over a no-obligation valuation. Takes 2 minutes to review.',
+      highlights: ['county records', '12% premium over last year', 'just closed at $620K', '1031 exchange', 'no-obligation valuation'],
     },
   },
 ];
@@ -218,10 +231,16 @@ export function AIComparison() {
                   &ldquo;{highlightText(example.ai.body, example.ai.highlights)}&rdquo;
                 </p>
               </div>
+              <div className={styles.dataSources}>
+                <span className={styles.dataSourceLabel}>Data used:</span>
+                {example.dataUsed.map((src, i) => (
+                  <span key={i} className={styles.dataSourceTag}>{src}</span>
+                ))}
+              </div>
               <div className={styles.cardFooterGood}>
-                <span>✓ References real property details</span>
-                <span>✓ Uses actual comps & data</span>
-                <span>✓ Matches your voice & tone</span>
+                <span>✓ Uses real MLS comps & public records</span>
+                <span>✓ Matches your writing voice</span>
+                <span>✓ Reply lands in your inbox instantly</span>
               </div>
             </motion.div>
           </AnimatePresence>
@@ -246,8 +265,8 @@ export function AIComparison() {
           transition={{ duration: 0.5, delay: 0.2 }}
           viewport={{ once: true }}
         >
-          Every pitch references real property data, real comps, and real neighborhood context.
-          No placeholders. No templates. Just emails that sound like you sat down and wrote them yourself.
+          Every pitch is built from real MLS data, public records, and recent comps. No fake details. No placeholders.
+          When they reply, it lands right in the platform. You respond directly, no switching apps.
         </motion.p>
       </div>
     </section>

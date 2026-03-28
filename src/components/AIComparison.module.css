@@ -229,6 +229,37 @@
 }
 
 /* Card footers */
+/* Data sources */
+.dataSources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px;
+  border-top: 1px solid #eee;
+}
+
+.dataSourceLabel {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dataSourceTag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(1, 159, 17, 0.06);
+  color: var(--green);
+  border: 1px solid rgba(1, 159, 17, 0.15);
+}
+
+/* Card footers */
 .cardFooterBad,
 .cardFooterGood {
   display: flex;

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import styles from './DashboardMockup.module.css';
 
@@ -8,7 +9,7 @@ const metrics = [
   { label: 'Appointments', value: '6', color: 'orange', change: '33% conversion', changeType: 'up' },
 ];
 
-const leads = [
+const allLeads = [
   {
     name: 'Michael Torres',
     address: '4821 Oakwood Dr, Riverside Heights',
@@ -19,6 +20,7 @@ const leads = [
     equity: '$185K equity',
     daysInfo: 'Expired 47d ago',
     avatar: 'MT',
+    type: 'Expired',
   },
   {
     name: 'Sarah Kim',
@@ -30,19 +32,47 @@ const leads = [
     equity: '$240K equity',
     daysInfo: 'Listed 12d ago',
     avatar: 'SK',
+    type: 'FSBO',
   },
   {
-    name: 'David & Maria Hernandez',
+    name: 'David Hernandez',
     address: '892 Sunset Blvd, Palm Canyon',
     match: 91,
-    badge: 'Expired 47d',
+    badge: 'Pre-Foreclosure',
     badgeVariant: 'Red',
     price: '$520K',
     equity: '$310K equity',
-    daysInfo: 'Pre-foreclosure',
+    daysInfo: 'NOD filed 34d ago',
     avatar: 'DH',
+    type: 'Pre-Foreclosure',
+  },
+  {
+    name: 'Linda Chen',
+    address: '2710 Harbor View Dr, Eastlake',
+    match: 82,
+    badge: 'Expired 21d',
+    badgeVariant: 'Red',
+    price: '$415K',
+    equity: '$195K equity',
+    daysInfo: 'Expired 21d ago',
+    avatar: 'LC',
+    type: 'Expired',
+  },
+  {
+    name: 'Robert Williams',
+    address: '558 Palm Ave, Northpark',
+    match: 78,
+    badge: 'FSBO',
+    badgeVariant: 'Orange',
+    price: '$349K',
+    equity: '$120K equity',
+    daysInfo: 'Listed 45d ago',
+    avatar: 'RW',
+    type: 'FSBO',
   },
 ];
+
+const tabFilters = ['All', 'Expired', 'FSBO', 'Pre-Foreclosure'];
 
 const colorClassMap = {
   orange: styles.metricValueOrange,
@@ -59,6 +89,14 @@ function MatchBar({ value }) {
 }
 
 export function DashboardMockup() {
+  const [activeTab, setActiveTab] = useState('All');
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [activeSidebarItem, setActiveSidebarItem] = useState('Dashboard');
+
+  const filteredLeads = activeTab === 'All'
+    ? allLeads
+    : allLeads.filter(l => l.type === activeTab);
+
   return (
     <div className={styles.wrapper}>
       <motion.div
@@ -92,21 +130,22 @@ export function DashboardMockup() {
                 <span className={styles.logoText}>ListingPitch</span>
               </div>
               <div className={styles.sidebarNav}>
-                <div className={`${styles.sidebarItem} ${styles.sidebarItemActive}`}>
-                  <span>📊</span> Dashboard
-                </div>
-                <div className={styles.sidebarItem}>
-                  <span>👥</span> My Leads
-                </div>
-                <div className={styles.sidebarItem}>
-                  <span>✉️</span> Pitches
-                </div>
-                <div className={styles.sidebarItem}>
-                  <span>📋</span> Pipeline
-                </div>
-                <div className={styles.sidebarItem}>
-                  <span>⚙️</span> Settings
-                </div>
+                {[
+                  { icon: '📊', label: 'Dashboard' },
+                  { icon: '👥', label: 'My Leads' },
+                  { icon: '✉️', label: 'Pitches' },
+                  { icon: '📋', label: 'Pipeline' },
+                  { icon: '⚙️', label: 'Settings' },
+                ].map(item => (
+                  <div
+                    key={item.label}
+                    className={`${styles.sidebarItem} ${activeSidebarItem === item.label ? styles.sidebarItemActive : ''}`}
+                    onClick={() => setActiveSidebarItem(item.label)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <span>{item.icon}</span> {item.label}
+                  </div>
+                ))}
               </div>
               <div className={styles.sidebarUser}>
                 <div className={styles.userAvatar}>SJ</div>
@@ -150,10 +189,16 @@ export function DashboardMockup() {
                 <div className={styles.tableHeader}>
                   <div className={styles.tableTitle}>Recent Leads</div>
                   <div className={styles.tableTabs}>
-                    <span className={styles.tableTabActive}>All</span>
-                    <span className={styles.tableTab}>Expired</span>
-                    <span className={styles.tableTab}>FSBO</span>
-                    <span className={styles.tableTab}>Pre-Foreclosure</span>
+                    {tabFilters.map(tab => (
+                      <span
+                        key={tab}
+                        className={activeTab === tab ? styles.tableTabActive : styles.tableTab}
+                        onClick={() => setActiveTab(tab)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {tab}
+                      </span>
+                    ))}
                   </div>
                 </div>
                 <div className={styles.tableHead}>
@@ -162,8 +207,13 @@ export function DashboardMockup() {
                   <span className={styles.colMatch}>Match</span>
                   <span className={styles.colStatus}>Status</span>
                 </div>
-                {leads.map((lead) => (
-                  <div key={lead.name} className={styles.leadRow}>
+                {filteredLeads.map((lead) => (
+                  <div
+                    key={lead.name}
+                    className={`${styles.leadRow} ${selectedLead === lead.name ? styles.leadRowSelected : ''}`}
+                    onClick={() => setSelectedLead(selectedLead === lead.name ? null : lead.name)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className={styles.colContact}>
                       <div className={`${styles.avatar} ${styles[`avatar${lead.badgeVariant}`]}`}>
                         {lead.avatar}

@@ -369,6 +369,11 @@
   background: #fafafa;
 }
 
+.leadRowSelected {
+  background: #FFF8F5;
+  border-left: 3px solid var(--orange);
+}
+
 /* Column: Contact */
 .colContact {
   display: flex;
