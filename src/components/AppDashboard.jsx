@@ -2074,6 +2074,20 @@ function InboxTab() {
   const [replyText, setReplyText] = useState('');
   const [composerOpen, setComposerOpen] = useState(null);
   const [extraMessages, setExtraMessages] = useState({});
+  const [customLabels, setCustomLabels] = useState({});
+  const [openLabelDropdown, setOpenLabelDropdown] = useState(null);
+
+  // Close label dropdown when clicking outside
+  useEffect(() => {
+    if (openLabelDropdown === null) return;
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('[data-label-dropdown]')) {
+        setOpenLabelDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openLabelDropdown]);
 
   const handleSendReply = useCallback((replyId, name) => {
     if (!replyText.trim()) return;
@@ -2091,27 +2105,77 @@ function InboxTab() {
     setComposerOpen(null);
   }, [replyText]);
 
+  // All possible label options
+  const labelOptions = ['Interested', 'Warm Lead', 'Not Interested', 'Meeting Set', 'Follow Up', 'Closed'];
+
+  // Map from label display text to a sentiment key for styling
+  const labelToSentimentKey = {
+    'Interested': 'interested',
+    'Warm Lead': 'warm',
+    'Not Interested': 'not-interested',
+    'Meeting Set': 'meeting-set',
+    'Follow Up': 'follow-up',
+    'Closed': 'closed',
+  };
+
+  // Map from original sentiment key to label display text
   const sentimentLabel = { 'interested': 'Interested', 'warm': 'Warm Lead', 'not-interested': 'Not Interested' };
+
+  // Get the effective label for a reply (custom label takes precedence)
+  const getEffectiveLabel = (reply) => {
+    if (customLabels[reply.id]) return customLabels[reply.id];
+    return sentimentLabel[reply.sentiment] || 'Unknown';
+  };
+
+  // Get the effective sentiment key for styling
+  const getEffectiveSentimentKey = (reply) => {
+    const label = getEffectiveLabel(reply);
+    return labelToSentimentKey[label] || reply.sentiment;
+  };
+
   const sentimentStyle = {
     'interested': 'bg-success/10 text-success border-success/20',
     'warm': 'bg-orange/10 text-orange border-orange/20',
     'not-interested': 'bg-gray-100 text-gray-400 border-gray-200',
+    'meeting-set': 'bg-blue-50 text-blue-600 border-blue-200',
+    'follow-up': 'bg-orange/10 text-orange border-orange/20',
+    'closed': 'bg-gray-100 text-gray-400 border-gray-200',
   };
+
+  // Dynamic filter counts based on effective labels
+  const labelFilterMap = {
+    'Interested': 'Interested',
+    'Warm Lead': 'Warm',
+    'Not Interested': 'Not Interested',
+    'Meeting Set': 'Meeting Set',
+    'Follow Up': 'Follow Up',
+    'Closed': 'Closed',
+  };
+
+  // Build filter counts dynamically
+  const filterCounts = {};
+  sampleReplies.forEach(r => {
+    const label = getEffectiveLabel(r);
+    const filterKey = labelFilterMap[label] || label;
+    filterCounts[filterKey] = (filterCounts[filterKey] || 0) + 1;
+  });
 
   const inboxFilters = [
     { key: 'All', count: sampleReplies.length },
-    { key: 'Interested', count: sampleReplies.filter(r => r.sentiment === 'interested').length },
-    { key: 'Warm', count: sampleReplies.filter(r => r.sentiment === 'warm').length },
-    { key: 'Not Interested', count: sampleReplies.filter(r => r.sentiment === 'not-interested').length },
-  ];
+    { key: 'Interested', count: filterCounts['Interested'] || 0 },
+    { key: 'Warm', count: filterCounts['Warm'] || 0 },
+    { key: 'Not Interested', count: filterCounts['Not Interested'] || 0 },
+    { key: 'Meeting Set', count: filterCounts['Meeting Set'] || 0 },
+    { key: 'Follow Up', count: filterCounts['Follow Up'] || 0 },
+    { key: 'Closed', count: filterCounts['Closed'] || 0 },
+  ].filter(f => f.key === 'All' || f.count > 0);
 
   const filtered = sampleReplies
     .filter(r => {
       if (activeInboxFilter === 'All') return true;
-      if (activeInboxFilter === 'Interested') return r.sentiment === 'interested';
-      if (activeInboxFilter === 'Warm') return r.sentiment === 'warm';
-      if (activeInboxFilter === 'Not Interested') return r.sentiment === 'not-interested';
-      return true;
+      const effectiveLabel = getEffectiveLabel(r);
+      const effectiveFilterKey = labelFilterMap[effectiveLabel] || effectiveLabel;
+      return effectiveFilterKey === activeInboxFilter;
     })
     .filter(r =>
       searchQuery === '' ||
@@ -2219,9 +2283,54 @@ function InboxTab() {
 
                     {/* Badges */}
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className={cn('inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium', sentimentStyle[reply.sentiment])}>
-                        {sentimentLabel[reply.sentiment]}
-                      </span>
+                      <div className="relative" data-label-dropdown>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenLabelDropdown(prev => prev === reply.id ? null : reply.id);
+                          }}
+                          className={cn(
+                            'inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium cursor-pointer hover:ring-1 hover:ring-gray-300 transition-all',
+                            sentimentStyle[getEffectiveSentimentKey(reply)]
+                          )}
+                        >
+                          {getEffectiveLabel(reply)}
+                          <ChevronDown className="h-2.5 w-2.5 ml-0.5" />
+                        </button>
+                        {openLabelDropdown === reply.id && (
+                          <div className="absolute right-0 top-full mt-1 z-50 w-36 rounded-lg border border-border bg-white shadow-lg py-1">
+                            {labelOptions.map((option) => {
+                              const optionKey = labelToSentimentKey[option];
+                              const isActive = getEffectiveLabel(reply) === option;
+                              return (
+                                <button
+                                  key={option}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCustomLabels(prev => ({ ...prev, [reply.id]: option }));
+                                    setOpenLabelDropdown(null);
+                                  }}
+                                  className={cn(
+                                    'w-full text-left px-3 py-1.5 text-xs transition-colors flex items-center gap-2',
+                                    isActive
+                                      ? 'bg-gray-50 font-semibold text-charcoal'
+                                      : 'text-gray-600 hover:bg-gray-50 hover:text-charcoal'
+                                  )}
+                                >
+                                  <span className={cn('w-2 h-2 rounded-full shrink-0', {
+                                    'bg-success': optionKey === 'interested',
+                                    'bg-orange': optionKey === 'warm' || optionKey === 'follow-up',
+                                    'bg-gray-400': optionKey === 'not-interested' || optionKey === 'closed',
+                                    'bg-blue-500': optionKey === 'meeting-set',
+                                  })} />
+                                  {option}
+                                  {isActive && <Check className="h-3 w-3 ml-auto text-success" />}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                       <ChevronDown className={cn('h-3.5 w-3.5 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
                     </div>
                   </div>
