@@ -18,10 +18,10 @@ const steps = [
   },
   {
     number: 3,
-    title: 'Connect Your Gmail',
+    title: 'Sends From Your Brand',
     description:
-      'Link your email account in one click. Replies land in your real inbox. Homeowners see you, not us.',
-    detail: 'One-click setup',
+      'Every email goes out from a protected domain with your name and brand. Warm-up, rotation, and deliverability are handled automatically. Homeowners see you, not us.',
+    detail: '94% inbox rate',
   },
   {
     number: 4,

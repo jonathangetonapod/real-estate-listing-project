@@ -45,7 +45,7 @@ const faqData = [
   },
   {
     q: 'What happens after a homeowner replies?',
-    a: 'Their reply shows up in your ListingPitch dashboard and your Gmail. You can respond directly from either place. Growth plan includes a visual pipeline to track every conversation from first reply to listing signed.',
+    a: 'Their reply shows up in your ListingPitch dashboard instantly. You respond directly from the platform. Growth plan includes a visual pipeline to track every conversation from first reply to listing signed.',
   },
   {
     q: "I\u2019ve tried lead gen services before and they didn\u2019t work.",
