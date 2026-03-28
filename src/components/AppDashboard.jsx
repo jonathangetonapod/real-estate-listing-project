@@ -1396,7 +1396,7 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
               <div className="h-px flex-1 bg-gray-200" />
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-1.5">
               {orderLeads.map((lead) => {
                 const idx = lead._origIndex;
                 const isExpanded = expandedLead === idx;
@@ -1405,81 +1405,72 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                 const isSkipped = skippedLeads[idx];
 
                 return (
-                  <div key={idx} className={cn('rounded-xl border transition-all duration-200', isSkipped ? 'opacity-40' : '', isExpanded ? 'border-orange/30 ring-1 ring-orange/10' : 'border-border hover:border-orange/20')}>
-                    {/* Main Card */}
+                  <div key={idx} className={cn('rounded-lg border transition-all duration-150', isSkipped ? 'opacity-40' : '', isExpanded ? 'border-orange/30 ring-1 ring-orange/10' : 'border-border hover:border-orange/20')}>
+                    {/* Compact Row */}
                     <button
                       onClick={() => handleToggleExpand(idx)}
-                      className="w-full text-left p-5 cursor-pointer"
+                      className="w-full text-left px-4 py-3 cursor-pointer"
                     >
-                      {/* Top row: Identity + Badges */}
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <div className="flex items-start gap-3 min-w-0">
-                          <div className={cn('w-2.5 h-2.5 rounded-full shrink-0 mt-1.5', typeDotColor(lead.type))} />
-                          <div className="min-w-0">
-                            <p className="font-sans text-base font-semibold text-charcoal truncate">{lead.name}</p>
-                            <p className="font-sans text-sm text-gray-500 truncate">{lead.address}</p>
+                      <div className="flex items-center gap-3">
+                        {/* Type dot */}
+                        <div className={cn('w-2 h-2 rounded-full shrink-0', typeDotColor(lead.type))} />
+
+                        {/* Name + Address */}
+                        <div className="min-w-0 w-[200px] shrink-0">
+                          <p className="font-sans text-sm font-semibold text-charcoal truncate">{lead.name}</p>
+                          <p className="font-sans text-xs text-gray-400 truncate">{lead.address}</p>
+                        </div>
+
+                        {/* Inline stats */}
+                        <div className="hidden sm:flex items-center gap-5 flex-1 min-w-0">
+                          <div className="text-center shrink-0">
+                            <p className="font-mono text-sm font-bold text-charcoal">{lead.price}</p>
+                            <p className="text-[9px] uppercase text-gray-400">Value</p>
+                          </div>
+                          <div className="text-center shrink-0">
+                            <p className="font-mono text-sm font-bold text-success">{lead.equity}</p>
+                            <p className="text-[9px] uppercase text-gray-400">Equity</p>
+                          </div>
+                          <div className="text-center shrink-0">
+                            <p className="font-mono text-xs text-charcoal">{lead.sqft}</p>
+                            <p className="text-[9px] uppercase text-gray-400">Sq Ft</p>
+                          </div>
+                          <div className="text-center shrink-0">
+                            <p className="font-mono text-xs text-charcoal">{lead.yearBuilt}</p>
+                            <p className="text-[9px] uppercase text-gray-400">Built</p>
+                          </div>
+                          <div className="text-center shrink-0">
+                            <p className="font-sans text-xs text-gray-600">{lead.days}</p>
+                            <p className="text-[9px] uppercase text-gray-400">Time</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className={cn('inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium', typeBadgeClass(lead.type))}>
+
+                        {/* Badges */}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium', typeBadgeClass(lead.type))}>
                             {lead.type}
                           </span>
                           {(() => {
                             const status = getPitchStatus(idx);
                             if (status === 'Sent') return (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-success/20 bg-success/10 px-2 py-0.5 text-[11px] font-medium text-success">
-                                <CheckCircle2 className="h-3 w-3" />Sent
+                              <span className="inline-flex items-center gap-1 rounded-full border border-success/20 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
+                                <CheckCircle2 className="h-2.5 w-2.5" />Sent
                               </span>
                             );
                             if (status === 'Draft') return (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-orange/20 bg-orange/10 px-2 py-0.5 text-[11px] font-medium text-orange">
-                                <Pencil className="h-3 w-3" />Draft
+                              <span className="inline-flex items-center gap-1 rounded-full border border-orange/20 bg-orange/10 px-1.5 py-0.5 text-[10px] font-medium text-orange">
+                                <Pencil className="h-2.5 w-2.5" />Draft
                               </span>
                             );
                             if (status === 'Skipped') return (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-400">
+                              <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-400">
                                 Skipped
                               </span>
                             );
-                            return (
-                              <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-medium text-gray-500">
-                                Not Contacted
-                              </span>
-                            );
+                            return null;
                           })()}
-                          <ChevronDown className={cn('h-4 w-4 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
+                          <ChevronDown className={cn('h-3.5 w-3.5 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
                         </div>
-                      </div>
-
-                      {/* Data grid */}
-                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-x-4 gap-y-2 pl-[22px]">
-                        <div>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Value</p>
-                          <p className="font-mono text-sm font-bold text-charcoal">{lead.price}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Equity</p>
-                          <p className="font-mono text-sm font-bold text-success">{lead.equity}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Sq Ft</p>
-                          <p className="font-mono text-sm text-charcoal">{lead.sqft}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Built</p>
-                          <p className="font-mono text-sm text-charcoal">{lead.yearBuilt}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Time</p>
-                          <p className="font-sans text-sm text-gray-600">{lead.days}</p>
-                        </div>
-                      </div>
-
-                      {/* Bottom row: Contact + financial snapshot */}
-                      <div className="flex items-center gap-4 mt-2 pl-[22px] text-xs text-gray-400 flex-wrap">
-                        <span className="font-mono">{lead.email}</span>
-                        {lead.lender && <span>{lead.lender} · {lead.loanAmount} @ {lead.interestRate}</span>}
-                        {lead.county && <span>{lead.county} County</span>}
                       </div>
                     </button>
 
