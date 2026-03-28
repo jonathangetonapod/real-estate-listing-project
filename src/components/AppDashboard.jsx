@@ -2503,22 +2503,29 @@ function PipelineTab({ deals, addDeal, moveDealStage }) {
         </Button>
       </div>
 
-      {/* Summary bar — only show when deals exist */}
-      {deals.length > 0 && (
-        <div className="rounded-lg border border-border bg-white p-4">
-          <div className="grid grid-cols-5 gap-4">
-            {stages.map((stage, i) => {
-              const count = deals.filter(d => d.stage === stage).length;
-              return (
-                <div key={stage} className="text-center">
-                  <span className="font-mono text-xl font-bold text-charcoal">{count}</span>
-                  <p className="text-[10px] uppercase tracking-wider text-gray-400 mt-0.5">{stage}</p>
+      {/* Pipeline stages — always visible */}
+      <div className="rounded-lg border border-border bg-white p-4">
+        <div className="flex items-center">
+          {stages.map((stage, i) => {
+            const count = deals.filter(d => d.stage === stage).length;
+            const textColors = ['text-success', 'text-orange', 'text-blue-600', 'text-charcoal', 'text-success'];
+            const bgColors = ['bg-success/10', 'bg-orange/10', 'bg-blue-500/10', 'bg-charcoal/10', 'bg-success/10'];
+            return (
+              <div key={stage} className="flex items-center flex-1">
+                <div className="flex flex-col items-center flex-1">
+                  <div className={cn('w-10 h-10 rounded-full flex items-center justify-center font-mono text-sm font-bold', count > 0 ? bgColors[i] : 'bg-gray-50', count > 0 ? textColors[i] : 'text-gray-300')}>
+                    {count}
+                  </div>
+                  <span className="text-[10px] text-gray-500 mt-1.5 font-medium text-center leading-tight">{stage}</span>
                 </div>
-              );
-            })}
-          </div>
+                {i < stages.length - 1 && (
+                  <div className={cn('h-px flex-shrink-0 w-6 mt-[-16px]', count > 0 ? 'bg-gray-300' : 'bg-gray-200')} />
+                )}
+              </div>
+            );
+          })}
         </div>
-      )}
+      </div>
 
       {deals.length === 0 ? (
         <Card className="rounded-xl">
