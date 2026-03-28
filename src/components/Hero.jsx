@@ -31,7 +31,7 @@ export function Hero() {
         animate="visible"
         custom={0}
       >
-        Now onboarding agents in select markets
+        Limited to 5 agents per zip code — check availability
       </motion.div>
 
       <motion.h1
@@ -41,9 +41,9 @@ export function Hero() {
         animate="visible"
         custom={0.1}
       >
-        Your Next{' '}
-        <span className={styles.headlineItalicOrange}>Listing</span>{' '}
-        Is Already Waiting.
+        Stop Competing for Leads.{' '}
+        <span className={styles.headlineItalicOrange}>Own</span>{' '}
+        Your Market.
       </motion.h1>
 
       <motion.p
@@ -53,9 +53,9 @@ export function Hero() {
         animate="visible"
         custom={0.2}
       >
-        We find motivated sellers in your farm area and deliver verified
-        contact data within 12 hours. You connect your Gmail, write
-        personalized pitches with AI, and close more listings.
+        We deliver motivated seller leads in your farm area within 12 hours,
+        with verified emails, property data, and AI-written pitches ready to send.
+        More listing appointments without cold calling, door knocking, or paying for shared leads.
       </motion.p>
 
       <motion.div
@@ -103,7 +103,7 @@ export function Hero() {
         animate="visible"
         custom={0.4}
       >
-        We&apos;ll reach out within 12 hours to set up your farm area. No credit card required.
+        See your leads before you pay. No credit card. Cancel in one click.
       </motion.p>
     </section>
   );

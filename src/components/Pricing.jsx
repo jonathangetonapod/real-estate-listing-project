@@ -38,8 +38,28 @@ export function Pricing() {
         whileInView="visible"
         viewport={{ once: true, margin: '-80px' }}
       >
-        Less Than One Showing&apos;s Worth of Gas Money
+        One Listing Pays for 2+ Years of ListingPitch
       </motion.h2>
+
+      <motion.div
+        className={styles.anchor}
+        variants={fadeIn}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: '-60px' }}
+      >
+        <div className={styles.anchorBad}>
+          <span className={styles.anchorLabel}>Zillow</span>
+          <span className={styles.anchorPrice}>$1,200+/mo</span>
+          <span className={styles.anchorNote}>Shared with 47 agents</span>
+        </div>
+        <div className={styles.anchorDivider}>vs</div>
+        <div className={styles.anchorGood}>
+          <span className={styles.anchorLabel}>ListingPitch</span>
+          <span className={styles.anchorPrice}>$199/mo</span>
+          <span className={styles.anchorNote}>Exclusive to your zip code</span>
+        </div>
+      </motion.div>
 
       <motion.div
         className={styles.grid}
@@ -92,7 +112,7 @@ export function Pricing() {
         whileInView="visible"
         viewport={{ once: true, margin: '-40px' }}
       >
-        No contracts. Cancel anytime. Start with a free preview.
+        14-day free trial. No contracts. Cancel in one click. If you don&apos;t book a conversation, we&apos;ll refund every penny.
       </motion.p>
 
       <motion.p

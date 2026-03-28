@@ -44,7 +44,7 @@ function useCountUp(target, duration = 2000, shouldStart = false) {
 
 const stats = [
   { target: 12847, display: (v) => v.toLocaleString(), label: 'Listing pitches sent' },
-  { target: 500, display: (v) => `${v}+`, label: 'Agents onboarded' },
+  { target: 6, display: (v) => `${v}+hrs`, label: 'Saved per agent/week' },
   { target: 94, display: (v) => `${v}%`, label: 'Avg deliverability' },
   { target: 12, display: (v) => `${v}hrs`, label: 'List turnaround' },
 ];

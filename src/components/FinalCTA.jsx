@@ -31,8 +31,8 @@ export function FinalCTA() {
         whileInView="visible"
         viewport={{ once: true, margin: '-80px' }}
       >
-        Your Next <span className={styles.headingAccent}>Listing</span> Is
-        Already Waiting.
+        Every Day You Wait, Another Agent Gets the{' '}
+        <span className={styles.headingAccent}>Appointment</span>.
       </motion.h2>
 
       <motion.p
@@ -42,7 +42,7 @@ export function FinalCTA() {
         whileInView="visible"
         viewport={{ once: true, margin: '-60px' }}
       >
-        Enter your email. See your leads. Start closing.
+        Limited to 5 agents per zip code. Claim your farm area before someone else does.
       </motion.p>
 
       <motion.div

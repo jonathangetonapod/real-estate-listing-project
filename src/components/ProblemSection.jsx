@@ -3,19 +3,19 @@ import styles from './ProblemSection.module.css';
 
 const cards = [
   {
-    icon: '\u23F0',
-    title: 'Expired listings go stale fast.',
-    body: 'By the time you pull the list, write a letter, and drop it in the mail, three other agents already called. Speed wins listings.',
+    icon: '\uD83D\uDCB8',
+    title: 'Zillow leads cost $1,200+/mo. You share them with 47 agents.',
+    body: "You\u2019re paying for a phone number that 47 other agents also bought. By the time you call, the homeowner is annoyed and you\u2019re competing on speed, not value.",
   },
   {
-    icon: '\uD83D\uDCDE',
-    title: "Cold calling is dead. Door knocking doesn\u2019t scale.",
-    body: 'You can knock on 20 doors a day or email 500 motivated sellers this week. Same effort, 25x the reach.',
+    icon: '\u23F0',
+    title: 'Cold calling works. It just eats your whole morning.',
+    body: "You can dial 100 numbers for 3 conversations, or email 500 verified sellers this week. Same hustle, 25x the reach. ListingPitch warms up your pipeline so every call is to someone who already knows your name.",
   },
   {
     icon: '\uD83D\uDDD1\uFE0F',
     title: 'Generic templates get deleted.',
-    body: "Homeowners can smell a mass email from a mile away. If it doesn\u2019t feel personal, it\u2019s spam. If it feels personal, it\u2019s a conversation.",
+    body: "Homeowners can smell a mass email from a mile away. If it doesn\u2019t feel personal, it\u2019s spam. If it references their actual property data and nearby comps, it\u2019s a conversation.",
   },
 ];
 
