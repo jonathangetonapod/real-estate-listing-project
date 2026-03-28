@@ -921,7 +921,18 @@ function LeadsTab() {
         ))}
       </div>
 
-      {filtered.length === 0 && (
+      {filtered.length === 0 && leads.length === 0 && (
+        <Card className="rounded-xl">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-12 h-12 rounded-full bg-orange/10 flex items-center justify-center mb-4">
+              <Clock className="h-6 w-6 text-orange" />
+            </div>
+            <p className="text-sm font-medium text-charcoal mb-1">Your seller leads are being prepared</p>
+            <p className="text-sm text-muted-foreground">Check back in a few hours.</p>
+          </CardContent>
+        </Card>
+      )}
+      {filtered.length === 0 && leads.length > 0 && (
         <div className="text-center py-12 text-muted-foreground text-sm">
           No leads match your filters.
         </div>
@@ -947,7 +958,16 @@ function DraftsTab() {
   }, [selectedDraft]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-12rem)]">
+    <div className="space-y-4">
+      {/* Contextual help for new users */}
+      <div className="flex items-start gap-3 rounded-xl bg-gray-50 border border-gray-100 px-4 py-3">
+        <Info className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
+        <p className="text-sm text-gray-500">
+          We wrote a personalized email for each seller based on their property details. Read it, edit if you want, then approve to send.
+        </p>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-16rem)]">
       {/* Left — lead list */}
       <div className="lg:w-1/3 rounded-xl border border-border bg-white overflow-hidden flex flex-col">
         <div className="px-4 py-3 border-b border-border">
@@ -1083,6 +1103,7 @@ function DraftsTab() {
           </Button>
         </div>
       </div>
+      </div>
     </div>
   );
 }
@@ -1092,12 +1113,34 @@ function DraftsTab() {
 // ---------------------------------------------------------------------------
 
 function PipelineTab() {
+  const totalPipelineItems = pipelineColumns.reduce((sum, col) => sum + col.count, 0);
+
   return (
     <div className="space-y-4">
       <div>
         <h2 className="font-heading text-lg font-semibold">My Deals</h2>
         <p className="text-sm text-muted-foreground mt-1">Track every seller from first contact to signed listing.</p>
       </div>
+
+      {/* Contextual help for new users */}
+      <div className="flex items-start gap-3 rounded-xl bg-gray-50 border border-gray-100 px-4 py-3">
+        <Info className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
+        <p className="text-sm text-gray-500">
+          This shows where each seller is in your outreach process. As sellers open your emails and respond, they move forward automatically.
+        </p>
+      </div>
+
+      {totalPipelineItems === 0 ? (
+        <Card className="rounded-xl">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <Inbox className="h-6 w-6 text-gray-400" />
+            </div>
+            <p className="text-sm font-medium text-charcoal mb-1">Your deal pipeline is empty</p>
+            <p className="text-sm text-muted-foreground">It&apos;ll fill up as you start sending emails.</p>
+          </CardContent>
+        </Card>
+      ) : (
       <div className="flex gap-3 overflow-x-auto pb-4">
         {pipelineColumns.map((col) => (
           <div
@@ -1254,6 +1297,18 @@ export default function AppDashboard() {
             {activeTab === 'leads' && <LeadsTab />}
             {activeTab === 'drafts' && <DraftsTab />}
             {activeTab === 'pipeline' && <PipelineTab />}
+            {activeTab === 'replies' && (
+              <div className="space-y-4">
+                <h2 className="font-heading text-lg font-semibold">Responses</h2>
+                <Card className="rounded-xl">
+                  <CardContent className="p-6 text-center text-muted-foreground">
+                    <MessageSquare className="h-8 w-8 mx-auto mb-3 text-orange" />
+                    <p className="text-sm font-medium text-foreground mb-1">3 new responses today</p>
+                    <p className="text-xs">Seller replies will appear here as they come in.</p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </FadePanel>
         </main>
       </div>
