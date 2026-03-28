@@ -23,6 +23,9 @@ import {
   ArrowRight,
   Eye,
   X,
+  MapPin,
+  Plus,
+  Check,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -40,6 +43,7 @@ const leads = [
 
 const navItems = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { key: 'farm', label: 'Farm Area', icon: MapPin },
   { key: 'leads', label: 'My Leads', icon: Users },
   { key: 'drafts', label: 'AI Drafts', icon: FileEdit },
   { key: 'sent', label: 'Sent', icon: Send },
@@ -50,10 +54,20 @@ const navItems = [
 
 const tabMap = {
   dashboard: 'overview',
+  farm: 'farm',
   leads: 'leads',
   drafts: 'drafts',
   pipeline: 'pipeline',
 };
+
+const leadTypes = [
+  { id: 'expired', label: 'Expired Listings', desc: 'Homes that didn\'t sell. Owners ready for a new approach.' },
+  { id: 'fsbo', label: 'FSBOs', desc: 'For-sale-by-owner listings struggling without professional help.' },
+  { id: 'preforeclosure', label: 'Pre-Foreclosure', desc: 'Homeowners facing financial pressure who need to sell fast.' },
+  { id: 'absentee', label: 'Absentee Owners', desc: 'Landlords and investors who may be ready to offload.' },
+  { id: 'highequity', label: 'High Equity', desc: 'Long-time owners sitting on significant equity.' },
+  { id: 'probate', label: 'Probate / Estate', desc: 'Inherited properties where heirs want a quick sale.' },
+];
 
 const activityFeed = [
   { text: 'AI drafted 12 new pitches for your Riverside Heights leads', time: '2h ago', icon: FileEdit, highlight: false },
@@ -187,6 +201,238 @@ function FadePanel({ children, tabKey }) {
         {children}
       </motion.div>
     </AnimatePresence>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tab: Farm Area
+// ---------------------------------------------------------------------------
+
+function FarmAreaTab() {
+  const [zipCodes, setZipCodes] = useState(['92506']);
+  const [newZip, setNewZip] = useState('');
+  const [selectedTypes, setSelectedTypes] = useState(['expired', 'fsbo', 'preforeclosure']);
+  const [priceMin, setPriceMin] = useState('200000');
+  const [priceMax, setPriceMax] = useState('800000');
+  const [submitted, setSubmitted] = useState(false);
+
+  const addZip = () => {
+    if (newZip.length === 5 && !zipCodes.includes(newZip)) {
+      setZipCodes([...zipCodes, newZip]);
+      setNewZip('');
+    }
+  };
+
+  const removeZip = (zip) => setZipCodes(zipCodes.filter(z => z !== zip));
+
+  const toggleType = (id) => {
+    setSelectedTypes(prev =>
+      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
+    );
+  };
+
+  if (submitted) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="max-w-2xl mx-auto text-center py-20"
+      >
+        <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6">
+          <Check className="w-8 h-8 text-success" />
+        </div>
+        <h2 className="font-heading text-3xl font-bold text-charcoal mb-3">Lead Request Submitted</h2>
+        <p className="font-sans text-lg text-gray-500 mb-2">
+          We&apos;re pulling {zipCodes.length * 80}+ motivated sellers across {zipCodes.length} zip code{zipCodes.length > 1 ? 's' : ''}.
+        </p>
+        <p className="font-sans text-base text-gray-400 mb-8">
+          Your leads will be ready in your dashboard within 12 hours.
+        </p>
+        <div className="inline-flex items-center gap-3 rounded-xl bg-light-bg border border-gray-200 px-6 py-4">
+          <Clock className="w-5 h-5 text-orange" />
+          <div className="text-left">
+            <div className="font-sans text-sm font-semibold text-charcoal">Estimated delivery</div>
+            <div className="font-mono text-xs text-gray-500">Tomorrow by 9:00 AM</div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <div className="mb-8">
+        <h2 className="font-heading text-2xl font-bold text-charcoal mb-2">Set Up Your Farm Area</h2>
+        <p className="font-sans text-base text-gray-500">
+          Tell us where you work. We&apos;ll deliver 250 verified motivated seller leads within 12 hours.
+        </p>
+      </div>
+
+      {/* Step 1: Zip Codes */}
+      <Card className="rounded-xl mb-6">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center">
+              <span className="font-mono text-sm font-bold text-orange">1</span>
+            </div>
+            <div>
+              <h3 className="font-sans text-base font-semibold text-charcoal">Your Zip Codes</h3>
+              <p className="font-sans text-sm text-gray-400">Up to 3 zip codes per farm area</p>
+            </div>
+          </div>
+
+          <div className="flex gap-3 mb-4">
+            <Input
+              type="text"
+              placeholder="Enter zip code"
+              value={newZip}
+              onChange={(e) => setNewZip(e.target.value.replace(/\D/g, '').slice(0, 5))}
+              onKeyDown={(e) => e.key === 'Enter' && addZip()}
+              className="max-w-[200px] rounded-lg"
+              maxLength={5}
+            />
+            <Button
+              variant="outline"
+              onClick={addZip}
+              disabled={newZip.length !== 5 || zipCodes.length >= 3}
+              className="rounded-lg"
+            >
+              <Plus className="w-4 h-4 mr-1" /> Add
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {zipCodes.map(zip => (
+              <div key={zip} className="inline-flex items-center gap-2 rounded-full bg-charcoal text-white px-4 py-1.5 text-sm font-mono">
+                {zip}
+                <button onClick={() => removeZip(zip)} className="text-white/50 hover:text-white transition-colors">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+            {zipCodes.length === 0 && (
+              <p className="font-sans text-sm text-gray-400">No zip codes added yet.</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Step 2: Lead Types */}
+      <Card className="rounded-xl mb-6">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center">
+              <span className="font-mono text-sm font-bold text-orange">2</span>
+            </div>
+            <div>
+              <h3 className="font-sans text-base font-semibold text-charcoal">Lead Types</h3>
+              <p className="font-sans text-sm text-gray-400">Select which seller types to include</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {leadTypes.map(type => (
+              <button
+                key={type.id}
+                onClick={() => toggleType(type.id)}
+                className={cn(
+                  'flex items-start gap-3 rounded-xl border p-4 text-left transition-all duration-200',
+                  selectedTypes.includes(type.id)
+                    ? 'border-orange bg-orange/[0.03]'
+                    : 'border-gray-200 hover:border-gray-300'
+                )}
+              >
+                <div className={cn(
+                  'mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors',
+                  selectedTypes.includes(type.id)
+                    ? 'border-orange bg-orange'
+                    : 'border-gray-300'
+                )}>
+                  {selectedTypes.includes(type.id) && <Check className="w-3 h-3 text-white" />}
+                </div>
+                <div>
+                  <div className="font-sans text-sm font-semibold text-charcoal">{type.label}</div>
+                  <div className="font-sans text-xs text-gray-400 mt-0.5">{type.desc}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Step 3: Price Range */}
+      <Card className="rounded-xl mb-8">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center">
+              <span className="font-mono text-sm font-bold text-orange">3</span>
+            </div>
+            <div>
+              <h3 className="font-sans text-base font-semibold text-charcoal">Price Range</h3>
+              <p className="font-sans text-sm text-gray-400">Filter leads by estimated property value</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <label className="font-sans text-xs text-gray-400 mb-1 block">Min Price</label>
+              <Input
+                type="text"
+                value={`$${Number(priceMin).toLocaleString()}`}
+                onChange={(e) => setPriceMin(e.target.value.replace(/\D/g, ''))}
+                className="rounded-lg font-mono"
+              />
+            </div>
+            <span className="text-gray-300 mt-5">—</span>
+            <div className="flex-1">
+              <label className="font-sans text-xs text-gray-400 mb-1 block">Max Price</label>
+              <Input
+                type="text"
+                value={`$${Number(priceMax).toLocaleString()}`}
+                onChange={(e) => setPriceMax(e.target.value.replace(/\D/g, ''))}
+                className="rounded-lg font-mono"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Summary + Submit */}
+      <div className="rounded-xl border border-orange/20 bg-orange/[0.02] p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-sans text-base font-semibold text-charcoal">Request Summary</h3>
+          <Badge className="bg-orange/10 text-orange border-orange/20 rounded-full font-mono text-xs">
+            ~{zipCodes.length * 80} leads estimated
+          </Badge>
+        </div>
+        <div className="grid grid-cols-3 gap-4 text-sm">
+          <div>
+            <div className="font-sans text-xs text-gray-400 mb-1">Zip Codes</div>
+            <div className="font-mono text-charcoal font-semibold">{zipCodes.join(', ') || 'None'}</div>
+          </div>
+          <div>
+            <div className="font-sans text-xs text-gray-400 mb-1">Lead Types</div>
+            <div className="font-sans text-charcoal font-semibold">{selectedTypes.length} of 6 selected</div>
+          </div>
+          <div>
+            <div className="font-sans text-xs text-gray-400 mb-1">Price Range</div>
+            <div className="font-mono text-charcoal font-semibold">${Number(priceMin).toLocaleString()} — ${Number(priceMax).toLocaleString()}</div>
+          </div>
+        </div>
+      </div>
+
+      <Button
+        onClick={() => setSubmitted(true)}
+        disabled={zipCodes.length === 0 || selectedTypes.length === 0}
+        className="w-full h-auto rounded-xl bg-orange text-white font-sans text-base font-semibold py-4 hover:bg-orange/90 transition-colors disabled:opacity-50"
+      >
+        Request My Leads <ArrowRight className="w-4 h-4 ml-2" />
+      </Button>
+
+      <p className="font-sans text-xs text-gray-400 text-center mt-3">
+        Leads delivered within 12 hours. 250 verified leads included in your plan.
+      </p>
+    </div>
   );
 }
 
@@ -736,6 +982,7 @@ export default function AppDashboard() {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <FadePanel tabKey={activeTab}>
             {activeTab === 'overview' && <OverviewTab />}
+            {activeTab === 'farm' && <FarmAreaTab />}
             {activeTab === 'leads' && <LeadsTab />}
             {activeTab === 'drafts' && <DraftsTab />}
             {activeTab === 'pipeline' && <PipelineTab />}
