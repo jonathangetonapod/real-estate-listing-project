@@ -1697,6 +1697,7 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
 
 function DraftsTab({ pitchDrafts }) {
   const [expandedPitch, setExpandedPitch] = useState(null);
+  const [expandedStep, setExpandedStep] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter to only leads with sent pitches
@@ -1815,47 +1816,167 @@ function DraftsTab({ pitchDrafts }) {
                       transition={{ duration: 0.25, ease: 'easeInOut' }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 pb-4 pt-0">
+                      <div className="px-4 pb-5 pt-0">
                         <div className="border-t border-gray-100 pt-4">
-                          {/* Email header */}
-                          <div className="flex items-center gap-4 text-xs text-gray-500 mb-4 flex-wrap">
-                            <span><span className="font-medium text-gray-400">From:</span> Sarah Johnson via OffMarket</span>
-                            <span><span className="font-medium text-gray-400">To:</span> {item.email}</span>
-                            <span><span className="font-medium text-gray-400">Subject:</span> {item.pitch.steps?.[0]?.subject}</span>
-                          </div>
 
-                          {/* 3-step sequence */}
-                          <div className="space-y-3">
-                            {item.pitch.steps?.map((step, si) => (
-                              <div key={si}>
-                                <div className="flex items-center gap-2 mb-1.5">
-                                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-charcoal text-white text-[10px] font-bold">{si + 1}</span>
-                                  <span className="text-xs font-medium text-charcoal">{['Initial Outreach', 'Follow-Up (Day 3)', 'Final Touch (Day 7)'][si]}</span>
-                                </div>
-                                <div className="rounded-lg bg-light-bg border border-gray-100 p-3 ml-7">
-                                  <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">{step.body}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Property context */}
-                          <div className="mt-4 rounded-lg border border-border p-3">
-                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm">
-                              {[
-                                { label: 'Value', value: item.price },
-                                { label: 'Equity', value: item.equity, className: 'text-success' },
-                                { label: 'Sq Ft', value: item.sqft },
-                                { label: 'Built', value: item.yearBuilt },
-                                { label: 'County', value: item.county },
-                              ].filter(f => f.value).map((f) => (
-                                <div key={f.label}>
-                                  <p className="text-[9px] uppercase text-gray-400">{f.label}</p>
-                                  <p className={cn('font-mono text-xs font-medium', f.className)}>{f.value}</p>
+                          {/* Sequence Timeline */}
+                          <div className="mb-5">
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-3">Sequence Timeline</p>
+                            <div className="flex items-center gap-0">
+                              {['Sent', 'Day 3', 'Day 7'].map((label, si) => (
+                                <div key={si} className="flex items-center flex-1">
+                                  <div className="flex flex-col items-center">
+                                    <div className={cn(
+                                      'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold',
+                                      si === 0 ? 'bg-success text-white' : 'bg-gray-100 text-gray-400'
+                                    )}>
+                                      {si === 0 ? <CheckCircle2 className="h-4 w-4" /> : si + 1}
+                                    </div>
+                                    <span className="text-[10px] text-gray-500 mt-1 font-medium">{['Initial Outreach', 'Follow-Up', 'Final Touch'][si]}</span>
+                                    <span className="text-[9px] text-gray-400">{si === 0 ? 'Delivered' : `Queued · ${label}`}</span>
+                                  </div>
+                                  {si < 2 && <div className={cn('flex-1 h-px mx-2 mt-[-20px]', si === 0 ? 'bg-success' : 'bg-gray-200')} />}
                                 </div>
                               ))}
                             </div>
                           </div>
+
+                          {/* Email header */}
+                          <div className="rounded-lg bg-gray-50 border border-gray-100 p-3 mb-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                              <div>
+                                <span className="text-gray-400 font-medium">From</span>
+                                <p className="text-charcoal">Sarah Johnson via OffMarket</p>
+                              </div>
+                              <div>
+                                <span className="text-gray-400 font-medium">To</span>
+                                <p className="text-charcoal">{item.email}</p>
+                              </div>
+                              <div>
+                                <span className="text-gray-400 font-medium">Subject</span>
+                                <p className="text-charcoal font-medium truncate">{item.pitch.steps?.[0]?.subject}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Collapsible 3-step sequence */}
+                          <div className="space-y-2 mb-5">
+                            {item.pitch.steps?.map((step, si) => {
+                              const stepKey = `${item._idx}-${si}`;
+                              const isStepOpen = expandedStep === stepKey;
+                              return (
+                                <div key={si} className="rounded-lg border border-border overflow-hidden">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setExpandedStep(prev => prev === stepKey ? null : stepKey); }}
+                                    className="w-full text-left px-3 py-2.5 flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                                  >
+                                    <span className={cn(
+                                      'inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold shrink-0',
+                                      si === 0 ? 'bg-success text-white' : 'bg-gray-100 text-gray-500'
+                                    )}>
+                                      {si === 0 ? <Check className="h-3 w-3" /> : si + 1}
+                                    </span>
+                                    <div className="flex-1 min-w-0">
+                                      <span className="text-xs font-medium text-charcoal">{['Initial Outreach', 'Follow-Up (Day 3)', 'Final Touch (Day 7)'][si]}</span>
+                                    </div>
+                                    <span className={cn(
+                                      'text-[10px] font-medium shrink-0',
+                                      si === 0 ? 'text-success' : 'text-gray-400'
+                                    )}>
+                                      {si === 0 ? 'Delivered' : 'Queued'}
+                                    </span>
+                                    <ChevronDown className={cn('h-3.5 w-3.5 text-gray-400 transition-transform duration-200 shrink-0', isStepOpen && 'rotate-180')} />
+                                  </button>
+                                  <AnimatePresence initial={false}>
+                                    {isStepOpen && (
+                                      <motion.div
+                                        initial={{ height: 0 }}
+                                        animate={{ height: 'auto' }}
+                                        exit={{ height: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="overflow-hidden"
+                                      >
+                                        <div className="px-3 pb-3 pt-0">
+                                          <div className="rounded-lg bg-light-bg border border-gray-100 p-3">
+                                            <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">{step.body}</p>
+                                          </div>
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Two columns: Property + Financial | Contact */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Property & Financial */}
+                            <div className="rounded-lg border border-border p-3 space-y-3">
+                              <div className="flex items-center gap-2">
+                                <Building2 className="h-3.5 w-3.5 text-gray-400" />
+                                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Property & Financial</p>
+                              </div>
+                              <div className="grid grid-cols-3 gap-x-4 gap-y-2">
+                                {[
+                                  { label: 'Value', value: item.price, bold: true },
+                                  { label: 'Equity', value: item.equity, className: 'text-success', bold: true },
+                                  { label: 'Sq Ft', value: item.sqft },
+                                  { label: 'Built', value: item.yearBuilt },
+                                  { label: 'Lot', value: item.lotSizeAcres ? `${item.lotSizeAcres} ac` : null },
+                                  { label: 'Zoning', value: item.zoningCode },
+                                  { label: 'Lender', value: item.lender },
+                                  { label: 'Loan', value: item.loanAmount },
+                                  { label: 'Rate', value: item.interestRate },
+                                  { label: 'Parcel', value: item.totalParcelValue },
+                                  { label: 'Tax Bill', value: item.taxBill ? `${item.taxBill}/yr` : null },
+                                  { label: 'County', value: item.county },
+                                ].filter(f => f.value).map((f) => (
+                                  <div key={f.label}>
+                                    <p className="text-[9px] uppercase text-gray-400">{f.label}</p>
+                                    <p className={cn('font-mono text-xs', f.bold ? 'font-bold' : 'font-medium', f.className)}>{f.value}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Contact Info */}
+                            <div className="rounded-lg border border-border p-3 space-y-3">
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-3.5 w-3.5 text-gray-400" />
+                                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Owner & Contact</p>
+                              </div>
+                              <div className="space-y-2">
+                                <div>
+                                  <p className="text-[9px] uppercase text-gray-400">Owner</p>
+                                  <p className="text-xs font-medium text-charcoal">{item.ownerName}</p>
+                                </div>
+                                {item.mailingAddress && (
+                                  <div>
+                                    <p className="text-[9px] uppercase text-gray-400">Mailing Address</p>
+                                    <p className="text-xs text-charcoal">{item.mailingAddress}</p>
+                                  </div>
+                                )}
+                                {item.phones?.length > 0 && (
+                                  <div>
+                                    <p className="text-[9px] uppercase text-gray-400 mb-0.5">Phone{item.phones.length > 1 ? 's' : ''}</p>
+                                    {item.phones.map((p, pi) => (
+                                      <p key={pi} className="text-xs font-mono text-charcoal">{p}</p>
+                                    ))}
+                                  </div>
+                                )}
+                                {item.emails?.length > 0 && (
+                                  <div>
+                                    <p className="text-[9px] uppercase text-gray-400 mb-0.5">Email{item.emails.length > 1 ? 's' : ''}</p>
+                                    {item.emails.map((em, ei) => (
+                                      <p key={ei} className="text-xs font-mono text-charcoal truncate">{em}</p>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
                         </div>
                       </div>
                     </motion.div>
