@@ -1014,14 +1014,14 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
                 variant="outline"
                 size="sm"
                 className="rounded-lg"
-                onClick={() => onSave(steps)}
+                onClick={() => { onSave(steps); onClose(); }}
               >
                 Save Draft
               </Button>
               <Button
                 size="sm"
                 className="rounded-lg bg-orange text-white hover:bg-orange-hover"
-                onClick={() => onSend(steps)}
+                onClick={() => { onSend(steps); onClose(); }}
               >
                 <Send className="h-3.5 w-3.5 mr-1.5" />
                 Approve & Send
