@@ -211,6 +211,47 @@ function FadePanel({ children, tabKey }) {
 // Tab: Farm Area
 // ---------------------------------------------------------------------------
 
+// Tappable help card — tap/click to reveal explanation
+function HelpCard({ value, label, tip }) {
+  const [showTip, setShowTip] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setShowTip(!showTip)}
+        className="w-full rounded-lg bg-white/60 p-3 text-left transition-all duration-200 hover:bg-white hover:shadow-sm"
+      >
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="font-mono text-sm font-bold text-charcoal">{value}</div>
+            <div className="font-sans text-xs text-gray-400">{label}</div>
+          </div>
+          <div className={cn(
+            'w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-colors text-[10px] font-bold',
+            showTip ? 'bg-orange text-white' : 'bg-gray-200 text-gray-400'
+          )}>
+            ?
+          </div>
+        </div>
+      </button>
+      <AnimatePresence>
+        {showTip && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="absolute z-30 top-full left-0 right-0 mt-2 rounded-xl bg-charcoal text-white p-4 shadow-xl"
+          >
+            <div className="font-sans text-sm leading-relaxed">{tip}</div>
+            <div className="absolute -top-1.5 left-6 w-3 h-3 bg-charcoal rotate-45" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function FarmAreaTab() {
   // 'form' | 'pending' | 'delivered'
   const [farmState, setFarmState] = useState('delivered');
@@ -297,15 +338,12 @@ function FarmAreaTab() {
                   <p className="font-sans text-xs text-gray-400 uppercase tracking-wide mb-3">What you&apos;ll get</p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[
-                      { label: 'Verified seller leads', value: '250' },
-                      { label: 'Email pitches written', value: '250' },
-                      { label: 'Skip-traced emails', value: 'Included' },
-                      { label: 'Delivered in', value: '12 hours' },
+                      { label: 'Verified seller leads', value: '250', tip: 'Expireds, FSBOs, pre-foreclosures, absentee owners, high equity, and probate leads in your zip codes. Every contact is verified against public records.' },
+                      { label: 'Email pitches written', value: '250', tip: 'Our AI writes a unique email for every seller based on their property address, asking price, nearby comps, and how long they\'ve been on market. No templates.' },
+                      { label: 'Skip-traced emails', value: 'Included', tip: 'We find the homeowner\'s real email address using skip-tracing databases. No extra charge — it\'s included with every lead.' },
+                      { label: 'Delivered in', value: '12 hours', tip: 'After you place your order, our team pulls your leads, verifies the data, and generates all email pitches. Everything lands in your dashboard within 12 hours.' },
                     ].map((item, i) => (
-                      <div key={i} className="rounded-lg bg-white/60 p-3">
-                        <div className="font-mono text-sm font-bold text-charcoal">{item.value}</div>
-                        <div className="font-sans text-xs text-gray-400">{item.label}</div>
-                      </div>
+                      <HelpCard key={i} value={item.value} label={item.label} tip={item.tip} />
                     ))}
                   </div>
                 </div>
