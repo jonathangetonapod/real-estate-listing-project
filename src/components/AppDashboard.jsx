@@ -802,16 +802,21 @@ function OverviewTab({ onNavigate }) {
 // ---------------------------------------------------------------------------
 
 function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, onClose }) {
-  const [subject, setSubject] = useState(draft?.subject || '');
-  const [body, setBody] = useState(draft?.body || '');
+  const [activeStep, setActiveStep] = useState(0);
+  const [steps, setSteps] = useState(draft?.steps || []);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   useEffect(() => {
-    setSubject(draft?.subject || '');
-    setBody(draft?.body || '');
+    setSteps(draft?.steps || []);
+    setActiveStep(0);
   }, [draft]);
 
-  const hasChanges = subject !== draft?.subject || body !== draft?.body;
+  const currentStep = steps[activeStep] || {};
+  const hasChanges = JSON.stringify(steps) !== JSON.stringify(draft?.steps);
+
+  const handleStepChange = (field, value) => {
+    setSteps(prev => prev.map((s, i) => i === activeStep ? { ...s, [field]: value } : s));
+  };
 
   const handleClose = () => {
     if (hasChanges) {
@@ -822,6 +827,8 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
   };
 
   const isReadOnly = draft?.status === 'sent';
+  const stepLabels = ['Initial Outreach', 'Follow-Up', 'Final Touch'];
+  const stepTimings = ['Sends immediately', 'Sends Day 3', 'Sends Day 7'];
 
   return (
     <>
@@ -840,7 +847,7 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="fixed right-0 top-0 bottom-0 z-[101] w-full max-w-[480px] bg-white shadow-2xl flex flex-col"
+        className="fixed right-0 top-0 bottom-0 z-[101] w-full max-w-[520px] bg-white shadow-2xl flex flex-col"
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-border flex items-start justify-between gap-4">
@@ -851,9 +858,10 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
               <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium', typeBadgeClass(lead.type))}>
                 {lead.type}
               </span>
+              <span className="text-[11px] text-muted-foreground">3-step sequence</span>
               {draft?.status === 'sent' && (
                 <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium bg-success/10 text-success border-success/20">
-                  Sent
+                  Approved
                 </span>
               )}
             </div>
@@ -863,32 +871,68 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
           </button>
         </div>
 
-        {/* Subject */}
-        <div className="px-6 py-3 border-b border-border">
-          <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1 block">Subject</label>
-          {isReadOnly ? (
-            <p className="text-sm font-medium text-charcoal">{subject}</p>
-          ) : (
-            <Input
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="text-sm font-medium"
-              placeholder="Email subject line..."
-            />
-          )}
+        {/* Step Tabs */}
+        <div className="px-6 py-2 border-b border-border flex items-center gap-1">
+          {stepLabels.map((label, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveStep(i)}
+              className={cn(
+                'flex-1 rounded-lg px-3 py-2 text-center transition-colors',
+                activeStep === i
+                  ? 'bg-charcoal text-white'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              )}
+            >
+              <span className="text-xs font-medium block">Step {i + 1}</span>
+              <span className="text-[10px] block mt-0.5 opacity-70">{label}</span>
+            </button>
+          ))}
         </div>
+
+        {/* Timing indicator */}
+        <div className="px-6 py-2 bg-light-bg border-b border-border">
+          <div className="flex items-center gap-2">
+            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">{stepTimings[activeStep]}</span>
+          </div>
+        </div>
+
+        {/* Subject — only shown for Step 1 */}
+        {activeStep === 0 && (
+          <div className="px-6 py-3 border-b border-border">
+            <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1 block">Subject</label>
+            {isReadOnly ? (
+              <p className="text-sm font-medium text-charcoal">{steps[0]?.subject}</p>
+            ) : (
+              <Input
+                value={steps[0]?.subject || ''}
+                onChange={(e) => {
+                  setSteps(prev => prev.map((s, i) => i === 0 ? { ...s, subject: e.target.value } : s));
+                }}
+                className="text-sm font-medium"
+                placeholder="Email subject line..."
+              />
+            )}
+          </div>
+        )}
+        {activeStep > 0 && (
+          <div className="px-6 py-2 border-b border-border">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Re: {steps[0]?.subject}</p>
+          </div>
+        )}
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {isReadOnly ? (
             <div className="rounded-xl bg-light-bg border border-gray-100 p-4">
-              <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">{body}</p>
+              <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">{currentStep.body}</p>
             </div>
           ) : (
             <textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              className="w-full min-h-[320px] rounded-xl bg-light-bg border border-gray-100 p-4 text-sm leading-relaxed text-foreground resize-none outline-none focus:ring-1 focus:ring-orange/30 transition-shadow"
+              value={currentStep.body || ''}
+              onChange={(e) => handleStepChange('body', e.target.value)}
+              className="w-full min-h-[260px] rounded-xl bg-light-bg border border-gray-100 p-4 text-sm leading-relaxed text-foreground resize-none outline-none focus:ring-1 focus:ring-orange/30 transition-shadow"
               placeholder="Email body..."
             />
           )}
@@ -906,8 +950,6 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
                 { label: 'Lender', value: lead.lender },
                 { label: 'Loan', value: lead.loanAmount },
                 { label: 'Rate', value: lead.interestRate },
-                { label: 'Parcel Value', value: lead.totalParcelValue },
-                { label: 'Tax Bill', value: lead.taxBill ? `$${lead.taxBill}/yr` : null },
               ].filter(item => item.value != null).map((item) => (
                 <div key={item.label}>
                   <p className="text-[10px] text-muted-foreground">{item.label}</p>
@@ -915,70 +957,62 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
                 </div>
               ))}
             </div>
-            {/* Owner & Contact */}
-            <div className="pt-2 border-t border-gray-100 grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <p className="text-[10px] text-muted-foreground">Owner</p>
-                <p className="font-medium truncate">{lead.ownerName}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground">County</p>
-                <p className="font-medium">{lead.county}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Data Sources */}
-          <div>
-            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2">Data Sources</p>
-            <div className="flex items-center gap-2 flex-wrap">
-              {[
-                'Property records',
-                lead.lender ? 'Loan data' : null,
-                'Tax records',
-                'Equity estimate',
-                lead.soldPrice && lead.soldPrice !== 'N/A' ? 'Sold comps' : null,
-                'MLS listing',
-              ].filter(Boolean).map((src) => (
-                <span key={src} className="rounded-md bg-muted px-2.5 py-1 text-xs text-muted-foreground">{src}</span>
-              ))}
-            </div>
           </div>
         </div>
 
         {/* Action Bar */}
         {!isReadOnly && (
-          <div className="px-6 py-4 border-t border-border flex items-center gap-2">
-            <button
-              onClick={() => onDiscard()}
-              className="px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              Discard
-            </button>
-            <button
-              onClick={() => onRegenerate()}
-              className="px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5"
-            >
-              <RefreshCw className="h-3.5 w-3.5" />
-              Regenerate
-            </button>
-            <div className="flex-1" />
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-lg"
-              onClick={() => onSave(subject, body)}
-            >
-              Save Draft
-            </Button>
-            <Button
-              size="sm"
-              className="rounded-lg bg-orange text-white hover:bg-orange-hover"
-              onClick={() => onSend(subject, body)}
-            >
-              <Send className="h-3.5 w-3.5 mr-1.5" />
-              Send Now
-            </Button>
+          <div className="px-6 py-4 border-t border-border">
+            {/* Step navigation */}
+            <div className="flex items-center justify-between mb-3">
+              <button
+                onClick={() => setActiveStep(prev => Math.max(0, prev - 1))}
+                disabled={activeStep === 0}
+                className={cn('text-xs font-medium px-2 py-1 rounded transition-colors', activeStep === 0 ? 'text-gray-300' : 'text-gray-500 hover:text-charcoal')}
+              >
+                ← Previous
+              </button>
+              <span className="text-xs text-muted-foreground">Step {activeStep + 1} of 3</span>
+              <button
+                onClick={() => setActiveStep(prev => Math.min(2, prev + 1))}
+                disabled={activeStep === 2}
+                className={cn('text-xs font-medium px-2 py-1 rounded transition-colors', activeStep === 2 ? 'text-gray-300' : 'text-gray-500 hover:text-charcoal')}
+              >
+                Next →
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onDiscard()}
+                className="px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Discard
+              </button>
+              <button
+                onClick={() => onRegenerate()}
+                className="px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Regenerate
+              </button>
+              <div className="flex-1" />
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-lg"
+                onClick={() => onSave(steps)}
+              >
+                Save Draft
+              </Button>
+              <Button
+                size="sm"
+                className="rounded-lg bg-orange text-white hover:bg-orange-hover"
+                onClick={() => onSend(steps)}
+              >
+                <Send className="h-3.5 w-3.5 mr-1.5" />
+                Approve & Send
+              </Button>
+            </div>
           </div>
         )}
 
@@ -1004,7 +1038,7 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
                 <p className="text-sm font-medium text-charcoal">You have unsaved changes</p>
                 <p className="text-sm text-muted-foreground">Save as draft or discard?</p>
                 <div className="flex items-center gap-2 justify-center">
-                  <Button variant="outline" size="sm" onClick={() => { onSave(subject, body); }}>
+                  <Button variant="outline" size="sm" onClick={() => { onSave(steps); }}>
                     Save Draft
                   </Button>
                   <Button variant="outline" size="sm" className="text-danger border-danger/20 hover:bg-danger/5" onClick={() => { onDiscard(); }}>
@@ -1138,26 +1172,33 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
     const street = lead.address.split(',')[0];
     const neighborhood = lead.address.split(',')[1]?.trim() || '';
 
-    const subjectLines = {
+    // Step 1: Initial outreach
+    const step1Subject = {
       'Expired': `Your ${street} Home — a Confidential Buyer May Be Interested`,
       'FSBO': `${street} — What Agent-Listed Homes Nearby Are Selling For`,
       'Pre-Foreclosure': `${street} — Protecting Your ${lead.equity} in Equity`,
       'High Equity': `${street} — Is Now the Right Time to Maximize Your Equity?`,
     };
 
-    const bodies = {
+    const step1Body = {
       'Expired': `Hi ${firstName},\n\nI noticed your home at ${street} came off the market after ${lead.days.replace('d expired', ' days')}. That can be frustrating, and I wanted to reach out because I may be able to help.\n\nI specialize in the ${neighborhood} area and have been tracking comparable sales nearby. Homes similar to yours — ${lead.sqft} sq ft, built in ${lead.yearBuilt} — have recently sold between ${lead.price} and above, which tells me there's genuine buyer demand in your price range.\n\nWith ${lead.equity} in equity and current rates at ${lead.interestRate}, you're in a strong position. I have a few strategies that have worked well for other homeowners in your situation — including off-market exposure to pre-qualified buyers.\n\nWould you be open to a quick 10-minute call this week? No pressure at all.\n\nBest regards,\nSarah Johnson\nRiverside Heights Specialist\nOffMarket Real Estate`,
-
       'FSBO': `Hi ${firstName},\n\nI saw your listing at ${street} and wanted to share some data that might be useful.\n\nIn the ${neighborhood} area, agent-represented homes similar to yours (${lead.sqft} sq ft, built ${lead.yearBuilt}) have sold for 8-12% more than FSBO listings over the past quarter. With your ${lead.equity} in equity, that difference could mean an extra $30-50K in your pocket.\n\nI'm not here to pressure you — I know you chose FSBO for a reason. But if you'd like to see the comps and decide for yourself, I'm happy to share them.\n\nWould a quick call work this week?\n\nBest regards,\nSarah Johnson\n${neighborhood} Specialist\nOffMarket Real Estate`,
-
       'Pre-Foreclosure': `Hi ${firstName},\n\nI understand you may be navigating a difficult situation with your property at ${street}, and I wanted to reach out with care.\n\nYour home is valued at approximately ${lead.price} with ${lead.equity} in equity — that's significant, and worth protecting. I specialize in helping homeowners in ${neighborhood} explore their options quickly and discreetly, whether that's a fast sale, a short sale, or another path forward.\n\nTime matters in these situations, and I'd love to help you understand all your options before they narrow.\n\nWould a confidential 10-minute call work for you this week?\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate`,
-
       'High Equity': `Hi ${firstName},\n\nI've been tracking the ${neighborhood} market closely, and homeowners like you — with ${lead.equity} in equity built over ${lead.days.replace('yr owned', ' years')} — are in an exceptional position right now.\n\nYour ${lead.sqft} sq ft property at ${street} sits in one of the most in-demand areas. Recent sales suggest you could realize a strong return, especially with current market conditions favoring sellers with established equity.\n\nI specialize in helping long-time owners maximize their position, whether you're considering downsizing, relocating, or simply exploring what your home is worth today.\n\nWould you be open to a no-obligation market analysis?\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate`,
     };
 
+    // Step 2: Follow-up (Day 3)
+    const step2Body = `Hi ${firstName},\n\nI wanted to follow up on my note about your property at ${street}. I know you're busy, so I'll keep this brief.\n\nI pulled together a few comparable sales in ${neighborhood} that I think you'd find interesting — homes similar to yours that sold recently, and what that means for your ${lead.equity} in equity.\n\nI'd love to share them with you. Would a 10-minute call work sometime this week?\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate`;
+
+    // Step 3: Final touch (Day 7)
+    const step3Body = `Hi ${firstName},\n\nI don't want to be a pest, so this will be my last note.\n\nI reached out because I genuinely believe I can help with your situation at ${street}. The ${neighborhood} market is moving, and with ${lead.equity} in equity, you have real options.\n\nIf now isn't the right time, I completely understand. But if you'd ever like a no-obligation conversation about what your property could sell for today, my door is always open.\n\nWishing you all the best,\nSarah Johnson\nOffMarket Real Estate`;
+
     return {
-      subject: subjectLines[lead.type] || `Your ${street} Property — A Quick Question`,
-      body: bodies[lead.type] || `Hi ${firstName},\n\nI noticed your property at ${street} and wanted to reach out...\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate`,
+      steps: [
+        { subject: step1Subject[lead.type] || `Your ${street} Property — A Quick Question`, body: step1Body[lead.type] || `Hi ${firstName},\n\nI noticed your property at ${street} and wanted to reach out...\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate` },
+        { body: step2Body },
+        { body: step3Body },
+      ],
       status: 'draft',
       lastEdited: new Date().toISOString(),
     };
@@ -1171,18 +1212,18 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
     setPitchSlideOverIndex(idx);
   }, [pitchDrafts, generatePitch]);
 
-  const handleSaveDraft = useCallback((idx, subject, body) => {
+  const handleSaveDraft = useCallback((idx, steps) => {
     setPitchDrafts(prev => ({
       ...prev,
-      [idx]: { ...prev[idx], subject, body, status: 'draft', lastEdited: new Date().toISOString() },
+      [idx]: { ...prev[idx], steps, status: 'draft', lastEdited: new Date().toISOString() },
     }));
     setPitchSlideOverIndex(null);
   }, []);
 
-  const handleSendPitch = useCallback((idx, subject, body) => {
+  const handleSendPitch = useCallback((idx, steps) => {
     setPitchDrafts(prev => ({
       ...prev,
-      [idx]: { ...prev[idx], subject, body, status: 'sent', lastEdited: new Date().toISOString() },
+      [idx]: { ...prev[idx], steps, status: 'sent', lastEdited: new Date().toISOString() },
     }));
     setContactedLeads(prev => ({ ...prev, [idx]: true }));
     setPitchSlideOverIndex(null);
@@ -1591,8 +1632,8 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
             lead={leads[pitchSlideOverIndex]}
 
             draft={pitchDrafts[pitchSlideOverIndex]}
-            onSave={(subject, body) => handleSaveDraft(pitchSlideOverIndex, subject, body)}
-            onSend={(subject, body) => handleSendPitch(pitchSlideOverIndex, subject, body)}
+            onSave={(steps) => handleSaveDraft(pitchSlideOverIndex, steps)}
+            onSend={(steps) => handleSendPitch(pitchSlideOverIndex, steps)}
             onRegenerate={() => handleRegeneratePitch(pitchSlideOverIndex)}
             onDiscard={() => handleDiscardPitch(pitchSlideOverIndex)}
             onClose={() => setPitchSlideOverIndex(null)}
@@ -1689,15 +1730,23 @@ function DraftsTab({ pitchDrafts }) {
                   </div>
                   <div className="flex gap-2 items-center">
                     <span className="font-medium text-muted-foreground w-16 shrink-0">Subject:</span>
-                    <span className="font-medium">{selected.pitch.subject}</span>
+                    <span className="font-medium">{selected.pitch.steps?.[0]?.subject}</span>
                   </div>
                 </div>
               </div>
 
               <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-                <div className="rounded-xl bg-light-bg border border-gray-100 p-4">
-                  <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">{selected.pitch.body}</p>
-                </div>
+                {selected.pitch.steps?.map((step, si) => (
+                  <div key={si} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-charcoal text-white text-[10px] font-bold">{si + 1}</span>
+                      <span className="text-xs font-medium text-charcoal">{['Initial Outreach', 'Follow-Up (Day 3)', 'Final Touch (Day 7)'][si]}</span>
+                    </div>
+                    <div className="rounded-xl bg-light-bg border border-gray-100 p-4">
+                      <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">{step.body}</p>
+                    </div>
+                  </div>
+                ))}
 
                 {/* Property context */}
                 <div className="rounded-xl border border-border p-4 space-y-2">
