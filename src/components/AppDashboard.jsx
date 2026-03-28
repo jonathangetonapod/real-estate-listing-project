@@ -1314,6 +1314,12 @@ function LeadsTab() {
                           <span className={cn('inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium', stageBadgeClass(lead.stage))}>
                             {isContacted ? 'Contacted' : lead.stage}
                           </span>
+                          {pitchDrafts[idx]?.status === 'draft' && (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-orange/20 bg-orange/10 px-2 py-0.5 text-[11px] font-medium text-orange">
+                              <Pencil className="h-3 w-3" />
+                              Draft
+                            </span>
+                          )}
                           <ChevronDown className={cn('h-4 w-4 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
                         </div>
                       </div>
@@ -1374,9 +1380,18 @@ function LeadsTab() {
                                       variant="outline"
                                       size="sm"
                                       className="w-full justify-start rounded-lg text-sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenPitchSlideOver(idx);
+                                      }}
                                     >
-                                      <ExternalLink className="h-3.5 w-3.5 mr-2" />
-                                      View Email Pitch
+                                      {pitchDrafts[idx]?.status === 'sent' ? (
+                                        <><Eye className="h-3.5 w-3.5 mr-2" />View Sent Pitch</>
+                                      ) : pitchDrafts[idx]?.status === 'draft' ? (
+                                        <><Pencil className="h-3.5 w-3.5 mr-2" />Edit Draft</>
+                                      ) : (
+                                        <><FileEdit className="h-3.5 w-3.5 mr-2" />Generate Email Pitch</>
+                                      )}
                                     </Button>
                                     <Button
                                       variant={isContacted ? 'default' : 'outline'}
@@ -1457,6 +1472,22 @@ function LeadsTab() {
           </div>
         )}
       </div>
+
+      {/* Pitch Slide-Over */}
+      <AnimatePresence>
+        {pitchSlideOverIndex !== null && (
+          <PitchSlideOver
+            lead={leads[pitchSlideOverIndex]}
+            ext={extendedLeadData[pitchSlideOverIndex]}
+            draft={pitchDrafts[pitchSlideOverIndex]}
+            onSave={(subject, body) => handleSaveDraft(pitchSlideOverIndex, subject, body)}
+            onSend={(subject, body) => handleSendPitch(pitchSlideOverIndex, subject, body)}
+            onRegenerate={() => handleRegeneratePitch(pitchSlideOverIndex)}
+            onDiscard={() => handleDiscardPitch(pitchSlideOverIndex)}
+            onClose={() => setPitchSlideOverIndex(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
