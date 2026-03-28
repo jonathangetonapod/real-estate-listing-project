@@ -102,10 +102,10 @@ function FAQItem({ q, a, index }) {
       transition={{ duration: 0.4, delay: index * 0.05 }}
     >
       <button
-        className="flex w-full items-center justify-between py-5 text-left"
+        className="flex w-full items-center justify-between py-4 md:py-5 min-h-[44px] text-left"
         onClick={() => setOpen(!open)}
       >
-        <span className="font-heading text-[17px] font-bold text-charcoal leading-snug pr-8">
+        <span className="font-heading text-[15px] md:text-[17px] font-bold text-charcoal leading-snug pr-8">
           {q}
         </span>
         <span className={cn(
@@ -175,7 +175,7 @@ export function WaitlistPage() {
   return (
     <div className="min-h-screen bg-white text-charcoal">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-5 mx-auto max-w-5xl">
+      <nav className="flex items-center justify-between px-4 py-4 md:px-6 md:py-5 mx-auto max-w-5xl">
         <Link to="/" className="font-heading text-xl font-bold">
           <span className="text-charcoal">Off</span>
           <span className="text-orange">Market</span>
@@ -186,7 +186,7 @@ export function WaitlistPage() {
       </nav>
 
       {/* Hero */}
-      <section className="px-6 pt-16 pb-20 md:pt-24 md:pb-28">
+      <section className="px-4 pt-12 pb-12 md:px-6 md:pt-24 md:pb-28">
         <div className="mx-auto max-w-2xl text-center">
           <motion.div
             className="inline-flex items-center gap-2 rounded-full border border-orange/20 bg-orange/[0.06] px-4 py-1.5 mb-8"
@@ -199,7 +199,7 @@ export function WaitlistPage() {
           </motion.div>
 
           <motion.h1
-            className="font-heading text-4xl md:text-[56px] font-bold leading-[1.08] tracking-tight mb-6"
+            className="font-heading text-3xl md:text-[56px] font-bold leading-[1.08] tracking-tight mb-6"
             variants={fadeUp} initial="hidden" animate="visible" custom={0.1}
           >
             Motivated sellers in your zip code.{' '}
@@ -311,7 +311,7 @@ export function WaitlistPage() {
 
       {/* Product facts strip */}
       <section ref={counterRef} className="border-y border-gray-200 py-6">
-        <div className="mx-auto max-w-5xl px-6 flex flex-wrap items-center justify-center gap-8 md:gap-16">
+        <div className="mx-auto max-w-5xl px-4 md:px-6 flex flex-wrap items-center justify-center gap-6 md:gap-16">
           <div className="text-center">
             <span className="font-mono text-2xl font-bold text-orange">250</span>
             <span className="block font-sans text-xs text-gray-500 mt-1">verified leads/month</span>
@@ -332,7 +332,7 @@ export function WaitlistPage() {
       </section>
 
       {/* What you get */}
-      <section className="px-6 py-20">
+      <section className="px-4 py-12 md:px-6 md:py-20">
         <div className="mx-auto max-w-3xl">
           <motion.p
             className="font-mono text-xs font-medium uppercase tracking-widest text-orange mb-4 text-center"
@@ -343,7 +343,7 @@ export function WaitlistPage() {
             What you get
           </motion.p>
           <motion.h2
-            className="font-heading text-3xl md:text-4xl font-bold text-center mb-14 leading-tight"
+            className="font-heading text-2xl md:text-4xl font-bold text-center mb-10 md:mb-14 leading-tight"
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -353,7 +353,7 @@ export function WaitlistPage() {
             <span className="text-gray-400">Nothing you don&apos;t.</span>
           </motion.h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             {benefits.map((b, i) => (
               <motion.div
                 key={b.title}
@@ -376,7 +376,7 @@ export function WaitlistPage() {
       </section>
 
       {/* Zillow comparison */}
-      <section className="px-6 pb-20">
+      <section className="px-4 pb-12 md:px-6 md:pb-20">
         <motion.div
           className="mx-auto max-w-xl overflow-hidden rounded-xl border border-gray-200"
           initial={{ opacity: 0, y: 16 }}
@@ -385,7 +385,7 @@ export function WaitlistPage() {
           transition={{ duration: 0.5 }}
         >
           <div className="grid grid-cols-2">
-            <div className="border-r border-gray-200 p-6 text-center bg-gray-50">
+            <div className="border-r border-gray-200 p-4 md:p-6 text-center bg-gray-50">
               <span className="block font-sans text-xs font-medium uppercase tracking-wide text-gray-400 mb-2">
                 Zillow Leads
               </span>
@@ -396,7 +396,7 @@ export function WaitlistPage() {
                 Shared with dozens of agents
               </span>
             </div>
-            <div className="p-6 text-center">
+            <div className="p-4 md:p-6 text-center">
               <span className="block font-sans text-xs font-medium uppercase tracking-wide text-orange mb-2">
                 OffMarket
               </span>
@@ -412,9 +412,9 @@ export function WaitlistPage() {
       </section>
 
       {/* Founding member pricing */}
-      <section className="px-6 pb-20">
+      <section className="px-4 pb-12 md:px-6 md:pb-20">
         <motion.div
-          className="mx-auto max-w-xl rounded-xl border border-orange/20 bg-orange/[0.04] p-8 text-center"
+          className="mx-auto max-w-xl rounded-xl border border-orange/20 bg-orange/[0.04] p-5 md:p-8 text-center"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -423,7 +423,7 @@ export function WaitlistPage() {
           <span className="inline-block font-mono text-xs font-medium uppercase tracking-widest text-orange mb-3">
             Founding Member Offer
           </span>
-          <h3 className="font-heading text-2xl md:text-3xl font-bold text-charcoal mb-2">
+          <h3 className="font-heading text-xl md:text-3xl font-bold text-charcoal mb-2">
             <span className="line-through text-gray-400 mr-2">${REGULAR_PRICE}/mo</span>
             ${FOUNDING_PRICE}/mo for life
           </h3>
@@ -431,7 +431,7 @@ export function WaitlistPage() {
             First 500 agents lock in founding pricing forever. Join the waitlist to reserve your spot.
           </p>
           <Button
-            className="h-auto rounded-xl bg-orange px-8 py-4 font-sans text-base font-semibold text-white border-none hover:bg-orange/90 transition-colors"
+            className="h-auto w-full sm:w-auto rounded-xl bg-orange px-8 py-4 font-sans text-base font-semibold text-white border-none hover:bg-orange/90 transition-colors"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             Join the Waitlist &rarr;
@@ -440,7 +440,7 @@ export function WaitlistPage() {
       </section>
 
       {/* FAQ */}
-      <section className="px-6 pb-20">
+      <section className="px-4 pb-12 md:px-6 md:pb-20">
         <div className="mx-auto max-w-xl">
           <motion.h2
             className="font-heading text-2xl font-bold text-center mb-10"
@@ -457,10 +457,10 @@ export function WaitlistPage() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="border-t border-gray-200 px-6 py-20">
+      <section className="border-t border-gray-200 px-4 py-12 md:px-6 md:py-20">
         <div className="mx-auto max-w-2xl text-center">
           <motion.h2
-            className="font-heading text-3xl md:text-4xl font-bold mb-4"
+            className="font-heading text-2xl md:text-4xl font-bold mb-4"
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -476,7 +476,7 @@ export function WaitlistPage() {
             {SPOTS_PER_MARKET} spots per zip code. Once they&apos;re gone, they&apos;re gone.
           </motion.p>
           <Button
-            className="h-auto rounded-xl bg-orange px-8 py-4 font-sans text-base font-semibold text-white border-none hover:bg-orange/90 transition-colors"
+            className="h-auto w-full sm:w-auto rounded-xl bg-orange px-8 py-4 font-sans text-base font-semibold text-white border-none hover:bg-orange/90 transition-colors"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             Join the Waitlist &rarr;
@@ -485,7 +485,7 @@ export function WaitlistPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 px-6 py-8">
+      <footer className="border-t border-gray-200 px-4 py-6 md:px-6 md:py-8">
         <div className="mx-auto max-w-5xl flex flex-col items-center gap-3">
           <div className="font-heading text-base font-bold">
             Off<span className="text-orange">Market</span>

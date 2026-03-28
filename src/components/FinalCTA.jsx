@@ -13,9 +13,9 @@ const fadeIn = {
 
 export function FinalCTA() {
   return (
-    <section className="bg-dark px-5 py-20 text-center text-white">
+    <section className="bg-dark px-4 py-12 md:px-5 md:py-20 text-center text-white">
       <motion.h2
-        className="mx-auto mb-4 font-heading text-4xl font-bold leading-tight md:text-[44px]"
+        className="mx-auto mb-4 font-heading text-3xl font-bold leading-tight md:text-[44px]"
         variants={fadeIn}
         initial="hidden"
         whileInView="visible"
@@ -43,7 +43,7 @@ export function FinalCTA() {
       >
         <Link to="/waitlist">
           <Button
-            className="h-auto rounded-xl bg-orange px-10 py-4 font-sans text-base font-semibold text-white border-none hover:bg-orange/90 transition-colors"
+            className="h-auto w-full sm:w-auto rounded-xl bg-orange px-10 py-4 font-sans text-base font-semibold text-white border-none hover:bg-orange/90 transition-colors"
           >
             Join the Waitlist &rarr;
           </Button>

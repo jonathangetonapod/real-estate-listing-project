@@ -16,7 +16,7 @@ export function VideoPlaceholder() {
 
   return (
     <motion.div
-      className="flex flex-col items-center px-4 pb-20 md:pb-20"
+      className="flex flex-col items-center px-4 pb-12 md:pb-20"
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.5, ease: 'easeOut' }}

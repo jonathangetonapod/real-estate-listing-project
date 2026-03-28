@@ -13,7 +13,7 @@ export function Hero() {
   };
 
   return (
-    <section className="flex flex-col items-center px-4 pt-20 pb-16 md:px-6 md:pt-20 md:pb-16 bg-white text-center">
+    <section className="flex flex-col items-center px-4 pt-12 pb-12 md:px-6 md:pt-20 md:pb-16 bg-white text-center">
       {/* Badge */}
       <motion.div
         className="inline-flex items-center px-4 py-1.5 bg-yellow/10 text-yellow-800 border border-yellow/30 rounded-full text-sm font-medium font-sans mb-8 tracking-[0.01em]"
@@ -27,7 +27,7 @@ export function Hero() {
 
       {/* Headline */}
       <motion.h1
-        className="font-heading text-4xl md:text-6xl font-bold text-dark leading-[1.1] tracking-tight max-w-3xl mb-6"
+        className="font-heading text-3xl md:text-6xl font-bold text-dark leading-[1.1] tracking-tight max-w-3xl mb-6"
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
@@ -60,7 +60,7 @@ export function Hero() {
       >
         <Link to="/waitlist">
           <Button
-            className="h-auto rounded-xl bg-orange text-white font-sans text-base font-semibold px-10 py-4 border-orange hover:bg-orange/90 transition-colors duration-200"
+            className="h-auto w-full sm:w-auto rounded-xl bg-orange text-white font-sans text-base font-semibold px-10 py-4 border-orange hover:bg-orange/90 transition-colors duration-200"
           >
             Join the Waitlist &rarr;
           </Button>

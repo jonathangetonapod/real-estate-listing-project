@@ -112,10 +112,10 @@ export function AIComparison() {
   const example = examples[activeIndex];
 
   return (
-    <section className="bg-lime py-20 px-5 sm:py-[60px] sm:px-4">
+    <section className="bg-lime py-12 px-4 md:py-20 md:px-5">
       <div className="mx-auto max-w-[1100px]">
         <motion.h2
-          className="font-heading text-4xl sm:text-[26px] md:text-[30px] lg:text-[44px] font-bold text-charcoal text-center mb-3 leading-tight"
+          className="font-heading text-[26px] md:text-[30px] lg:text-[44px] font-bold text-charcoal text-center mb-3 leading-tight"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -137,8 +137,7 @@ export function AIComparison() {
             <button
               key={i}
               className={cn(
-                'rounded-3xl px-5 py-2 font-sans text-sm font-semibold cursor-pointer transition-all duration-200 border',
-                'sm:px-3.5 sm:py-1.5 sm:text-[13px]',
+                'rounded-3xl px-3.5 py-1.5 font-sans text-[13px] md:px-5 md:py-2 md:text-sm font-semibold cursor-pointer transition-all duration-200 border min-h-[44px] flex items-center',
                 i === activeIndex
                   ? 'bg-charcoal text-white border-charcoal'
                   : 'bg-charcoal/8 border-charcoal/12 text-charcoal hover:bg-charcoal/15'
@@ -154,7 +153,7 @@ export function AIComparison() {
         <AnimatePresence mode="wait">
           <motion.div
             key={`context-${activeIndex}`}
-            className="flex items-center justify-center gap-3 mb-5 flex-wrap md:flex-col md:gap-1.5"
+            className="flex flex-col md:flex-row items-center justify-center gap-1.5 md:gap-3 mb-5 flex-wrap"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -194,7 +193,7 @@ export function AIComparison() {
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="flex items-center gap-2 px-6 py-4 border-b border-[#eee] sm:px-4 sm:py-3">
+              <div className="flex items-center gap-2 px-4 py-3 md:px-6 md:py-4 border-b border-[#eee]">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#FFE8E8] text-danger text-sm font-bold leading-none">
                   ✕
                 </span>
@@ -205,7 +204,7 @@ export function AIComparison() {
                   Low response rate
                 </Badge>
               </div>
-              <div className="p-5 px-6 sm:p-4">
+              <div className="p-4 md:p-5 md:px-6">
                 <div className="font-sans text-sm font-semibold text-charcoal mb-3">
                   <span className="font-normal text-muted-foreground mr-1.5">Subject:</span>
                   {example.generic.subject}
@@ -215,7 +214,7 @@ export function AIComparison() {
                   &ldquo;{example.generic.body}&rdquo;
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2 px-6 py-3.5 bg-[#FFF8F6] border-t border-[#FFE8E8] font-sans text-xs font-medium text-danger md:flex-col md:gap-1 sm:px-4 sm:py-3">
+              <div className="flex flex-col gap-1 md:flex-wrap md:flex-row md:gap-2 px-4 py-3 md:px-6 md:py-3.5 bg-[#FFF8F6] border-t border-[#FFE8E8] font-sans text-xs font-medium text-danger">
                 <span className="flex items-center gap-1">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-danger" /> No personalization
                 </span>
@@ -239,7 +238,7 @@ export function AIComparison() {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3, delay: 0.1 }}
             >
-              <div className="flex items-center gap-2 px-6 py-4 border-b border-[#eee] sm:px-4 sm:py-3">
+              <div className="flex items-center gap-2 px-4 py-3 md:px-6 md:py-4 border-b border-[#eee]">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#e6f9e9] text-success text-sm font-bold leading-none">
                   ✓
                 </span>
@@ -250,7 +249,7 @@ export function AIComparison() {
                   3-5x higher reply rate
                 </Badge>
               </div>
-              <div className="p-5 px-6 sm:p-4">
+              <div className="p-4 md:p-5 md:px-6">
                 <div className="font-sans text-sm font-semibold text-charcoal mb-3">
                   <span className="font-normal text-muted-foreground mr-1.5">Subject:</span>
                   {example.ai.subject}
@@ -260,7 +259,7 @@ export function AIComparison() {
                   &ldquo;{highlightText(example.ai.body, example.ai.highlights)}&rdquo;
                 </p>
               </div>
-              <div className="flex flex-wrap items-center gap-1.5 px-6 py-3 border-t border-[#eee]">
+              <div className="flex flex-wrap items-center gap-1.5 px-4 py-3 md:px-6 border-t border-[#eee]">
                 <span className="font-sans text-[11px] font-semibold text-[#999] uppercase tracking-wide">
                   Data used:
                 </span>
@@ -270,7 +269,7 @@ export function AIComparison() {
                   </Badge>
                 ))}
               </div>
-              <div className="flex flex-wrap gap-2 px-6 py-3.5 bg-[#F0FDF4] border-t border-[#d1fae5] font-sans text-xs font-medium text-success md:flex-col md:gap-1 sm:px-4 sm:py-3">
+              <div className="flex flex-col gap-1 md:flex-wrap md:flex-row md:gap-2 px-4 py-3 md:px-6 md:py-3.5 bg-[#F0FDF4] border-t border-[#d1fae5] font-sans text-xs font-medium text-success">
                 <span className="flex items-center gap-1">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" /> Uses real MLS comps & public records
                 </span>

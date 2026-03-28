@@ -59,10 +59,10 @@ const stepVariants = {
 
 export function HowItWorks() {
   return (
-    <section className="bg-light-bg py-20 px-5" id="how-it-works">
+    <section className="bg-light-bg py-12 px-4 md:py-20 md:px-5" id="how-it-works">
       <div className="mx-auto max-w-3xl">
         <motion.div
-          className="text-center mb-16"
+          className="text-center mb-10 md:mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-80px' }}
@@ -71,7 +71,7 @@ export function HowItWorks() {
           <span className="inline-block font-mono text-xs font-medium uppercase tracking-widest text-orange mb-4">
             How It Works
           </span>
-          <h2 className="font-heading text-4xl md:text-[44px] font-bold text-dark leading-tight">
+          <h2 className="font-heading text-3xl md:text-[44px] font-bold text-dark leading-tight">
             Farm Area to First Reply<br className="hidden md:block" /> in Under 30 Days
           </h2>
         </motion.div>
@@ -104,8 +104,8 @@ export function HowItWorks() {
                 </div>
 
                 {/* Content card */}
-                <div className="flex-1 pb-8 md:pb-10">
-                  <div className="rounded-xl border border-transparent bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-300 group-hover:border-orange/20 group-hover:shadow-[0_2px_8px_rgba(255,89,36,0.06)]">
+                <div className="flex-1 pb-6 md:pb-10">
+                  <div className="rounded-xl border border-transparent bg-white p-4 md:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-300 group-hover:border-orange/20 group-hover:shadow-[0_2px_8px_rgba(255,89,36,0.06)]">
                     <div className="flex items-start justify-between gap-4 mb-2">
                       <h3 className="font-heading text-lg font-bold text-dark leading-snug">
                         {step.title}

@@ -38,10 +38,10 @@ const cardVariants = {
 
 export function ProblemSection() {
   return (
-    <section className="bg-white px-6 py-20">
+    <section className="bg-white px-4 py-12 md:px-6 md:py-20">
       <div className="mx-auto max-w-7xl">
         <motion.h2
-          className="mx-auto mb-14 max-w-2xl text-center font-heading text-4xl font-bold leading-tight text-charcoal md:text-[44px]"
+          className="mx-auto mb-10 md:mb-14 max-w-2xl text-center font-heading text-3xl font-bold leading-tight text-charcoal md:text-[44px]"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-60px' }}
@@ -60,7 +60,7 @@ export function ProblemSection() {
           {cards.map((card) => (
             <motion.div
               key={card.title}
-              className="rounded-xl border border-gray-200 bg-white p-8"
+              className="rounded-xl border border-gray-200 bg-white p-5 md:p-8"
               variants={cardVariants}
             >
               <span className={`mb-4 block h-2.5 w-2.5 rounded-full ${card.indicator}`} />

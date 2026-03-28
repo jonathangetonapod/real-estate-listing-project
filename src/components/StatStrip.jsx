@@ -53,7 +53,7 @@ function StatItem({ target, display, label, shouldAnimate }) {
 
   return (
     <div className="min-w-[120px] text-center">
-      <div className="font-mono text-3xl font-bold leading-tight text-orange md:text-4xl">
+      <div className="font-mono text-2xl font-bold leading-tight text-orange md:text-4xl">
         {display(count)}
       </div>
       <div className="mt-1 text-sm text-gray-500">
@@ -70,13 +70,13 @@ export function StatStrip() {
   return (
     <motion.section
       ref={ref}
-      className="bg-dark px-6 py-8"
+      className="bg-dark px-4 py-6 md:px-6 md:py-8"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
     >
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-8 md:gap-16">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-6 md:gap-16">
         {stats.map((stat) => (
           <StatItem
             key={stat.label}

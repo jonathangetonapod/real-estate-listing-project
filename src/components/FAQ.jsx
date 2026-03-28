@@ -59,9 +59,9 @@ const faqData = [
 
 export function FAQ() {
   return (
-    <section id="faq" className="bg-white px-5 py-20">
+    <section id="faq" className="bg-white px-4 py-12 md:px-5 md:py-20">
       <motion.h2
-        className="mx-auto mb-12 text-center font-heading text-4xl font-bold leading-tight text-dark"
+        className="mx-auto mb-8 md:mb-12 text-center font-heading text-3xl md:text-4xl font-bold leading-tight text-dark"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-80px' }}
@@ -85,7 +85,7 @@ export function FAQ() {
               }}
             >
               <AccordionItem value={`faq-${index}`}>
-                <AccordionTrigger className="py-5 font-heading text-lg font-bold leading-snug text-dark hover:no-underline">
+                <AccordionTrigger className="py-4 md:py-5 min-h-[44px] font-heading text-base md:text-lg font-bold leading-snug text-dark hover:no-underline text-left">
                   {item.q}
                 </AccordionTrigger>
                 <AccordionContent>

@@ -123,7 +123,7 @@ export function DashboardMockup() {
     : allLeads.filter(l => l.badge === activeTab);
 
   return (
-    <div className="flex justify-center px-6 py-16">
+    <div className="flex justify-center px-4 py-12 md:px-6 md:py-16">
       <motion.div
         className="w-full max-w-[1000px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl"
         initial={{ opacity: 0, y: 60 }}
@@ -217,7 +217,7 @@ export function DashboardMockup() {
                 {metrics.map((metric) => (
                   <div
                     key={metric.label}
-                    className="rounded-xl border border-gray-100 bg-white p-4"
+                    className="rounded-xl border border-gray-100 bg-white p-3 md:p-4"
                   >
                     <div className="mb-1.5 flex items-center justify-between">
                       <div className="font-sans text-[11px] font-medium uppercase tracking-wide text-gray-500">
@@ -236,7 +236,7 @@ export function DashboardMockup() {
                     </div>
                     <div
                       className={cn(
-                        'font-mono text-[28px] font-bold leading-none',
+                        'font-mono text-xl md:text-[28px] font-bold leading-none',
                         metricValueColorMap[metric.color]
                       )}
                     >
@@ -252,7 +252,7 @@ export function DashboardMockup() {
                   <div className="font-sans text-sm font-bold text-charcoal">
                     Recent Leads
                   </div>
-                  <div className="hidden gap-1 md:flex">
+                  <div className="flex gap-1 overflow-x-auto">
                     {tabFilters.map(tab => (
                       <button
                         key={tab}

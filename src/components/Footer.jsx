@@ -8,13 +8,13 @@ const navLinks = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/10 bg-dark px-5 py-10">
+    <footer className="border-t border-white/10 bg-dark px-4 py-8 md:px-5 md:py-10">
       <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-5 text-center md:flex-row md:text-left">
         <div className="font-heading text-lg font-bold text-white">
           Off<span className="text-orange">Market</span>
         </div>
 
-        <nav className="flex flex-wrap items-center justify-center gap-6">
+        <nav className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
           {navLinks.map((link) => (
             <a
               key={link.label}

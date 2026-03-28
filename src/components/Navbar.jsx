@@ -71,7 +71,7 @@ export function Navbar() {
 
         {/* Hamburger */}
         <button
-          className="flex md:hidden flex-col justify-center items-center gap-[5px] w-9 h-9 bg-transparent border-none cursor-pointer p-1"
+          className="flex md:hidden flex-col justify-center items-center gap-[5px] w-11 h-11 bg-transparent border-none cursor-pointer p-1"
           onClick={toggleMobile}
           aria-label="Toggle menu"
         >
@@ -105,7 +105,7 @@ export function Navbar() {
           {navLinks.map((link) => (
             <a
               key={link.label}
-              className="font-sans text-base font-medium text-charcoal py-2 transition-colors duration-200 hover:text-orange"
+              className="font-sans text-base font-medium text-charcoal py-3 min-h-[44px] flex items-center transition-colors duration-200 hover:text-orange"
               href={link.href}
               onClick={() => setMobileOpen(false)}
             >
@@ -114,7 +114,7 @@ export function Navbar() {
           ))}
           <Link to="/waitlist" onClick={() => setMobileOpen(false)}>
             <Button
-              className="w-full rounded-full bg-orange text-white font-sans text-sm font-semibold px-6 py-2.5 border-orange hover:bg-orange/90 transition-colors duration-200"
+              className="w-full rounded-full bg-orange text-white font-sans text-sm font-semibold px-6 py-3 min-h-[44px] border-orange hover:bg-orange/90 transition-colors duration-200"
             >
               Join the Waitlist
             </Button>

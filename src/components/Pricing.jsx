@@ -25,9 +25,9 @@ const fadeIn = {
 
 export function Pricing() {
   return (
-    <section id="pricing" className="bg-light-bg px-5 py-20">
+    <section id="pricing" className="bg-light-bg px-4 py-12 md:px-5 md:py-20">
       <motion.h2
-        className="mx-auto mb-4 text-center font-heading text-4xl font-bold leading-tight text-dark md:text-[44px]"
+        className="mx-auto mb-4 text-center font-heading text-3xl font-bold leading-tight text-dark md:text-[44px]"
         variants={fadeIn}
         initial="hidden"
         whileInView="visible"
@@ -54,7 +54,7 @@ export function Pricing() {
         whileInView="visible"
         viewport={{ once: true, margin: '-60px' }}
       >
-        <div className="flex-1 bg-red-50 px-6 py-5 text-center">
+        <div className="flex-1 bg-red-50 px-4 py-4 md:px-6 md:py-5 text-center">
           <span className="block font-sans text-xs font-semibold uppercase tracking-wide text-gray-400">
             Zillow Leads
           </span>
@@ -70,7 +70,7 @@ export function Pricing() {
           vs
         </div>
 
-        <div className="flex-1 bg-green-50 px-6 py-5 text-center">
+        <div className="flex-1 bg-green-50 px-4 py-4 md:px-6 md:py-5 text-center">
           <span className="block font-sans text-xs font-semibold uppercase tracking-wide text-gray-400">
             OffMarket
           </span>
@@ -92,13 +92,13 @@ export function Pricing() {
         viewport={{ once: true, margin: '-80px' }}
       >
         <Card className="rounded-xl bg-white py-0 ring-2 ring-orange">
-          <CardContent className="flex flex-col p-8">
+          <CardContent className="flex flex-col p-5 md:p-8">
             <span className="font-sans text-sm font-semibold uppercase tracking-wide text-orange">
               OffMarket
             </span>
 
             <div className="mt-3 mb-2 flex items-baseline gap-1">
-              <span className="font-heading text-6xl font-bold leading-none text-charcoal">
+              <span className="font-heading text-5xl md:text-6xl font-bold leading-none text-charcoal">
                 $99
               </span>
               <span className="font-sans text-lg text-gray-400">/month</span>
