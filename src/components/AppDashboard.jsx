@@ -239,46 +239,13 @@ function FarmAreaTab() {
   if (farmState === 'delivered') {
     return (
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="font-heading text-2xl font-bold text-charcoal mb-1">Your Farm Area</h2>
-            <p className="font-sans text-sm text-gray-500">Riverside Heights, CA</p>
-          </div>
-          <Button variant="outline" className="rounded-lg text-sm" onClick={() => setFarmState('form')}>
-            Edit Farm Area
-          </Button>
+        <div className="mb-8">
+          <h2 className="font-heading text-2xl font-bold text-charcoal mb-1">My Market</h2>
+          <p className="font-sans text-sm text-gray-500">Order leads and track your deliveries.</p>
         </div>
 
-        {/* Current farm summary */}
-        <Card className="rounded-xl mb-6">
-          <CardContent className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div>
-                <div className="font-sans text-xs text-gray-400 uppercase tracking-wide mb-1">Zip Codes</div>
-                <div className="flex gap-1.5">
-                  {zipCodes.map(z => (
-                    <span key={z} className="font-mono text-sm font-semibold text-charcoal bg-light-bg rounded-md px-2 py-0.5">{z}</span>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <div className="font-sans text-xs text-gray-400 uppercase tracking-wide mb-1">Lead Types</div>
-                <div className="font-sans text-sm font-semibold text-charcoal">{selectedTypes.length} types active</div>
-              </div>
-              <div>
-                <div className="font-sans text-xs text-gray-400 uppercase tracking-wide mb-1">Price Range</div>
-                <div className="font-mono text-sm font-semibold text-charcoal">${Number(priceMin).toLocaleString()} — ${Number(priceMax).toLocaleString()}</div>
-              </div>
-              <div>
-                <div className="font-sans text-xs text-gray-400 uppercase tracking-wide mb-1">Status</div>
-                <Badge className="bg-success/10 text-success border-success/20 rounded-full text-xs">Active</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Lead delivery history */}
-        <h3 className="font-sans text-base font-semibold text-charcoal mb-4">Lead Deliveries</h3>
+        <h3 className="font-sans text-base font-semibold text-charcoal mb-4">Past Orders</h3>
         <div className="space-y-3">
           {[
             { date: 'Mar 28, 2026', count: 248, types: 'Expired (94), FSBO (62), Pre-Foreclosure (38), Absentee (28), High Equity (26)', status: 'delivered', drafts: 248 },
