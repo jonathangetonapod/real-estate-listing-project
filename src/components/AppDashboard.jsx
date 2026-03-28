@@ -34,6 +34,9 @@ import {
   XCircle,
   Pencil,
   RefreshCw,
+  Building2,
+  DollarSign,
+  Phone,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -41,12 +44,51 @@ import {
 // ---------------------------------------------------------------------------
 
 const leads = [
-  { name: 'Michael Torres', address: '4821 Oakwood Dr, Riverside Heights', type: 'Expired', match: 94, price: '$485K', equity: '$185K', days: '47d expired', draft: 'Ready', stage: 'Drafted', email: 'mtorres@email.com', order: 'Mar 2026', sqft: '2,840', yearBuilt: 2004, lotSize: '0.18 acres', loanAmount: '$300K', interestRate: '5.25%', taxBill: '$5,820', ownerName: 'Michael Torres' },
-  { name: 'Sarah Kim', address: '1203 Maple Ridge Ln, Canyon Crest', type: 'FSBO', match: 87, price: '$392K', equity: '$240K', days: '12d listed', draft: 'Ready', stage: 'Drafted', email: 'skim@email.com', order: 'Mar 2026', sqft: '1,960', yearBuilt: 2011, lotSize: '0.14 acres', loanAmount: '$152K', interestRate: '3.75%', taxBill: '$4,480', ownerName: 'Sarah Kim' },
-  { name: 'David Hernandez', address: '892 Sunset Blvd, Palm Canyon', type: 'Pre-Foreclosure', match: 91, price: '$520K', equity: '$310K', days: 'NOD 34d', draft: 'Sent', stage: 'Sent', email: 'dhernandez@email.com', order: 'Mar 2026', sqft: '3,200', yearBuilt: 1998, lotSize: '0.22 acres', loanAmount: '$210K', interestRate: '4.50%', taxBill: '$6,240', ownerName: 'David Hernandez' },
-  { name: 'Linda Chen', address: '2710 Harbor View Dr, Eastlake', type: 'Expired', match: 82, price: '$415K', equity: '$195K', days: '21d expired', draft: 'Ready', stage: 'New', email: 'lchen@email.com', order: 'Mar 2026', sqft: '2,100', yearBuilt: 2008, lotSize: '0.16 acres', loanAmount: '$220K', interestRate: '6.00%', taxBill: '$4,980', ownerName: 'Linda Chen' },
-  { name: 'Robert Williams', address: '558 Palm Ave, Northpark', type: 'FSBO', match: 78, price: '$349K', equity: '$120K', days: '45d listed', draft: 'Pending', stage: 'New', email: 'rwilliams@email.com', order: 'Feb 2026', sqft: '1,540', yearBuilt: 1995, lotSize: '0.12 acres', loanAmount: '$229K', interestRate: '5.75%', taxBill: '$3,920', ownerName: 'Robert Williams' },
-  { name: 'Maria Gonzalez', address: '1847 Vista Del Mar, Oceanside', type: 'High Equity', match: 85, price: '$680K', equity: '$420K', days: '15yr owned', draft: 'Sent', stage: 'Opened', email: 'mgonzalez@email.com', order: 'Feb 2026', sqft: '3,680', yearBuilt: 2001, lotSize: '0.31 acres', loanAmount: '$260K', interestRate: '3.25%', taxBill: '$8,160', ownerName: 'Maria Gonzalez' },
+  {
+    name: 'Michael Torres', address: '4821 Oakwood Dr, Riverside Heights', type: 'Expired', match: 94, price: '$485K', equity: '$185K', days: '47d expired', draft: 'Ready', stage: 'Drafted', email: 'mtorres@email.com', order: 'Mar 2026',
+    // CREXI-level property data
+    propertyType: 'Single Family', sqft: '2,840', numberOfUnits: 1, yearBuilt: 2004, lotSizeAcres: '0.18', zoningCode: 'R-1', county: 'Riverside',
+    // Financial
+    soldPrice: '$459K', loanAmount: '$300K', lender: 'Wells Fargo', loanType: 'Conventional', interestRate: '5.25%', totalParcelValue: '$485K', improvementValue: '$390K', landValue: '$95K', taxBill: '$5,820', taxYear: 2024,
+    // Owner & contact
+    ownerName: 'Michael Torres', mailingAddress: '4821 Oakwood Dr, Riverside Heights, CA 92501', contactName: 'Michael Torres',
+    phones: ['(951) 555-0142', '(951) 555-0198'], emails: ['mtorres@email.com', 'mike.torres@work.com'],
+  },
+  {
+    name: 'Sarah Kim', address: '1203 Maple Ridge Ln, Canyon Crest', type: 'FSBO', match: 87, price: '$392K', equity: '$240K', days: '12d listed', draft: 'Ready', stage: 'Drafted', email: 'skim@email.com', order: 'Mar 2026',
+    propertyType: 'Single Family', sqft: '1,960', numberOfUnits: 1, yearBuilt: 2011, lotSizeAcres: '0.14', zoningCode: 'R-1', county: 'Riverside',
+    soldPrice: '$392K', loanAmount: '$152K', lender: 'Chase', loanType: 'Conventional', interestRate: '3.75%', totalParcelValue: '$392K', improvementValue: '$310K', landValue: '$82K', taxBill: '$4,480', taxYear: 2024,
+    ownerName: 'Sarah Kim', mailingAddress: '1203 Maple Ridge Ln, Canyon Crest, CA 92507', contactName: 'Sarah Kim',
+    phones: ['(951) 555-0234'], emails: ['skim@email.com'],
+  },
+  {
+    name: 'David Hernandez', address: '892 Sunset Blvd, Palm Canyon', type: 'Pre-Foreclosure', match: 91, price: '$520K', equity: '$310K', days: 'NOD 34d', draft: 'Sent', stage: 'Sent', email: 'dhernandez@email.com', order: 'Mar 2026',
+    propertyType: 'Single Family', sqft: '3,200', numberOfUnits: 1, yearBuilt: 1998, lotSizeAcres: '0.22', zoningCode: 'R-1', county: 'Riverside',
+    soldPrice: '$540K', loanAmount: '$210K', lender: 'Bank of America', loanType: 'FHA', interestRate: '4.50%', totalParcelValue: '$520K', improvementValue: '$415K', landValue: '$105K', taxBill: '$6,240', taxYear: 2024,
+    ownerName: 'David Hernandez', mailingAddress: '892 Sunset Blvd, Palm Canyon, CA 92264', contactName: 'David Hernandez',
+    phones: ['(760) 555-0312', '(760) 555-0318', '(951) 555-0401'], emails: ['dhernandez@email.com', 'd.hernandez@gmail.com'],
+  },
+  {
+    name: 'Linda Chen', address: '2710 Harbor View Dr, Eastlake', type: 'Expired', match: 82, price: '$415K', equity: '$195K', days: '21d expired', draft: 'Ready', stage: 'New', email: 'lchen@email.com', order: 'Mar 2026',
+    propertyType: 'Townhouse', sqft: '2,100', numberOfUnits: 1, yearBuilt: 2008, lotSizeAcres: '0.08', zoningCode: 'R-2', county: 'San Diego',
+    soldPrice: '$415K', loanAmount: '$220K', lender: 'US Bank', loanType: 'Conventional', interestRate: '6.00%', totalParcelValue: '$415K', improvementValue: '$340K', landValue: '$75K', taxBill: '$4,980', taxYear: 2024,
+    ownerName: 'Linda Chen', mailingAddress: '2710 Harbor View Dr, Eastlake, CA 91915', contactName: 'Linda Chen',
+    phones: ['(619) 555-0456'], emails: ['lchen@email.com', 'linda.chen@outlook.com'],
+  },
+  {
+    name: 'Robert Williams', address: '558 Palm Ave, Northpark', type: 'FSBO', match: 78, price: '$349K', equity: '$120K', days: '45d listed', draft: 'Pending', stage: 'New', email: 'rwilliams@email.com', order: 'Feb 2026',
+    propertyType: 'Condo', sqft: '1,540', numberOfUnits: 1, yearBuilt: 1995, lotSizeAcres: '0.04', zoningCode: 'R-3', county: 'San Diego',
+    soldPrice: '$349K', loanAmount: '$229K', lender: 'Quicken Loans', loanType: 'Conventional', interestRate: '5.75%', totalParcelValue: '$349K', improvementValue: '$295K', landValue: '$54K', taxBill: '$3,920', taxYear: 2024,
+    ownerName: 'Robert Williams', mailingAddress: '558 Palm Ave, Northpark, CA 92104', contactName: 'Robert Williams',
+    phones: ['(619) 555-0589', '(619) 555-0612'], emails: ['rwilliams@email.com'],
+  },
+  {
+    name: 'Maria Gonzalez', address: '1847 Vista Del Mar, Oceanside', type: 'High Equity', match: 85, price: '$680K', equity: '$420K', days: '15yr owned', draft: 'Sent', stage: 'Opened', email: 'mgonzalez@email.com', order: 'Feb 2026',
+    propertyType: 'Single Family', sqft: '3,680', numberOfUnits: 1, yearBuilt: 2001, lotSizeAcres: '0.31', zoningCode: 'R-1', county: 'San Diego',
+    soldPrice: 'N/A', loanAmount: '$260K', lender: 'CitiMortgage', loanType: 'Conventional', interestRate: '3.25%', totalParcelValue: '$680K', improvementValue: '$520K', landValue: '$160K', taxBill: '$8,160', taxYear: 2024,
+    ownerName: 'Maria Gonzalez', mailingAddress: '1847 Vista Del Mar, Oceanside, CA 92054', contactName: 'Maria Gonzalez',
+    phones: ['(760) 555-0723', '(760) 555-0741', '(619) 555-0899'], emails: ['mgonzalez@email.com', 'maria.g@yahoo.com', 'mgonzalez@work.com'],
+  },
 ];
 
 const navItems = [
@@ -883,24 +925,37 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
           )}
 
           {/* Lead Context Strip */}
-          <div className="rounded-xl border border-border p-4 space-y-2">
+          <div className="rounded-xl border border-border p-4 space-y-3">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Property Context</p>
             <div className="grid grid-cols-2 gap-3 text-sm">
               {[
-                { label: 'Price', value: lead.price },
+                { label: 'Value', value: lead.price },
                 { label: 'Equity', value: lead.equity, className: 'text-success' },
                 { label: 'Sq Ft', value: lead.sqft },
                 { label: 'Year Built', value: lead.yearBuilt },
-                { label: 'Lot Size', value: lead.lotSize },
+                { label: 'Lot', value: lead.lotSizeAcres ? `${lead.lotSizeAcres} ac` : null },
+                { label: 'Lender', value: lead.lender },
                 { label: 'Loan', value: lead.loanAmount },
                 { label: 'Rate', value: lead.interestRate },
-                { label: 'Tax Bill', value: lead.taxBill },
-              ].map((item) => (
+                { label: 'Parcel Value', value: lead.totalParcelValue },
+                { label: 'Tax Bill', value: lead.taxBill ? `$${lead.taxBill}/yr` : null },
+              ].filter(item => item.value != null).map((item) => (
                 <div key={item.label}>
                   <p className="text-[10px] text-muted-foreground">{item.label}</p>
                   <p className={cn('font-medium', item.className)}>{item.value}</p>
                 </div>
               ))}
+            </div>
+            {/* Owner & Contact */}
+            <div className="pt-2 border-t border-gray-100 grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-[10px] text-muted-foreground">Owner</p>
+                <p className="font-medium truncate">{lead.ownerName}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground">County</p>
+                <p className="font-medium">{lead.county}</p>
+              </div>
             </div>
           </div>
 
@@ -908,7 +963,14 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
           <div>
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2">Data Sources</p>
             <div className="flex items-center gap-2 flex-wrap">
-              {['MLS listing', 'Sold comps', 'Days expired', 'Equity estimate', 'Tax records', 'Loan data'].map((src) => (
+              {[
+                'Property records',
+                lead.lender ? 'Loan data' : null,
+                'Tax records',
+                'Equity estimate',
+                lead.soldPrice && lead.soldPrice !== 'N/A' ? 'Sold comps' : null,
+                'MLS listing',
+              ].filter(Boolean).map((src) => (
                 <span key={src} className="rounded-md bg-muted px-2.5 py-1 text-xs text-muted-foreground">{src}</span>
               ))}
             </div>
@@ -1155,6 +1217,7 @@ function LeadsTab() {
       ...prev,
       [idx]: { ...prev[idx], subject, body, status: 'sent', lastEdited: new Date().toISOString() },
     }));
+    setContactedLeads(prev => ({ ...prev, [idx]: true }));
     setPitchSlideOverIndex(null);
   }, []);
 
@@ -1337,7 +1400,7 @@ function LeadsTab() {
 
                     {/* Expandable Detail Panel */}
                     <AnimatePresence initial={false}>
-                      {isExpanded && ext && (
+                      {isExpanded && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
@@ -1347,22 +1410,34 @@ function LeadsTab() {
                         >
                           <div className="px-5 pb-5 pt-0">
                             <div className="border-t border-gray-100 pt-5">
+                              {/* AI Insight */}
+                              {extendedLeadData[idx] && (
+                                <div className="rounded-xl bg-light-bg border border-gray-100 p-4 mb-5">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Info className="h-4 w-4 text-orange" />
+                                    <h4 className="font-heading text-sm font-semibold text-charcoal">Why This Seller</h4>
+                                  </div>
+                                  <p className="text-sm leading-relaxed text-gray-600">{extendedLeadData[idx].insight}</p>
+                                </div>
+                              )}
+
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {/* Column 1: Property Details */}
                                 <div className="space-y-3">
                                   <h4 className="font-heading text-sm font-semibold text-charcoal flex items-center gap-2">
-                                    <Home className="h-4 w-4 text-gray-400" />
+                                    <Building2 className="h-4 w-4 text-gray-400" />
                                     Property Details
                                   </h4>
                                   <div className="space-y-2">
                                     {[
-                                      { label: 'Estimated Value', value: ext.estimatedValue },
-                                      { label: 'Estimated Equity', value: ext.estimatedEquity },
-                                      { label: 'Days on Market', value: ext.daysOnMarket },
-                                      { label: 'Lead Type', value: ext.leadType },
-                                      { label: 'Original List Price', value: ext.originalListPrice },
-                                      { label: 'Last Listed', value: ext.lastListed },
-                                    ].map((item) => (
+                                      { label: 'Property Type', value: lead.propertyType },
+                                      { label: 'Building Sq Ft', value: lead.sqft },
+                                      { label: 'Units', value: lead.numberOfUnits },
+                                      { label: 'Year Built', value: lead.yearBuilt },
+                                      { label: 'Lot Size', value: lead.lotSizeAcres ? `${lead.lotSizeAcres} acres` : null },
+                                      { label: 'Zoning', value: lead.zoningCode },
+                                      { label: 'County', value: lead.county },
+                                    ].filter(item => item.value != null).map((item) => (
                                       <div key={item.label} className="flex justify-between items-center">
                                         <span className="text-xs text-muted-foreground">{item.label}</span>
                                         <span className="text-sm font-medium text-charcoal">{item.value}</span>
@@ -1371,21 +1446,78 @@ function LeadsTab() {
                                   </div>
                                 </div>
 
-                                {/* Column 2: Why This Seller */}
+                                {/* Column 2: Financial Details */}
                                 <div className="space-y-3">
                                   <h4 className="font-heading text-sm font-semibold text-charcoal flex items-center gap-2">
-                                    <Info className="h-4 w-4 text-orange" />
-                                    Why This Seller
+                                    <DollarSign className="h-4 w-4 text-gray-400" />
+                                    Financial Details
                                   </h4>
-                                  <div className="rounded-xl bg-light-bg border border-gray-100 p-4">
-                                    <p className="text-sm leading-relaxed text-gray-600">{ext.insight}</p>
+                                  <div className="space-y-2">
+                                    {[
+                                      { label: 'Estimated Value', value: lead.price },
+                                      { label: 'Estimated Equity', value: lead.equity, className: 'text-success font-bold' },
+                                      { label: 'Last Sold Price', value: lead.soldPrice },
+                                      { label: 'Lender', value: lead.lender },
+                                      { label: 'Loan Amount', value: lead.loanAmount },
+                                      { label: 'Loan Type', value: lead.loanType },
+                                      { label: 'Interest Rate', value: lead.interestRate },
+                                      { label: 'Parcel Value', value: lead.totalParcelValue },
+                                      { label: 'Improvement', value: lead.improvementValue },
+                                      { label: 'Land', value: lead.landValue },
+                                      { label: `Tax Bill (${lead.taxYear})`, value: lead.taxBill ? `$${lead.taxBill}/yr` : null },
+                                    ].filter(item => item.value != null && item.value !== 'N/A').map((item) => (
+                                      <div key={item.label} className="flex justify-between items-center">
+                                        <span className="text-xs text-muted-foreground">{item.label}</span>
+                                        <span className={cn('text-sm font-medium text-charcoal', item.className)}>{item.value}</span>
+                                      </div>
+                                    ))}
                                   </div>
                                 </div>
 
-                                {/* Column 3: Quick Actions */}
+                                {/* Column 3: Owner & Contact + Quick Actions */}
                                 <div className="space-y-3">
-                                  <h4 className="font-heading text-sm font-semibold text-charcoal">Quick Actions</h4>
+                                  <h4 className="font-heading text-sm font-semibold text-charcoal flex items-center gap-2">
+                                    <Phone className="h-4 w-4 text-gray-400" />
+                                    Owner & Contact
+                                  </h4>
                                   <div className="space-y-2">
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-xs text-muted-foreground">Owner</span>
+                                      <span className="text-sm font-medium text-charcoal">{lead.ownerName}</span>
+                                    </div>
+                                    {lead.contactName && lead.contactName !== lead.ownerName && (
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-xs text-muted-foreground">Contact</span>
+                                        <span className="text-sm font-medium text-charcoal">{lead.contactName}</span>
+                                      </div>
+                                    )}
+                                    {lead.mailingAddress && (
+                                      <div>
+                                        <span className="text-xs text-muted-foreground block mb-0.5">Mailing Address</span>
+                                        <span className="text-xs text-charcoal">{lead.mailingAddress}</span>
+                                      </div>
+                                    )}
+                                    {lead.phones?.length > 0 && (
+                                      <div>
+                                        <span className="text-xs text-muted-foreground block mb-0.5">Phone{lead.phones.length > 1 ? 's' : ''}</span>
+                                        {lead.phones.map((p, pi) => (
+                                          <span key={pi} className="text-xs font-mono text-charcoal block">{p}</span>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {lead.emails?.length > 0 && (
+                                      <div>
+                                        <span className="text-xs text-muted-foreground block mb-0.5">Email{lead.emails.length > 1 ? 's' : ''}</span>
+                                        {lead.emails.map((em, ei) => (
+                                          <span key={ei} className="text-xs font-mono text-charcoal block truncate">{em}</span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Quick Actions */}
+                                  <div className="pt-3 border-t border-gray-100 space-y-2">
+                                    <h4 className="font-heading text-sm font-semibold text-charcoal">Quick Actions</h4>
                                     <Button
                                       variant="outline"
                                       size="sm"
