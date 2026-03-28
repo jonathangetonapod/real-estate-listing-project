@@ -157,7 +157,7 @@ export function Pricing() {
         whileInView="visible"
         viewport={{ once: true, margin: '-40px' }}
       >
-        14-day free trial. No contracts. Cancel in one click. If you don&apos;t book a conversation, we&apos;ll refund every penny.
+        No contracts. Cancel anytime. See your first leads before you pay.
       </motion.p>
 
       <motion.p
