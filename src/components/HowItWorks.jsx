@@ -4,15 +4,15 @@ import styles from './HowItWorks.module.css';
 const steps = [
   {
     number: 1,
-    title: 'We Find Your Sellers',
+    title: 'Tell Us Your Farm Area',
     description:
-      'Tell us your farm area. We deliver a curated list of motivated sellers \u2014 expireds, FSBOs, pre-foreclosures, and more \u2014 within 12 hours.',
+      'Pick your zip codes. Within 12 hours, we deliver a curated list of motivated sellers \u2014 expireds, FSBOs, pre-foreclosures, absentee owners \u2014 sourced from 155M+ property records.',
   },
   {
     number: 2,
-    title: 'Verified Data, Ready to Go',
+    title: 'Skip-Traced and Verified',
     description:
-      'Every lead comes with verified email addresses, property details, equity estimates, and days on market. No stale data, no guessing.',
+      'Every lead comes with skip-traced email addresses, property details, equity estimates, days on market, and original listing price. The same data that costs $99/month on PropStream \u2014 included free.',
   },
   {
     number: 3,
@@ -22,9 +22,15 @@ const steps = [
   },
   {
     number: 4,
-    title: 'Write Emails with AI',
+    title: 'Pitch Them in Your Voice',
     description:
-      "You\u2019re in control. Our AI helps you craft personal, property-specific pitches that sound like you wrote them yourself. Hit send when you\u2019re ready.",
+      'Our AI references the property address, asking price, nearby comps, and days on market to draft a pitch that sounds like you. Review it, tweak it, and hit send.',
+  },
+  {
+    number: 5,
+    title: 'Replies Land in Your Dashboard',
+    description:
+      'When a seller responds, it shows up in your pipeline instantly. Track conversations, set follow-ups, and move leads from reply to listing appointment \u2014 all in one place.',
   },
 ];
 
@@ -57,7 +63,7 @@ export function HowItWorks() {
           viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
         >
-          From Farm Area to Listing Appointment
+          Farm Area to First Reply in Under 30 Days
         </motion.h2>
 
         <motion.div

@@ -4,18 +4,18 @@ import styles from './Pricing.module.css';
 const starterFeatures = [
   '1 farm area (up to 3 zip codes)',
   '500 emails/month',
-  'AI voice matching',
+  'AI writes in your voice',
   'All lead types included',
-  'Email warm-up & deliverability',
-  'Reply tracking & notifications',
+  'Automated email warm-up (94% inbox rate)',
+  'Reply notifications in real time',
 ];
 
 const growthFeatures = [
   'Unlimited farm areas',
   '1,500 emails/month',
-  'AI voice matching + follow-ups',
+  'AI writes in your voice + automated follow-ups',
   'All lead types included',
-  'Full pipeline tracker (Kanban)',
+  'Visual pipeline: lead → pitch → reply → appointment',
   'Priority support',
 ];
 
@@ -83,12 +83,12 @@ export function Pricing() {
               </li>
             ))}
           </ul>
-          <button className={styles.ctaButton}>Get Early Access</button>
+          <button className={styles.ctaButton}>Start Free Preview</button>
         </div>
 
         {/* Growth Card (Featured) */}
         <div className={styles.cardFeatured}>
-          <span className={styles.planNameFeatured}>Growth</span>
+          <span className={styles.planNameFeatured}>Growth — Most Popular</span>
           <div className={styles.priceRow}>
             <span className={styles.price}>$299</span>
             <span className={styles.pricePeriod}>/month</span>
@@ -101,7 +101,7 @@ export function Pricing() {
               </li>
             ))}
           </ul>
-          <button className={styles.ctaButton}>Get Early Access</button>
+          <button className={styles.ctaButton}>Start Free Preview</button>
         </div>
       </motion.div>
 

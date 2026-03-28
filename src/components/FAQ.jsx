@@ -9,15 +9,15 @@ const faqData = [
   },
   {
     q: 'How is this different from buying Zillow leads?',
-    a: 'Zillow leads are shared with up to 50 agents. ListingPitch emails go directly from you to the homeowner. No competition, no bidding, no sharing.',
+    a: 'Zillow leads are shared with up to 50 agents. ListingPitch emails go directly from you to the homeowner. No competition, no bidding, no sharing. And at $199/mo vs $1,200+/mo, the math speaks for itself.',
   },
   {
     q: 'Do I need PropStream?',
-    a: 'No. We handle all data sourcing. Your subscription includes full access to motivated seller data in your farm area.',
+    a: 'No. We handle all data sourcing, skip-tracing, and email verification. With PropStream you pull the data, export CSVs, skip-trace contacts, and write emails yourself. That\u2019s 5+ hours every week. With ListingPitch, you open your dashboard and the pitches are ready.',
   },
   {
     q: "Can homeowners tell it's AI-written?",
-    a: 'Our AI studies your writing style and references property-specific details. The address, days on market, nearby comps, and neighborhood context. Every email reads like you spent 5 minutes writing it personally.',
+    a: 'Our AI references property-specific details: the address, asking price, days on market, nearby comps, and equity data. Every email reads like you spent 5 minutes writing it personally. No [First Name] merge tags, no generic scripts.',
   },
   {
     q: 'Is cold emailing homeowners legal?',
@@ -25,15 +25,31 @@ const faqData = [
   },
   {
     q: 'How many listings can I expect?',
-    a: 'Results vary by market, but our target benchmark is 3-5 listing conversations per month from 500 emails. At average commission rates, that\u2019s $15,000-40,000 in potential GCI from a $199-299 investment.',
+    a: 'Our benchmark is 3-5 listing conversations per month from 500 emails. At a 6% commission on a $400K home, one closed deal is $12,000 in GCI. A single listing from ListingPitch pays for the entire year.',
   },
   {
     q: 'How long until I see results?',
-    a: 'Your secondary domain needs 14-21 days of warm-up before we scale to full volume. Most agents see their first replies within 3-4 weeks of signing up.',
+    a: 'We set up a protected sending domain for you, which takes 14-21 days to warm up. This is non-negotiable \u2014 it\u2019s what keeps your emails out of spam. Most agents see their first replies within 3-4 weeks. Once warm-up is done, you have a reliable outreach channel that works month after month.',
   },
   {
     q: 'Can I customize which lead types I target?',
     a: 'Yes. You choose which lead types to include, set filters for price range, equity level, days expired, and more. You control who gets pitched.',
+  },
+  {
+    q: 'Is my farm area exclusive?',
+    a: 'We limit the number of agents per zip code to avoid overlap. When your farm area is full, new agents are waitlisted until a slot opens. This keeps your outreach effective and your competition low.',
+  },
+  {
+    q: 'What happens after a homeowner replies?',
+    a: 'Their reply shows up in your ListingPitch dashboard and your Gmail. You can respond directly from either place. Growth plan includes a visual pipeline to track every conversation from first reply to listing signed.',
+  },
+  {
+    q: "I\u2019ve tried lead gen services before and they didn\u2019t work.",
+    a: 'Most lead gen gives you a name and a phone number and says \u201Cgo call them.\u201D ListingPitch is different \u2014 we give you verified emails, property-specific data, and AI-drafted pitches that reference real comps. You\u2019re not cold-prospecting. You\u2019re reaching out with market intel they don\u2019t have.',
+  },
+  {
+    q: 'What if I want to cancel?',
+    a: 'Cancel anytime from your dashboard. No calls, no retention team, no hoops. Your data and conversation history stay available for 30 days after cancellation.',
   },
 ];
 
@@ -78,7 +94,7 @@ export function FAQ() {
         viewport={{ once: true, margin: '-80px' }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
       >
-        Frequently Asked Questions
+        Questions Agents Ask Before Signing Up
       </motion.h2>
 
       <div className={styles.list}>

@@ -78,7 +78,7 @@ export function Hero() {
               />
             </div>
             <button type="submit" className={styles.submitBtn}>
-              Get Early Access &rarr;
+              See My Seller List &rarr;
             </button>
           </form>
         ) : (

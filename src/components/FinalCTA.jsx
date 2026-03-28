@@ -63,7 +63,7 @@ export function FinalCTA() {
                 required
               />
               <button type="submit" className={styles.submitBtn}>
-                Get Early Access &rarr;
+                Send Me My Seller List &rarr;
               </button>
             </form>
           </div>

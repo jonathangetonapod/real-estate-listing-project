@@ -32,7 +32,7 @@ export function VideoPlaceholder({ onClick }) {
           <div className={styles.playTriangle} />
         </button>
       </div>
-      <p className={styles.label}>See how it works in 90 seconds</p>
+      <p className={styles.label}>Watch: How one agent booked 3 listing appointments in her first month</p>
     </motion.div>
   );
 }

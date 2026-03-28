@@ -49,8 +49,8 @@ export function Navbar() {
         </ul>
 
         <div className={`${styles.actions} ${styles.desktopActions}`}>
-          <button className={styles.btnOutline}>Book Demo</button>
-          <button className={styles.btnSolid}>Get Early Access</button>
+          <button className={styles.btnOutline}>See a Sample List</button>
+          <button className={styles.btnSolid}>Start Free Preview</button>
         </div>
 
         <button
@@ -77,8 +77,8 @@ export function Navbar() {
             </a>
           ))}
           <div className={styles.actions}>
-            <button className={styles.btnOutline}>Book Demo</button>
-            <button className={styles.btnSolid}>Get Early Access</button>
+            <button className={styles.btnOutline}>See a Sample List</button>
+            <button className={styles.btnSolid}>Start Free Preview</button>
           </div>
         </div>
       </nav>
