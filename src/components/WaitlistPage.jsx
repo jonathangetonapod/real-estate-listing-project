@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
 const FOUNDING_PRICE = 79;
 const REGULAR_PRICE = 99;
-const SPOTS_PER_MARKET = 50;
+const SPOTS_PER_MARKET = 5;
 
 const benefits = [
   {
@@ -30,19 +31,43 @@ const benefits = [
 const faqItems = [
   {
     q: 'What do I get for $99/mo?',
-    a: '250 verified motivated seller leads per month, AI-drafted outreach emails for each, managed sending with your name and brand, and reply tracking in your dashboard. All lead types included.',
+    a: '250 verified motivated seller leads per month, AI-drafted outreach emails for each lead, managed sending with your name and brand (94% inbox rate), reply tracking in your dashboard, and follow-up sequences. All lead types included: expireds, FSBOs, pre-foreclosures, absentee owners, high equity, and probate.',
   },
   {
     q: 'Why limit agents per zip code?',
-    a: 'If 50 agents email the same sellers, nobody gets replies. We cap each market so your outreach actually works. When your zip code is full, new agents are waitlisted until a spot opens.',
+    a: 'If multiple agents email the same sellers with the same tool, nobody gets replies. We limit each zip code to 5 agents so your outreach actually works and your leads stay exclusive.',
   },
   {
     q: 'How is this different from Zillow leads?',
-    a: 'Zillow shares each lead with dozens of agents and charges $1,200+/mo. ListSignal delivers exclusive, verified seller data with AI-drafted pitches for $99/mo.',
+    a: 'Zillow shares each lead with dozens of agents and charges $1,200+/mo. ListSignal delivers exclusive, verified seller data with AI-drafted pitches for $99/mo. Your leads are yours. No bidding, no sharing.',
+  },
+  {
+    q: 'What does "founding member" mean?',
+    a: 'The first 500 agents to join lock in $79/mo for life instead of the regular $99/mo. Founding members also get priority access when their market opens and early input on new features.',
+  },
+  {
+    q: 'Will this hurt my email reputation?',
+    a: 'We never touch your personal email. Every email goes out from our managed infrastructure with your name and brand in the from field. We handle warm-up, rotation, and deliverability. Replies come into your ListSignal dashboard.',
+  },
+  {
+    q: 'Do I need any other tools?',
+    a: 'No. We handle all data sourcing, skip-tracing, email verification, AI drafting, and sending. No exporting CSVs, no manual lookups, no separate subscriptions.',
+  },
+  {
+    q: 'How long until I see results?',
+    a: 'Your sending domain needs 14-21 days to warm up. This is non-negotiable \u2014 it keeps your emails out of spam. Most agents see their first replies within 3-4 weeks. Once warm-up is done, you have a reliable outreach channel that works month after month.',
+  },
+  {
+    q: 'Is cold emailing homeowners legal?',
+    a: 'Yes, when done properly under CAN-SPAM. Every email includes your real identity, physical address, and one-click unsubscribe. We handle compliance automatically.',
   },
   {
     q: 'When do you launch?',
-    a: 'We are onboarding markets in waves. Waitlist members get first access when their market opens. Founding members ($79/mo for life) are prioritized.',
+    a: 'We are onboarding markets in waves. Waitlist members get first access when their market opens. Founding members are prioritized.',
+  },
+  {
+    q: 'What if I want to cancel?',
+    a: 'Cancel anytime from your dashboard. No calls, no retention team, no hoops. Your data and conversation history stay available for 30 days after cancellation.',
   },
 ];
 
@@ -126,7 +151,8 @@ export function WaitlistPage() {
     return () => observer.disconnect();
   }, []);
 
-  const waitlistCount = useCountUp(2347, 2000, counterVisible);
+  // No fake social proof numbers — show real product stats instead
+  const unused = counterVisible; // keep observer for animation trigger
 
   const handleEmailSubmit = (e) => {
     e.preventDefault();
@@ -150,13 +176,13 @@ export function WaitlistPage() {
     <div className="min-h-screen bg-white text-charcoal">
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 mx-auto max-w-5xl">
-        <div className="font-heading text-xl font-bold">
+        <Link to="/" className="font-heading text-xl font-bold">
           <span className="text-charcoal">List</span>
           <span className="text-orange">Signal</span>
-        </div>
-        <span className="hidden sm:block font-mono text-xs text-gray-400 tracking-wider uppercase">
-          Early Access
-        </span>
+        </Link>
+        <Link to="/" className="font-sans text-sm text-gray-400 hover:text-charcoal transition-colors">
+          &larr; Back to home
+        </Link>
       </nav>
 
       {/* Hero */}
@@ -177,7 +203,7 @@ export function WaitlistPage() {
             variants={fadeUp} initial="hidden" animate="visible" custom={0.1}
           >
             Motivated sellers in your zip code.{' '}
-            <span className="italic text-orange">Delivered by morning.</span>
+            <span className="italic text-orange">Delivered in 12 hours.</span>
           </motion.h1>
 
           <motion.p
@@ -255,7 +281,7 @@ export function WaitlistPage() {
                     {zipCode} — 11 of {SPOTS_PER_MARKET} spots claimed
                   </p>
                   <p className="font-heading text-2xl font-bold text-charcoal mb-2">
-                    You&apos;re #{Math.floor(Math.random() * 200) + 100} on the waitlist
+                    You&apos;re on the waitlist
                   </p>
                   <p className="font-sans text-sm text-gray-400 mb-4">
                     Founding members get priority access at ${FOUNDING_PRICE}/mo for life (regular ${REGULAR_PRICE}/mo).
@@ -283,26 +309,24 @@ export function WaitlistPage() {
         </div>
       </section>
 
-      {/* Social proof counter */}
+      {/* Product facts strip */}
       <section ref={counterRef} className="border-y border-gray-200 py-6">
         <div className="mx-auto max-w-5xl px-6 flex flex-wrap items-center justify-center gap-8 md:gap-16">
           <div className="text-center">
-            <span className="font-mono text-2xl font-bold text-orange">
-              {waitlistCount.toLocaleString()}
-            </span>
-            <span className="block font-sans text-xs text-gray-400 mt-1">agents on waitlist</span>
-          </div>
-          <div className="text-center">
-            <span className="font-mono text-2xl font-bold text-charcoal">127</span>
-            <span className="block font-sans text-xs text-gray-400 mt-1">markets requested</span>
+            <span className="font-mono text-2xl font-bold text-orange">250</span>
+            <span className="block font-sans text-xs text-gray-500 mt-1">verified leads/month</span>
           </div>
           <div className="text-center">
             <span className="font-mono text-2xl font-bold text-charcoal">12hrs</span>
-            <span className="block font-sans text-xs text-gray-400 mt-1">lead turnaround</span>
+            <span className="block font-sans text-xs text-gray-500 mt-1">lead turnaround</span>
+          </div>
+          <div className="text-center">
+            <span className="font-mono text-2xl font-bold text-charcoal">94%</span>
+            <span className="block font-sans text-xs text-gray-500 mt-1">inbox placement</span>
           </div>
           <div className="text-center">
             <span className="font-mono text-2xl font-bold text-charcoal">$99</span>
-            <span className="block font-sans text-xs text-gray-400 mt-1">per month</span>
+            <span className="block font-sans text-xs text-gray-500 mt-1">per month</span>
           </div>
         </div>
       </section>
@@ -342,7 +366,7 @@ export function WaitlistPage() {
                 <h3 className="font-sans text-[15px] font-semibold text-charcoal mb-2">
                   {b.title}
                 </h3>
-                <p className="font-sans text-sm text-gray-400 leading-relaxed">
+                <p className="font-sans text-sm text-gray-500 leading-relaxed">
                   {b.detail}
                 </p>
               </motion.div>
@@ -410,7 +434,7 @@ export function WaitlistPage() {
             className="h-auto rounded-xl bg-orange px-8 py-4 font-sans text-base font-semibold text-white border-none hover:bg-orange/90 transition-colors"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
-            Reserve My Spot &rarr;
+            Join the Waitlist &rarr;
           </Button>
         </motion.div>
       </section>
