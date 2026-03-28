@@ -32,6 +32,8 @@ import {
   ChevronDown,
   ExternalLink,
   XCircle,
+  Pencil,
+  RefreshCw,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -777,6 +779,216 @@ function OverviewTab({ onNavigate }) {
         </div>
       </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tab: My Leads
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Pitch Slide-Over Panel
+// ---------------------------------------------------------------------------
+
+function PitchSlideOver({ lead, ext, draft, onSave, onSend, onRegenerate, onDiscard, onClose }) {
+  const [subject, setSubject] = useState(draft?.subject || '');
+  const [body, setBody] = useState(draft?.body || '');
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+
+  useEffect(() => {
+    setSubject(draft?.subject || '');
+    setBody(draft?.body || '');
+  }, [draft]);
+
+  const hasChanges = subject !== draft?.subject || body !== draft?.body;
+
+  const handleClose = () => {
+    if (hasChanges) {
+      setShowDiscardConfirm(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const isReadOnly = draft?.status === 'sent';
+
+  return (
+    <>
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-[2px]"
+        onClick={handleClose}
+      />
+
+      {/* Panel */}
+      <motion.div
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        className="fixed right-0 top-0 bottom-0 z-[101] w-full max-w-[480px] bg-white shadow-2xl flex flex-col"
+      >
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-border flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h3 className="font-heading text-base font-semibold text-charcoal truncate">{lead.name}</h3>
+            <p className="text-sm text-muted-foreground truncate">{lead.address}</p>
+            <div className="flex items-center gap-2 mt-2">
+              <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium', typeBadgeClass(lead.type))}>
+                {lead.type}
+              </span>
+              {draft?.status === 'sent' && (
+                <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium bg-success/10 text-success border-success/20">
+                  Sent
+                </span>
+              )}
+            </div>
+          </div>
+          <button onClick={handleClose} className="rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Subject */}
+        <div className="px-6 py-3 border-b border-border">
+          <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1 block">Subject</label>
+          {isReadOnly ? (
+            <p className="text-sm font-medium text-charcoal">{subject}</p>
+          ) : (
+            <Input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="text-sm font-medium"
+              placeholder="Email subject line..."
+            />
+          )}
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+          {isReadOnly ? (
+            <div className="rounded-xl bg-light-bg border border-gray-100 p-4">
+              <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">{body}</p>
+            </div>
+          ) : (
+            <textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              className="w-full min-h-[320px] rounded-xl bg-light-bg border border-gray-100 p-4 text-sm leading-relaxed text-foreground resize-none outline-none focus:ring-1 focus:ring-orange/30 transition-shadow"
+              placeholder="Email body..."
+            />
+          )}
+
+          {/* Lead Context Strip */}
+          <div className="rounded-xl border border-border p-4 space-y-2">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Property Context</p>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              {[
+                { label: 'Price', value: lead.price },
+                { label: 'Equity', value: lead.equity, className: 'text-success' },
+                { label: 'Sq Ft', value: lead.sqft },
+                { label: 'Year Built', value: lead.yearBuilt },
+                { label: 'Lot Size', value: lead.lotSize },
+                { label: 'Loan', value: lead.loanAmount },
+                { label: 'Rate', value: lead.interestRate },
+                { label: 'Tax Bill', value: lead.taxBill },
+              ].map((item) => (
+                <div key={item.label}>
+                  <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                  <p className={cn('font-medium', item.className)}>{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Data Sources */}
+          <div>
+            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2">Data Sources</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              {['MLS listing', 'Sold comps', 'Days expired', 'Equity estimate', 'Tax records', 'Loan data'].map((src) => (
+                <span key={src} className="rounded-md bg-muted px-2.5 py-1 text-xs text-muted-foreground">{src}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Action Bar */}
+        {!isReadOnly && (
+          <div className="px-6 py-4 border-t border-border flex items-center gap-2">
+            <button
+              onClick={() => onDiscard()}
+              className="px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Discard
+            </button>
+            <button
+              onClick={() => onRegenerate()}
+              className="px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Regenerate
+            </button>
+            <div className="flex-1" />
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-lg"
+              onClick={() => onSave(subject, body)}
+            >
+              Save Draft
+            </Button>
+            <Button
+              size="sm"
+              className="rounded-lg bg-orange text-white hover:bg-orange-hover"
+              onClick={() => onSend(subject, body)}
+            >
+              <Send className="h-3.5 w-3.5 mr-1.5" />
+              Send Now
+            </Button>
+          </div>
+        )}
+
+        {/* Read-only close bar */}
+        {isReadOnly && (
+          <div className="px-6 py-4 border-t border-border flex justify-end">
+            <Button variant="outline" size="sm" className="rounded-lg" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        )}
+
+        {/* Discard confirmation */}
+        <AnimatePresence>
+          {showDiscardConfirm && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-10 bg-white/90 backdrop-blur-sm flex items-center justify-center p-6"
+            >
+              <div className="text-center space-y-4">
+                <p className="text-sm font-medium text-charcoal">You have unsaved changes</p>
+                <p className="text-sm text-muted-foreground">Save as draft or discard?</p>
+                <div className="flex items-center gap-2 justify-center">
+                  <Button variant="outline" size="sm" onClick={() => { onSave(subject, body); }}>
+                    Save Draft
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-danger border-danger/20 hover:bg-danger/5" onClick={() => { onDiscard(); }}>
+                    Discard
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setShowDiscardConfirm(false)}>
+                    Keep Editing
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </>
   );
 }
 
