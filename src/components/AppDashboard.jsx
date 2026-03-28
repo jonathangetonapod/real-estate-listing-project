@@ -793,6 +793,8 @@ function LeadsTab() {
   const [activeOrder, setActiveOrder] = useState('All');
   const [contactedLeads, setContactedLeads] = useState({});
   const [skippedLeads, setSkippedLeads] = useState({});
+  const [pitchDrafts, setPitchDrafts] = useState({});
+  const [pitchSlideOverIndex, setPitchSlideOverIndex] = useState(null);
 
   // Extended property data for each lead (keyed by index in the leads array)
   const extendedLeadData = [
@@ -888,6 +890,76 @@ function LeadsTab() {
   const handleSkipLead = useCallback((index, e) => {
     e.stopPropagation();
     setSkippedLeads(prev => ({ ...prev, [index]: !prev[index] }));
+  }, []);
+
+  const generatePitch = useCallback((lead, ext) => {
+    const firstName = lead.name.split(' ')[0];
+    const street = lead.address.split(',')[0];
+    const neighborhood = lead.address.split(',')[1]?.trim() || '';
+
+    const subjectLines = {
+      'Expired': `Your ${street} Home — a Confidential Buyer May Be Interested`,
+      'FSBO': `${street} — What Agent-Listed Homes Nearby Are Selling For`,
+      'Pre-Foreclosure': `${street} — Protecting Your ${lead.equity} in Equity`,
+      'High Equity': `${street} — Is Now the Right Time to Maximize Your Equity?`,
+    };
+
+    const bodies = {
+      'Expired': `Hi ${firstName},\n\nI noticed your home at ${street} came off the market after ${lead.days.replace('d expired', ' days')}. That can be frustrating, and I wanted to reach out because I may be able to help.\n\nI specialize in the ${neighborhood} area and have been tracking comparable sales nearby. Homes similar to yours — ${lead.sqft} sq ft, built in ${lead.yearBuilt} — have recently sold between ${lead.price} and above, which tells me there's genuine buyer demand in your price range.\n\nWith ${lead.equity} in equity and current rates at ${lead.interestRate}, you're in a strong position. I have a few strategies that have worked well for other homeowners in your situation — including off-market exposure to pre-qualified buyers.\n\nWould you be open to a quick 10-minute call this week? No pressure at all.\n\nBest regards,\nSarah Johnson\nRiverside Heights Specialist\nOffMarket Real Estate`,
+
+      'FSBO': `Hi ${firstName},\n\nI saw your listing at ${street} and wanted to share some data that might be useful.\n\nIn the ${neighborhood} area, agent-represented homes similar to yours (${lead.sqft} sq ft, built ${lead.yearBuilt}) have sold for 8-12% more than FSBO listings over the past quarter. With your ${lead.equity} in equity, that difference could mean an extra $30-50K in your pocket.\n\nI'm not here to pressure you — I know you chose FSBO for a reason. But if you'd like to see the comps and decide for yourself, I'm happy to share them.\n\nWould a quick call work this week?\n\nBest regards,\nSarah Johnson\n${neighborhood} Specialist\nOffMarket Real Estate`,
+
+      'Pre-Foreclosure': `Hi ${firstName},\n\nI understand you may be navigating a difficult situation with your property at ${street}, and I wanted to reach out with care.\n\nYour home is valued at approximately ${lead.price} with ${lead.equity} in equity — that's significant, and worth protecting. I specialize in helping homeowners in ${neighborhood} explore their options quickly and discreetly, whether that's a fast sale, a short sale, or another path forward.\n\nTime matters in these situations, and I'd love to help you understand all your options before they narrow.\n\nWould a confidential 10-minute call work for you this week?\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate`,
+
+      'High Equity': `Hi ${firstName},\n\nI've been tracking the ${neighborhood} market closely, and homeowners like you — with ${lead.equity} in equity built over ${lead.days.replace('yr owned', ' years')} — are in an exceptional position right now.\n\nYour ${lead.sqft} sq ft property at ${street} sits in one of the most in-demand areas. Recent sales suggest you could realize a strong return, especially with current market conditions favoring sellers with established equity.\n\nI specialize in helping long-time owners maximize their position, whether you're considering downsizing, relocating, or simply exploring what your home is worth today.\n\nWould you be open to a no-obligation market analysis?\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate`,
+    };
+
+    return {
+      subject: subjectLines[lead.type] || `Your ${street} Property — A Quick Question`,
+      body: bodies[lead.type] || `Hi ${firstName},\n\nI noticed your property at ${street} and wanted to reach out...\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate`,
+      status: 'draft',
+      lastEdited: new Date().toISOString(),
+    };
+  }, []);
+
+  const handleOpenPitchSlideOver = useCallback((idx) => {
+    if (!pitchDrafts[idx]) {
+      const lead = leads[idx];
+      const ext = extendedLeadData[idx];
+      setPitchDrafts(prev => ({ ...prev, [idx]: generatePitch(lead, ext) }));
+    }
+    setPitchSlideOverIndex(idx);
+  }, [pitchDrafts, generatePitch]);
+
+  const handleSaveDraft = useCallback((idx, subject, body) => {
+    setPitchDrafts(prev => ({
+      ...prev,
+      [idx]: { ...prev[idx], subject, body, status: 'draft', lastEdited: new Date().toISOString() },
+    }));
+    setPitchSlideOverIndex(null);
+  }, []);
+
+  const handleSendPitch = useCallback((idx, subject, body) => {
+    setPitchDrafts(prev => ({
+      ...prev,
+      [idx]: { ...prev[idx], subject, body, status: 'sent', lastEdited: new Date().toISOString() },
+    }));
+    setPitchSlideOverIndex(null);
+  }, []);
+
+  const handleRegeneratePitch = useCallback((idx) => {
+    const lead = leads[idx];
+    const ext = extendedLeadData[idx];
+    setPitchDrafts(prev => ({ ...prev, [idx]: generatePitch(lead, ext) }));
+  }, [generatePitch]);
+
+  const handleDiscardPitch = useCallback((idx) => {
+    setPitchDrafts(prev => {
+      const next = { ...prev };
+      delete next[idx];
+      return next;
+    });
+    setPitchSlideOverIndex(null);
   }, []);
 
   // Filter by lead type and search query
