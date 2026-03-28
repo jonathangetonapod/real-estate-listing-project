@@ -185,22 +185,6 @@ function typeBadgeClass(type) {
   }
 }
 
-function stageBadgeClass(stage) {
-  switch (stage) {
-    case 'New':
-      return 'bg-gray-100 text-gray-600 border-gray-200';
-    case 'Drafted':
-      return 'bg-orange/10 text-orange border-orange/20';
-    case 'Sent':
-      return 'bg-charcoal/10 text-charcoal border-charcoal/20';
-    case 'Opened':
-      return 'bg-blue-50 text-blue-600 border-blue-200';
-    case 'Replied':
-      return 'bg-success/10 text-success border-success/20';
-    default:
-      return 'bg-muted text-muted-foreground';
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Fade wrapper
@@ -1182,7 +1166,6 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
     }
   };
 
-  const pipelineStages = ['New', 'Drafted', 'Sent', 'Opened', 'Replied'];
 
   const handleToggleExpand = useCallback((index) => {
     setExpandedLead(prev => prev === index ? null : index);
@@ -1420,7 +1403,6 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                 const ext = extendedLeadData[idx];
                 const isContacted = contactedLeads[idx];
                 const isSkipped = skippedLeads[idx];
-                const currentStageIndex = pipelineStages.indexOf(lead.stage);
 
                 return (
                   <div key={idx} className={cn('rounded-xl border transition-all duration-200', isSkipped ? 'opacity-40' : '', isExpanded ? 'border-orange/30 ring-1 ring-orange/10' : 'border-border hover:border-orange/20')}>
@@ -1473,15 +1455,31 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                           <span className={cn('inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium', typeBadgeClass(lead.type))}>
                             {lead.type}
                           </span>
-                          <span className={cn('inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium', stageBadgeClass(lead.stage))}>
-                            {isContacted ? 'Contacted' : lead.stage}
-                          </span>
-                          {pitchDrafts[idx]?.status === 'draft' && (
-                            <span className="inline-flex items-center gap-1 rounded-full border border-orange/20 bg-orange/10 px-2 py-0.5 text-[11px] font-medium text-orange">
-                              <Pencil className="h-3 w-3" />
-                              Draft
-                            </span>
-                          )}
+                          {(() => {
+                            const status = getPitchStatus(idx);
+                            if (status === 'Sent') return (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-success/20 bg-success/10 px-2 py-0.5 text-[11px] font-medium text-success">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Sent
+                              </span>
+                            );
+                            if (status === 'Draft') return (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-orange/20 bg-orange/10 px-2 py-0.5 text-[11px] font-medium text-orange">
+                                <Pencil className="h-3 w-3" />
+                                Draft
+                              </span>
+                            );
+                            if (status === 'Skipped') return (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-400">
+                                Skipped
+                              </span>
+                            );
+                            return (
+                              <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-medium text-gray-500">
+                                Not Contacted
+                              </span>
+                            );
+                          })()}
                           <ChevronDown className={cn('h-4 w-4 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
                         </div>
                       </div>
@@ -1650,27 +1648,6 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                                     )}
                                   </div>
 
-                                  {/* Mini Pipeline Indicator */}
-                                  <div className="pt-3 border-t border-gray-100">
-                                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Pipeline Stage</p>
-                                    <div className="flex items-center gap-1">
-                                      {pipelineStages.map((stage, sIdx) => (
-                                        <div key={stage} className="flex items-center gap-1">
-                                          <div
-                                            className={cn(
-                                              'w-2 h-2 rounded-full',
-                                              sIdx <= currentStageIndex ? 'bg-orange' : 'bg-gray-200'
-                                            )}
-                                            title={stage}
-                                          />
-                                          {sIdx < pipelineStages.length - 1 && (
-                                            <div className={cn('w-3 h-px', sIdx < currentStageIndex ? 'bg-orange' : 'bg-gray-200')} />
-                                          )}
-                                        </div>
-                                      ))}
-                                      <span className="text-[10px] text-muted-foreground ml-2">{isContacted ? 'Contacted' : lead.stage}</span>
-                                    </div>
-                                  </div>
                                 </div>
                               </div>
                             </div>
