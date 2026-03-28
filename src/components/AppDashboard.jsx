@@ -2071,6 +2071,25 @@ function InboxTab() {
   const [expandedReply, setExpandedReply] = useState(null);
   const [activeInboxFilter, setActiveInboxFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [replyText, setReplyText] = useState('');
+  const [composerOpen, setComposerOpen] = useState(null);
+  const [extraMessages, setExtraMessages] = useState({});
+
+  const handleSendReply = useCallback((replyId, name) => {
+    if (!replyText.trim()) return;
+    const msg = {
+      from: 'agent',
+      name: 'Sarah Johnson',
+      date: new Date().toISOString(),
+      body: replyText.trim(),
+    };
+    setExtraMessages(prev => ({
+      ...prev,
+      [replyId]: [...(prev[replyId] || []), msg],
+    }));
+    setReplyText('');
+    setComposerOpen(null);
+  }, [replyText]);
 
   const sentimentLabel = { 'interested': 'Interested', 'warm': 'Warm Lead', 'not-interested': 'Not Interested' };
   const sentimentStyle = {
@@ -2236,7 +2255,7 @@ function InboxTab() {
 
                           {/* Conversation thread */}
                           <div className="space-y-3 mb-4">
-                            {reply.thread.map((msg, mi) => (
+                            {[...reply.thread, ...(extraMessages[reply.id] || [])].map((msg, mi) => (
                               <div key={mi} className={cn('flex gap-3', msg.from === 'agent' ? '' : '')}>
                                 {/* Avatar */}
                                 <div className={cn(
@@ -2270,18 +2289,54 @@ function InboxTab() {
                             ))}
                           </div>
 
-                          {/* Reply composer placeholder */}
-                          <div className="rounded-lg border border-dashed border-gray-200 p-3 mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-orange text-white flex items-center justify-center text-[10px] font-bold shrink-0">SJ</div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs text-gray-400">Write a reply to {reply.name.split(' ')[0]}...</p>
+                          {/* Reply composer */}
+                          <div className="rounded-lg border border-border p-3 mb-4">
+                            {composerOpen === reply.id ? (
+                              <div className="space-y-3">
+                                <div className="flex items-start gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-orange text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">SJ</div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                      <span className="text-xs font-semibold text-charcoal">Sarah Johnson</span>
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-orange/10 text-orange">You</span>
+                                    </div>
+                                    <textarea
+                                      value={replyText}
+                                      onChange={(e) => setReplyText(e.target.value)}
+                                      className="w-full min-h-[120px] rounded-lg bg-light-bg border border-gray-100 p-3 text-sm leading-relaxed text-foreground resize-none outline-none focus:ring-1 focus:ring-orange/30 transition-shadow"
+                                      placeholder={`Write your reply to ${reply.name.split(' ')[0]}...`}
+                                      autoFocus
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-end gap-2 pl-11">
+                                  <button
+                                    onClick={() => { setComposerOpen(null); setReplyText(''); }}
+                                    className="px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <Button
+                                    size="sm"
+                                    className="rounded-lg bg-orange text-white hover:bg-orange-hover"
+                                    onClick={() => handleSendReply(reply.id, reply.name)}
+                                    disabled={!replyText.trim()}
+                                  >
+                                    <Send className="h-3.5 w-3.5 mr-1.5" />
+                                    Send Reply
+                                  </Button>
+                                </div>
                               </div>
-                              <Button size="sm" className="rounded-lg bg-orange text-white hover:bg-orange-hover shrink-0">
-                                <Send className="h-3.5 w-3.5 mr-1.5" />
-                                Reply
-                              </Button>
-                            </div>
+                            ) : (
+                              <button
+                                onClick={() => { setComposerOpen(reply.id); setReplyText(''); }}
+                                className="w-full flex items-center gap-3 text-left"
+                              >
+                                <div className="w-8 h-8 rounded-full bg-orange text-white flex items-center justify-center text-[10px] font-bold shrink-0">SJ</div>
+                                <p className="text-xs text-gray-400 flex-1">Write a reply to {reply.name.split(' ')[0]}...</p>
+                                <span className="text-xs text-orange font-medium">Reply</span>
+                              </button>
+                            )}
                           </div>
 
                           {/* Bottom row: Property + Actions */}
