@@ -96,7 +96,7 @@ const navItems = [
   { key: 'farm', label: 'Order New Leads', subtitle: 'Get fresh sellers delivered', icon: MapPin },
   { key: 'leads', label: 'Seller Leads', subtitle: 'People who may want to sell', icon: Users },
   { key: 'drafts', label: 'Pitches Sent', subtitle: 'Emails you\'ve sent', icon: Send },
-  { key: 'replies', label: 'Responses', subtitle: 'Sellers who replied', icon: MessageSquare },
+  { key: 'replies', label: 'Inbox', subtitle: 'Seller replies and conversations', icon: Inbox },
   { key: 'pipeline', label: 'My Deals', subtitle: 'Track your progress', icon: GitBranch },
   { key: 'settings', label: 'Settings', subtitle: null, icon: Settings },
 ];
@@ -694,7 +694,7 @@ function OverviewTab({ onNavigate }) {
                 'text-sm group-hover:text-orange transition-colors',
                 hasResponses ? 'text-muted-foreground line-through' : 'text-charcoal font-medium'
               )}>
-                Check for seller responses
+                Check your inbox
               </span>
               <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
@@ -737,7 +737,7 @@ function OverviewTab({ onNavigate }) {
             onClick={() => onNavigate('replies')}
             className="rounded-lg text-sm shrink-0"
           >
-            View Responses <ArrowRight className="w-4 h-4 ml-1" />
+            View Inbox <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </CardContent>
       </Card>
@@ -2024,6 +2024,315 @@ function DraftsTab({ pitchDrafts }) {
 }
 
 // ---------------------------------------------------------------------------
+// Tab: Inbox
+// ---------------------------------------------------------------------------
+
+const sampleReplies = [
+  {
+    id: 1,
+    name: 'Michael Torres',
+    address: '4821 Oakwood Dr, Riverside Heights',
+    email: 'mtorres@email.com',
+    type: 'Expired',
+    price: '$485K',
+    equity: '$185K',
+    replyDate: '2026-03-28T14:22:00Z',
+    replyPreview: 'Hi Sarah, thanks for reaching out. I have been thinking about relisting and would be open to hearing what you have in mind. What does your schedule look like next week?',
+    replyFull: 'Hi Sarah,\n\nThanks for reaching out. I have been thinking about relisting and would be open to hearing what you have in mind. We had some issues with our previous agent regarding pricing strategy, and I want to make sure we get it right this time.\n\nWhat does your schedule look like next week? I'm generally free Tuesday and Thursday afternoons.\n\nBest,\nMichael',
+    threadStep: 1,
+    status: 'new',
+    sentiment: 'interested',
+  },
+  {
+    id: 2,
+    name: 'Maria Gonzalez',
+    address: '1847 Vista Del Mar, Oceanside',
+    email: 'mgonzalez@email.com',
+    type: 'High Equity',
+    price: '$680K',
+    equity: '$420K',
+    replyDate: '2026-03-27T09:15:00Z',
+    replyPreview: 'Thank you for the information. My husband and I have been discussing downsizing. Could you send over those comparable sales you mentioned?',
+    replyFull: 'Hi Sarah,\n\nThank you for the information. My husband and I have been discussing downsizing for a while now, and your timing is pretty good.\n\nCould you send over those comparable sales you mentioned? We want to understand what the market looks like before making any decisions. We've been in this house for 15 years and it's a big step.\n\nAlso, would you be able to do a walkthrough to give us an idea of what we might need to do to get the best price?\n\nThank you,\nMaria',
+    threadStep: 1,
+    status: 'new',
+    sentiment: 'interested',
+  },
+  {
+    id: 3,
+    name: 'David Hernandez',
+    address: '892 Sunset Blvd, Palm Canyon',
+    email: 'dhernandez@email.com',
+    type: 'Pre-Foreclosure',
+    price: '$520K',
+    equity: '$310K',
+    replyDate: '2026-03-26T16:45:00Z',
+    replyPreview: 'I appreciate you reaching out. Things are complicated right now. Can we talk on the phone instead of email?',
+    replyFull: 'Sarah,\n\nI appreciate you reaching out. Things are complicated right now and I'd rather not go into all the details over email.\n\nCan we talk on the phone instead? I have some questions about the timeline and what a quick sale would actually look like. My number is (760) 555-0312, best time to reach me is after 5pm on weekdays.\n\nThanks,\nDavid',
+    threadStep: 1,
+    status: 'read',
+    sentiment: 'warm',
+  },
+  {
+    id: 4,
+    name: 'Robert Williams',
+    address: '558 Palm Ave, Northpark',
+    email: 'rwilliams@email.com',
+    type: 'FSBO',
+    price: '$349K',
+    equity: '$120K',
+    replyDate: '2026-03-25T11:30:00Z',
+    replyPreview: 'Not interested at this time. Please remove me from your list.',
+    replyFull: 'Not interested at this time. Please remove me from your list.\n\nRobert',
+    threadStep: 1,
+    status: 'read',
+    sentiment: 'not-interested',
+  },
+];
+
+function InboxTab() {
+  const [expandedReply, setExpandedReply] = useState(null);
+  const [activeInboxFilter, setActiveInboxFilter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const sentimentLabel = { 'interested': 'Interested', 'warm': 'Warm Lead', 'not-interested': 'Not Interested' };
+  const sentimentStyle = {
+    'interested': 'bg-success/10 text-success border-success/20',
+    'warm': 'bg-orange/10 text-orange border-orange/20',
+    'not-interested': 'bg-gray-100 text-gray-400 border-gray-200',
+  };
+
+  const inboxFilters = [
+    { key: 'All', count: sampleReplies.length },
+    { key: 'Interested', count: sampleReplies.filter(r => r.sentiment === 'interested').length },
+    { key: 'Warm', count: sampleReplies.filter(r => r.sentiment === 'warm').length },
+    { key: 'Not Interested', count: sampleReplies.filter(r => r.sentiment === 'not-interested').length },
+  ];
+
+  const filtered = sampleReplies
+    .filter(r => {
+      if (activeInboxFilter === 'All') return true;
+      if (activeInboxFilter === 'Interested') return r.sentiment === 'interested';
+      if (activeInboxFilter === 'Warm') return r.sentiment === 'warm';
+      if (activeInboxFilter === 'Not Interested') return r.sentiment === 'not-interested';
+      return true;
+    })
+    .filter(r =>
+      searchQuery === '' ||
+      r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.replyPreview.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+  const newCount = sampleReplies.filter(r => r.status === 'new').length;
+
+  return (
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="font-heading text-2xl font-bold text-charcoal">Inbox</h1>
+            {newCount > 0 && (
+              <span className="inline-flex items-center rounded-full bg-orange px-2.5 py-0.5 text-xs font-bold text-white">
+                {newCount} new
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">Seller replies to your outreach sequences.</p>
+        </div>
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search replies..."
+            className="pl-9 h-9 text-sm"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-center gap-1 flex-wrap">
+        {inboxFilters.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setActiveInboxFilter(f.key)}
+            className={cn(
+              'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap',
+              activeInboxFilter === f.key
+                ? 'bg-charcoal text-white'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            )}
+          >
+            {f.key}{f.key !== 'All' ? ` (${f.count})` : ''}
+          </button>
+        ))}
+      </div>
+
+      {/* Reply list */}
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <Inbox className="h-6 w-6 text-gray-400" />
+          </div>
+          <p className="text-sm font-medium text-charcoal mb-1">
+            {sampleReplies.length === 0 ? 'No replies yet' : 'No replies match your filters'}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {sampleReplies.length === 0 ? 'When sellers reply to your sequences, they\'ll appear here.' : 'Try adjusting your search or filter criteria.'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          {filtered.map((reply) => {
+            const isExpanded = expandedReply === reply.id;
+            return (
+              <div key={reply.id} className={cn(
+                'rounded-lg border transition-all duration-150',
+                reply.status === 'new' ? 'border-orange/30 bg-orange/[0.02]' : '',
+                isExpanded ? 'ring-1 ring-orange/10 border-orange/30' : 'border-border hover:border-orange/20'
+              )}>
+                {/* Compact Row */}
+                <button
+                  onClick={() => setExpandedReply(prev => prev === reply.id ? null : reply.id)}
+                  className="w-full text-left px-4 py-3 cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Unread dot */}
+                    <div className={cn('w-2 h-2 rounded-full shrink-0', reply.status === 'new' ? 'bg-orange' : 'bg-transparent')} />
+
+                    {/* Name + preview */}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className={cn('text-sm truncate', reply.status === 'new' ? 'font-bold text-charcoal' : 'font-semibold text-charcoal')}>{reply.name}</p>
+                        <span className="text-[10px] text-gray-400 shrink-0">
+                          {new Date(reply.replyDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 truncate">{reply.replyPreview}</p>
+                    </div>
+
+                    {/* Inline stats */}
+                    <div className="hidden sm:flex items-center gap-4 shrink-0">
+                      <div className="text-center">
+                        <p className="font-mono text-sm font-bold text-charcoal">{reply.price}</p>
+                        <p className="text-[9px] uppercase text-gray-400">Value</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-mono text-sm font-bold text-success">{reply.equity}</p>
+                        <p className="text-[9px] uppercase text-gray-400">Equity</p>
+                      </div>
+                    </div>
+
+                    {/* Badges */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className={cn('inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium', sentimentStyle[reply.sentiment])}>
+                        {sentimentLabel[reply.sentiment]}
+                      </span>
+                      <ChevronDown className={cn('h-3.5 w-3.5 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
+                    </div>
+                  </div>
+                </button>
+
+                {/* Expanded detail */}
+                <AnimatePresence initial={false}>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 pb-4 pt-0">
+                        <div className="border-t border-gray-100 pt-4">
+                          {/* Reply metadata */}
+                          <div className="rounded-lg bg-gray-50 border border-gray-100 p-3 mb-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                              <div>
+                                <span className="text-gray-400 font-medium">From</span>
+                                <p className="text-charcoal">{reply.name}</p>
+                              </div>
+                              <div>
+                                <span className="text-gray-400 font-medium">Email</span>
+                                <p className="text-charcoal font-mono">{reply.email}</p>
+                              </div>
+                              <div>
+                                <span className="text-gray-400 font-medium">Replied to</span>
+                                <p className="text-charcoal">Step {reply.threadStep} · Initial Outreach</p>
+                              </div>
+                              <div>
+                                <span className="text-gray-400 font-medium">Received</span>
+                                <p className="text-charcoal font-mono">
+                                  {new Date(reply.replyDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Full reply */}
+                          <div className="mb-4">
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Seller&apos;s Reply</p>
+                            <div className="rounded-lg bg-light-bg border border-gray-100 p-4">
+                              <p className="text-sm leading-relaxed text-charcoal whitespace-pre-line">{reply.replyFull}</p>
+                            </div>
+                          </div>
+
+                          {/* Property context + quick actions */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="rounded-lg border border-border p-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Building2 className="h-3.5 w-3.5 text-gray-400" />
+                                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Property</p>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                {[
+                                  { label: 'Address', value: reply.address.split(',')[0] },
+                                  { label: 'Type', value: reply.type },
+                                  { label: 'Value', value: reply.price, bold: true },
+                                  { label: 'Equity', value: reply.equity, className: 'text-success', bold: true },
+                                ].map((f) => (
+                                  <div key={f.label}>
+                                    <p className="text-[9px] uppercase text-gray-400">{f.label}</p>
+                                    <p className={cn('text-xs', f.bold ? 'font-bold font-mono' : 'font-medium', f.className)}>{f.value}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="rounded-lg border border-border p-3 space-y-2">
+                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Quick Actions</p>
+                              <Button variant="outline" size="sm" className="w-full justify-start rounded-lg text-sm">
+                                <Mail className="h-3.5 w-3.5 mr-2" />
+                                Reply to {reply.name.split(' ')[0]}
+                              </Button>
+                              <Button variant="outline" size="sm" className="w-full justify-start rounded-lg text-sm">
+                                <Phone className="h-3.5 w-3.5 mr-2" />
+                                Schedule Call
+                              </Button>
+                              <Button variant="outline" size="sm" className="w-full justify-start rounded-lg text-sm">
+                                <ArrowRight className="h-3.5 w-3.5 mr-2" />
+                                Move to Deals
+                              </Button>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Tab: Pipeline
 // ---------------------------------------------------------------------------
 
@@ -2325,7 +2634,7 @@ export default function AppDashboard() {
             {/* Mobile hamburger — hidden, bottom tabs replace it */}
             <div>
               <h1 className="font-heading text-lg font-semibold">Good morning, Sarah</h1>
-              <p className="text-xs text-muted-foreground">You have <span className="font-semibold text-orange">62 pitches</span> to review and <span className="font-semibold text-success">3 new responses</span>.</p>
+              <p className="text-xs text-muted-foreground">You have <span className="font-semibold text-orange">62 pitches</span> to review and <span className="font-semibold text-success">3 new replies</span>.</p>
             </div>
           </div>
 
@@ -2351,20 +2660,7 @@ export default function AppDashboard() {
             {activeTab === 'leads' && <LeadsTab pitchDrafts={pitchDrafts} setPitchDrafts={setPitchDrafts} contactedLeads={contactedLeads} setContactedLeads={setContactedLeads} />}
             {activeTab === 'drafts' && <DraftsTab pitchDrafts={pitchDrafts} />}
             {activeTab === 'pipeline' && <PipelineTab />}
-            {activeTab === 'replies' && (
-              <div className="space-y-4">
-                <h2 className="font-heading text-lg font-semibold">Responses</h2>
-                <Card className="rounded-xl">
-                  <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="w-12 h-12 rounded-full bg-orange/10 flex items-center justify-center mb-4">
-                      <MessageSquare className="h-6 w-6 text-orange" />
-                    </div>
-                    <p className="text-sm font-medium text-charcoal mb-1">No responses yet</p>
-                    <p className="text-sm text-muted-foreground">Once sellers reply to your emails, they&apos;ll show up here.</p>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+            {activeTab === 'replies' && <InboxTab />}
           </FadePanel>
         </main>
       </div>
@@ -2375,7 +2671,7 @@ export default function AppDashboard() {
           { key: 'dashboard', label: 'Home', icon: Home },
           { key: 'leads', label: 'Leads', icon: Users },
           { key: 'drafts', label: 'Sent', icon: Send },
-          { key: 'replies', label: 'Responses', icon: MessageSquare },
+          { key: 'replies', label: 'Inbox', icon: Inbox },
           { key: 'pipeline', label: 'Deals', icon: GitBranch },
         ].map((tab) => {
           const Icon = tab.icon;
