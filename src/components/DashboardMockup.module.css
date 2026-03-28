@@ -1,0 +1,182 @@
+.wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 60px 24px;
+}
+
+.browser {
+  width: 100%;
+  max-width: 900px;
+  background: var(--light-bg);
+  border: 1px solid #ddd;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.chrome {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  background: #e8eae5;
+  border-bottom: 1px solid #ddd;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.dotRed {
+  background: #FF5F56;
+}
+
+.dotYellow {
+  background: #FFBD2E;
+}
+
+.dotGreen {
+  background: #27C93F;
+}
+
+.body {
+  padding: 24px;
+}
+
+/* Metric cards row */
+.metricsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.metricCard {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.metricValue {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.metricValueOrange {
+  color: var(--orange);
+}
+
+.metricValueGreen {
+  color: #019F11;
+}
+
+.metricValueDefault {
+  color: var(--charcoal);
+}
+
+.metricLabel {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: #888;
+  font-weight: 500;
+}
+
+/* Lead rows */
+.leadsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leadRow {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.leadInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.leadName {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+.leadAddress {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: #888;
+}
+
+.leadMeta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.matchScore {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--orange);
+  white-space: nowrap;
+}
+
+.badge {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.badgeGreen {
+  background: #e6f9e9;
+  color: #019F11;
+}
+
+.badgeOrange {
+  background: #FFF3E0;
+  color: #FF5924;
+}
+
+.badgeRed {
+  background: #FFE8E8;
+  color: #BC1619;
+}
+
+/* Responsive */
+@media (max-width: 680px) {
+  .metricsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .leadRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .leadMeta {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
