@@ -373,7 +373,7 @@ function FarmAreaTab() {
                     </div>
                     <div>
                       <div className="font-sans text-sm font-semibold text-charcoal">{order.count} leads delivered</div>
-                      <div className="font-sans text-xs text-gray-400">{order.date} · {order.zips}</div>
+                      <div className="font-sans text-xs text-gray-400">{order.date} · Zip: {order.zips}</div>
                     </div>
                   </div>
                   <Badge className={cn(
