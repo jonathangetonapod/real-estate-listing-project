@@ -1315,7 +1315,12 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold text-charcoal">Seller Leads</h1>
-          <p className="text-sm text-muted-foreground mt-1">People in your market who may be ready to sell.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            <span className="font-semibold text-charcoal">{leads.length}</span> leads in your market
+            {Object.values(pitchDrafts).filter(d => d?.status === 'sent').length > 0 && (
+              <span> · <span className="text-success font-medium">{Object.values(pitchDrafts).filter(d => d?.status === 'sent').length} pitched</span></span>
+            )}
+          </p>
         </div>
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -1379,8 +1384,11 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                 'rounded-md px-2 py-1 text-[11px] font-medium transition-colors whitespace-nowrap border',
                 activePitchStatus === f.key
                   ? 'border-charcoal bg-charcoal/5 text-charcoal'
-                  : 'border-transparent text-muted-foreground hover:border-gray-200 hover:text-foreground'
+                  : f.key !== 'All' && f.count === 0
+                    ? 'border-transparent text-gray-300 cursor-default'
+                    : 'border-transparent text-muted-foreground hover:border-gray-200 hover:text-foreground'
               )}
+              disabled={f.key !== 'All' && f.count === 0}
             >
               {f.key}{f.key !== 'All' ? ` (${f.count})` : ''}
             </button>
@@ -1410,61 +1418,69 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                 const isSkipped = skippedLeads[idx];
 
                 return (
-                  <div key={idx} className={cn('rounded-lg border transition-all duration-150', isSkipped ? 'opacity-40' : '', isExpanded ? 'border-orange/30 ring-1 ring-orange/10' : 'border-border hover:border-orange/20')}>
+                  <div key={idx} className={cn(
+                    'rounded-lg border transition-all duration-200 group',
+                    isSkipped ? 'opacity-40' : '',
+                    isExpanded
+                      ? 'border-orange/30 ring-1 ring-orange/10 shadow-sm bg-white'
+                      : 'border-border hover:border-orange/20 hover:shadow-md hover:-translate-y-[1px] bg-white'
+                  )}>
                     {/* Compact Row */}
                     <button
                       onClick={() => handleToggleExpand(idx)}
-                      className="w-full text-left px-4 py-3 cursor-pointer"
+                      className="w-full text-left px-4 py-3.5 cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
-                        {/* Type dot */}
-                        <div className={cn('w-2 h-2 rounded-full shrink-0', typeDotColor(lead.type))} />
+                        {/* Type dot with pulse for new leads */}
+                        <div className="relative shrink-0">
+                          <div className={cn('w-2.5 h-2.5 rounded-full', typeDotColor(lead.type))} />
+                        </div>
 
                         {/* Name + Address */}
-                        <div className="min-w-0 w-[200px] shrink-0">
-                          <p className="font-sans text-sm font-semibold text-charcoal truncate">{lead.name}</p>
+                        <div className="min-w-0 w-[220px] shrink-0">
+                          <p className="font-sans text-sm font-semibold text-charcoal truncate group-hover:text-orange transition-colors">{lead.name}</p>
                           <p className="font-sans text-xs text-gray-500 truncate">{lead.address}</p>
                         </div>
 
                         {/* Inline stats */}
-                        <div className="hidden sm:flex items-center gap-5 flex-1 min-w-0">
-                          <div className="text-center shrink-0">
-                            <p className="font-mono text-sm font-bold text-charcoal">{lead.price}</p>
-                            <p className="text-[9px] uppercase text-gray-400">Value</p>
+                        <div className="hidden sm:flex items-center gap-6 flex-1 min-w-0">
+                          <div className="shrink-0">
+                            <p className="font-mono text-base font-bold text-charcoal leading-tight">{lead.price}</p>
+                            <p className="text-[9px] uppercase text-gray-400 tracking-wider">Value</p>
                           </div>
-                          <div className="text-center shrink-0">
-                            <p className="font-mono text-xs text-charcoal">{lead.sqft}</p>
-                            <p className="text-[9px] uppercase text-gray-400">Sq Ft</p>
+                          <div className="shrink-0">
+                            <p className="font-mono text-xs font-medium text-gray-700">{lead.sqft} <span className="text-gray-400">ft²</span></p>
+                            <p className="text-[9px] uppercase text-gray-400 tracking-wider">Size</p>
                           </div>
-                          <div className="text-center shrink-0">
-                            <p className="font-mono text-xs text-charcoal">{lead.yearBuilt}</p>
-                            <p className="text-[9px] uppercase text-gray-400">Built</p>
+                          <div className="shrink-0">
+                            <p className="font-mono text-xs font-medium text-gray-700">{lead.yearBuilt}</p>
+                            <p className="text-[9px] uppercase text-gray-400 tracking-wider">Built</p>
                           </div>
-                          <div className="text-center shrink-0">
-                            <p className="font-sans text-xs text-gray-600">{lead.days}</p>
-                            <p className="text-[9px] uppercase text-gray-400">Time</p>
+                          <div className="shrink-0">
+                            <p className="font-sans text-xs font-medium text-gray-600">{lead.days}</p>
+                            <p className="text-[9px] uppercase text-gray-400 tracking-wider">Status</p>
                           </div>
                         </div>
 
                         {/* Badges */}
                         <div className="flex items-center gap-1.5 shrink-0">
-                          <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium', typeBadgeClass(lead.type))}>
+                          <span className={cn('inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-medium', typeBadgeClass(lead.type))}>
                             {lead.type}
                           </span>
                           {(() => {
                             const status = getPitchStatus(idx);
                             if (status === 'Sent') return (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-success/20 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
+                              <span className="inline-flex items-center gap-1 rounded-md border border-success/20 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
                                 <CheckCircle2 className="h-2.5 w-2.5" />Sent
                               </span>
                             );
                             if (status === 'Draft') return (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-orange/20 bg-orange/10 px-1.5 py-0.5 text-[10px] font-medium text-orange">
+                              <span className="inline-flex items-center gap-1 rounded-md border border-orange/20 bg-orange/10 px-1.5 py-0.5 text-[10px] font-medium text-orange">
                                 <Pencil className="h-2.5 w-2.5" />Draft
                               </span>
                             );
                             if (status === 'Skipped') return (
-                              <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-400">
+                              <span className="inline-flex items-center rounded-md border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-400">
                                 Skipped
                               </span>
                             );
