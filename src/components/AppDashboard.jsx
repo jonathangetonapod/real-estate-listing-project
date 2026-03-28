@@ -166,24 +166,6 @@ const pipelineLeads = {
   ],
 };
 
-const draftEmail = {
-  subject: 'Your Oakwood Dr Home — a Confidential Buyer May Be Interested',
-  body: `Hi Michael,
-
-I noticed your home at 4821 Oakwood Dr came off the market after 47 days. That can be frustrating, and I wanted to reach out because I may be able to help.
-
-I specialize in the Riverside Heights area and have been tracking comparable sales nearby. Homes similar to yours on Oakwood Dr have recently sold between $475K and $510K, which tells me there's genuine buyer demand in your price range.
-
-I have a few strategies that have worked well for other homeowners in your situation — including off-market exposure to pre-qualified buyers — and I'd love to share them with you.
-
-Would you be open to a quick 10-minute call this week? No pressure at all, just a conversation to see if I can help.
-
-Best regards,
-Sarah Johnson
-Riverside Heights Specialist
-OffMarket Real Estate`,
-};
-
 // ---------------------------------------------------------------------------
 // Helper: lead type badge colour
 // ---------------------------------------------------------------------------
@@ -198,19 +180,6 @@ function typeBadgeClass(type) {
       return 'bg-yellow/10 text-yellow-700 border-yellow/30';
     case 'High Equity':
       return 'bg-success/10 text-success border-success/20';
-    default:
-      return 'bg-muted text-muted-foreground';
-  }
-}
-
-function draftBadgeClass(draft) {
-  switch (draft) {
-    case 'Ready':
-      return 'bg-orange/10 text-orange border-orange/20';
-    case 'Sent':
-      return 'bg-success/10 text-success border-success/20';
-    case 'Pending':
-      return 'bg-muted text-muted-foreground border-border';
     default:
       return 'bg-muted text-muted-foreground';
   }
@@ -1060,14 +1029,12 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
 
 const filterOptions = ['All', 'Expired', 'FSBO', 'Pre-Foreclosure', 'High Equity'];
 
-function LeadsTab() {
+function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLeads }) {
   const [expandedLead, setExpandedLead] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeOrder, setActiveOrder] = useState('All');
-  const [contactedLeads, setContactedLeads] = useState({});
   const [skippedLeads, setSkippedLeads] = useState({});
-  const [pitchDrafts, setPitchDrafts] = useState({});
   const [pitchSlideOverIndex, setPitchSlideOverIndex] = useState(null);
 
   // Extended property data for each lead (keyed by index in the leads array)
@@ -1635,168 +1602,128 @@ function LeadsTab() {
 }
 
 // ---------------------------------------------------------------------------
-// Tab: AI Drafts
+// Tab: Pitches Sent
 // ---------------------------------------------------------------------------
 
-function DraftsTab() {
-  const [selectedDraft, setSelectedDraft] = useState(0);
-  const [approvedDrafts, setApprovedDrafts] = useState({});
-  const selected = leads[selectedDraft];
+function DraftsTab({ pitchDrafts }) {
+  // Filter to only leads with sent pitches
+  const sentPitches = leads.map((lead, i) => ({ ...lead, _idx: i, pitch: pitchDrafts[i] }))
+    .filter(item => item.pitch?.status === 'sent');
 
-  const handleDraftApprove = useCallback(() => {
-    setApprovedDrafts(prev => ({ ...prev, [selectedDraft]: true }));
-    setTimeout(() => {
-      setApprovedDrafts(prev => ({ ...prev, [selectedDraft]: false }));
-    }, 1500);
-  }, [selectedDraft]);
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const selected = sentPitches[selectedIdx];
 
   return (
     <div className="space-y-4">
-      {/* Contextual help for new users */}
-      <div className="flex items-start gap-3 rounded-xl bg-gray-50 border border-gray-100 px-4 py-3">
-        <Info className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
-        <p className="text-sm text-gray-500">
-          A record of personalized emails sent to sellers. Track delivery and engagement from here.
-        </p>
+      <div>
+        <h2 className="font-heading text-lg font-semibold">Pitches Sent</h2>
+        <p className="text-sm text-muted-foreground mt-1">Emails you&apos;ve sent to sellers. Track delivery and engagement.</p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-16rem)]">
-      {/* Left — lead list */}
-      <div className="lg:w-1/3 rounded-xl border border-border bg-white overflow-hidden flex flex-col">
-        <div className="px-4 py-3 border-b border-border">
-          <p className="text-sm font-medium">Pitches Sent</p>
-          <p className="text-xs text-muted-foreground">{leads.filter(l => l.draft === 'Sent').length} emails delivered</p>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {leads.map((lead, i) => (
-            <button
-              key={i}
-              onClick={() => setSelectedDraft(i)}
-              className={cn(
-                'w-full text-left px-4 py-3 border-b border-border transition-colors',
-                selectedDraft === i ? 'bg-orange/5' : 'hover:bg-muted/50'
-              )}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm font-medium truncate">{lead.name}</p>
-                <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium shrink-0 ml-2', draftBadgeClass(lead.draft))}>
-                  {lead.draft}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground truncate">{lead.address}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Right — email preview */}
-      <div className="lg:w-2/3 rounded-xl border border-border bg-white overflow-hidden flex flex-col">
-        <div className="px-6 py-4 border-b border-border">
-          <h3 className="font-heading text-base font-semibold mb-3">Email Preview</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex gap-2 items-center">
-              <span className="font-medium text-muted-foreground w-16 shrink-0">From:</span>
-              <span>Sarah Johnson via OffMarket</span>
+      {sentPitches.length === 0 ? (
+        <Card className="rounded-xl">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <Send className="h-6 w-6 text-gray-400" />
             </div>
-            <div className="flex gap-2 items-center">
-              <span className="font-medium text-muted-foreground w-16 shrink-0">To:</span>
-              <span>{selected.email}</span>
+            <p className="text-sm font-medium text-charcoal mb-1">No pitches sent yet</p>
+            <p className="text-sm text-muted-foreground">Generate and send pitches from the Seller Leads tab — they&apos;ll appear here.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-16rem)]">
+          {/* Left — sent list */}
+          <div className="lg:w-1/3 rounded-xl border border-border bg-white overflow-hidden flex flex-col">
+            <div className="px-4 py-3 border-b border-border">
+              <p className="text-sm font-medium">Sent Emails</p>
+              <p className="text-xs text-muted-foreground">{sentPitches.length} {sentPitches.length === 1 ? 'email' : 'emails'} delivered</p>
             </div>
-            <div className="flex gap-2 items-center">
-              <span className="font-medium text-muted-foreground w-16 shrink-0">Subject:</span>
-              <Input
-                defaultValue={draftEmail.subject.replace('Oakwood Dr', selected.address.split(',')[0].split(' ').slice(1).join(' '))}
-                className="flex-1 text-sm font-medium"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-          <textarea
-            className="w-full h-64 rounded-lg bg-light-bg p-4 text-sm leading-relaxed text-foreground resize-none border-0 outline-none focus:ring-1 focus:ring-orange/30"
-            defaultValue={draftEmail.body.replace('Michael', selected.name.split(' ')[0]).replace('4821 Oakwood Dr', selected.address.split(',')[0]).replace('47 days', selected.days)}
-          />
-
-          {/* Data sources */}
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Data Sources</p>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="rounded-md bg-muted px-2.5 py-1 text-xs text-muted-foreground">MLS listing</span>
-              <span className="rounded-md bg-muted px-2.5 py-1 text-xs text-muted-foreground">Sold comps</span>
-              <span className="rounded-md bg-muted px-2.5 py-1 text-xs text-muted-foreground">Days expired</span>
-              <span className="rounded-md bg-muted px-2.5 py-1 text-xs text-muted-foreground">Equity estimate</span>
+            <div className="flex-1 overflow-y-auto">
+              {sentPitches.map((item, i) => (
+                <button
+                  key={item._idx}
+                  onClick={() => setSelectedIdx(i)}
+                  className={cn(
+                    'w-full text-left px-4 py-3 border-b border-border transition-colors',
+                    selectedIdx === i ? 'bg-orange/5' : 'hover:bg-muted/50'
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-medium truncate">{item.name}</p>
+                    <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium shrink-0 ml-2 bg-success/10 text-success border-success/20">
+                      Sent
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">{item.address}</p>
+                  {item.pitch.lastEdited && (
+                    <p className="text-[10px] text-gray-400 mt-1">
+                      {new Date(item.pitch.lastEdited).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                    </p>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Property context */}
-          <div className="rounded-xl border border-border p-4 space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Property Context</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-              <div>
-                <p className="text-xs text-muted-foreground">Address</p>
-                <p className="font-medium truncate">{selected.address.split(',')[0]}</p>
+          {/* Right — email preview (read-only) */}
+          {selected && (
+            <div className="lg:w-2/3 rounded-xl border border-border bg-white overflow-hidden flex flex-col">
+              <div className="px-6 py-4 border-b border-border">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-heading text-base font-semibold">Sent Email</h3>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium bg-success/10 text-success border-success/20">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Delivered
+                  </span>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex gap-2 items-center">
+                    <span className="font-medium text-muted-foreground w-16 shrink-0">From:</span>
+                    <span>Sarah Johnson via OffMarket</span>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <span className="font-medium text-muted-foreground w-16 shrink-0">To:</span>
+                    <span>{selected.email}</span>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <span className="font-medium text-muted-foreground w-16 shrink-0">Subject:</span>
+                    <span className="font-medium">{selected.pitch.subject}</span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Price</p>
-                <p className="font-medium">{selected.price}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Equity</p>
-                <p className="font-medium text-success">{selected.equity}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Status</p>
-                <p className="font-medium">{selected.days}</p>
+
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                <div className="rounded-xl bg-light-bg border border-gray-100 p-4">
+                  <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">{selected.pitch.body}</p>
+                </div>
+
+                {/* Property context */}
+                <div className="rounded-xl border border-border p-4 space-y-2">
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Property Context</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Address</p>
+                      <p className="font-medium truncate">{selected.address.split(',')[0]}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Price</p>
+                      <p className="font-medium">{selected.price}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Equity</p>
+                      <p className="font-medium text-success">{selected.equity}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Type</p>
+                      <p className="font-medium">{selected.type}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
-
-        {/* Bottom action bar — desktop */}
-        <div className="hidden md:flex px-6 py-3 border-t border-border items-center gap-2">
-          <Button variant="outline" size="default">Skip</Button>
-          <Button variant="outline" size="default">Edit</Button>
-          <Button
-            size="default"
-            onClick={handleDraftApprove}
-            className={cn(
-              'ml-auto transition-all duration-300',
-              approvedDrafts[selectedDraft]
-                ? 'bg-success text-white hover:bg-success scale-105'
-                : 'bg-orange text-white hover:bg-orange-hover'
-            )}
-          >
-            {approvedDrafts[selectedDraft] ? (
-              <><CheckCircle2 className="w-4 h-4 mr-1" /> Sent!</>
-            ) : (
-              'Approve & Send'
-            )}
-          </Button>
-        </div>
-
-        {/* Bottom action bar — mobile sticky */}
-        <div className="md:hidden fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border px-4 py-3 flex items-center gap-2 shadow-lg">
-          <Button variant="outline" size="default" className="flex-1">Skip</Button>
-          <Button
-            size="default"
-            onClick={handleDraftApprove}
-            className={cn(
-              'flex-1 transition-all duration-300',
-              approvedDrafts[selectedDraft]
-                ? 'bg-success text-white hover:bg-success scale-105'
-                : 'bg-orange text-white hover:bg-orange-hover'
-            )}
-          >
-            {approvedDrafts[selectedDraft] ? (
-              <><CheckCircle2 className="w-4 h-4 mr-1" /> Sent!</>
-            ) : (
-              'Approve & Send'
-            )}
-          </Button>
-        </div>
-      </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -1981,6 +1908,10 @@ export default function AppDashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLeadsArrived, setShowLeadsArrived] = useState(true);
 
+  // Shared state — pitch drafts and contacted leads live here so both tabs can access them
+  const [pitchDrafts, setPitchDrafts] = useState({});
+  const [contactedLeads, setContactedLeads] = useState({});
+
   const activeTab = tabMap[activeNav] || 'overview';
 
   function handleNavClick(key) {
@@ -2122,8 +2053,8 @@ export default function AppDashboard() {
           <FadePanel tabKey={activeTab}>
             {activeTab === 'overview' && <OverviewTab onNavigate={handleNavClick} />}
             {activeTab === 'farm' && <FarmAreaTab />}
-            {activeTab === 'leads' && <LeadsTab />}
-            {activeTab === 'drafts' && <DraftsTab />}
+            {activeTab === 'leads' && <LeadsTab pitchDrafts={pitchDrafts} setPitchDrafts={setPitchDrafts} contactedLeads={contactedLeads} setContactedLeads={setContactedLeads} />}
+            {activeTab === 'drafts' && <DraftsTab pitchDrafts={pitchDrafts} />}
             {activeTab === 'pipeline' && <PipelineTab />}
             {activeTab === 'replies' && (
               <div className="space-y-4">
