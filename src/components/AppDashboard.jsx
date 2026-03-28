@@ -1517,13 +1517,15 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                                         <><Check className="h-3.5 w-3.5 mr-2" /> Mark as Contacted</>
                                       )}
                                     </Button>
-                                    <button
-                                      onClick={(e) => handleSkipLead(idx, e)}
-                                      className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
-                                    >
-                                      <XCircle className="h-3.5 w-3.5 mr-2 inline" />
-                                      {isSkipped ? 'Undo Skip' : 'Skip This Lead'}
-                                    </button>
+                                    {pitchDrafts[idx]?.status !== 'sent' && (
+                                      <button
+                                        onClick={(e) => handleSkipLead(idx, e)}
+                                        className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+                                      >
+                                        <XCircle className="h-3.5 w-3.5 mr-2 inline" />
+                                        {isSkipped ? 'Undo Skip' : 'Skip This Lead'}
+                                      </button>
+                                    )}
                                   </div>
 
                                   {/* Mini Pipeline Indicator */}
