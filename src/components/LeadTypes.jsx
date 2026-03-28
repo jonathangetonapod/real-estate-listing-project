@@ -1,18 +1,18 @@
 import { motion } from 'framer-motion';
-import styles from './LeadTypes.module.css';
+import { cn } from '@/lib/utils';
 
 const leadCards = [
   {
-    icon: '\uD83D\uDD34',
-    iconBg: '#FFE8E8',
+    color: 'bg-danger',
+    colorBg: 'bg-danger/10',
     title: 'Expired Listings',
     stat: '7 in 10 choose a new agent',
     description:
       'Their last agent couldn\u2019t close. 70% of expired listings relist with a different agent. The fastest one to reach them wins.',
   },
   {
-    icon: '\uD83C\uDFE0',
-    iconBg: '#FFF3E0',
+    color: 'bg-orange',
+    colorBg: 'bg-orange/10',
     title: 'FSBOs',
     stat: 'Sell for 23% less without an agent',
     description:
@@ -20,8 +20,8 @@ const leadCards = [
     source: 'NAR, 2023',
   },
   {
-    icon: '\u26A0\uFE0F',
-    iconBg: '#FFEAEA',
+    color: 'bg-danger',
+    colorBg: 'bg-danger/10',
     title: 'Pre-Foreclosure',
     stat: '357K+ filings in 2023',
     description:
@@ -29,8 +29,8 @@ const leadCards = [
     source: 'ATTOM Data, 2024',
   },
   {
-    icon: '\uD83D\uDCCD',
-    iconBg: '#E8F4FD',
+    color: 'bg-[#2196F3]',
+    colorBg: 'bg-[#2196F3]/10',
     title: 'Absentee Owners',
     stat: '1 in 4 U.S. properties',
     description:
@@ -38,8 +38,8 @@ const leadCards = [
     source: 'ATTOM Data',
   },
   {
-    icon: '\uD83D\uDCB0',
-    iconBg: '#E6F9E9',
+    color: 'bg-success',
+    colorBg: 'bg-success/10',
     title: 'High Equity',
     stat: '$315K avg homeowner equity',
     description:
@@ -47,8 +47,8 @@ const leadCards = [
     source: 'CoreLogic, 2024',
   },
   {
-    icon: '\uD83D\uDCCB',
-    iconBg: '#F3E8FF',
+    color: 'bg-[#9C27B0]',
+    colorBg: 'bg-[#9C27B0]/10',
     title: 'Probate / Estate',
     stat: '1.5\u20132M properties/year',
     description:
@@ -76,10 +76,10 @@ const cardVariants = {
 
 export function LeadTypes() {
   return (
-    <section className={styles.section}>
-      <div className={styles.container}>
+    <section className="bg-white py-20 px-5 sm:py-[60px] sm:px-4">
+      <div className="mx-auto max-w-[1100px]">
         <motion.h2
-          className={styles.heading}
+          className="font-heading text-4xl sm:text-[28px] md:text-[34px] lg:text-[44px] font-bold text-dark text-center mb-4 leading-tight"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-80px' }}
@@ -89,7 +89,7 @@ export function LeadTypes() {
         </motion.h2>
 
         <motion.p
-          className={styles.subtitle}
+          className="font-sans text-lg sm:text-base text-[#555555] text-center max-w-[600px] mx-auto mb-10 leading-relaxed"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-60px' }}
@@ -100,7 +100,7 @@ export function LeadTypes() {
         </motion.p>
 
         <motion.div
-          className={styles.grid}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-4 mb-10"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -109,23 +109,24 @@ export function LeadTypes() {
           {leadCards.map((card) => (
             <motion.div
               key={card.title}
-              className={styles.card}
+              className="border border-border rounded-xl p-7 transition-colors duration-200 hover:border-orange"
               variants={cardVariants}
             >
-              <div
-                className={styles.iconContainer}
-                style={{ background: card.iconBg }}
-              >
-                {card.icon}
+              <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center mb-4', card.colorBg)}>
+                <div className={cn('w-3 h-3 rounded-full', card.color)} />
               </div>
-              <h3 className={styles.cardTitle}>{card.title}</h3>
-              <p className={styles.statLine}>{card.stat}</p>
-              <p className={styles.cardDescription}>
+              <h3 className="font-heading text-lg font-bold text-dark mb-2">
+                {card.title}
+              </h3>
+              <p className="font-mono text-[13px] font-medium text-orange mb-3">
+                {card.stat}
+              </p>
+              <p className="font-sans text-sm text-[#555555] leading-relaxed">
                 {card.description}
                 {card.source && (
                   <>
                     {' '}
-                    <span className={styles.source}>({card.source})</span>
+                    <span className="text-xs text-[#999]">({card.source})</span>
                   </>
                 )}
               </p>
@@ -134,7 +135,7 @@ export function LeadTypes() {
         </motion.div>
 
         <motion.p
-          className={styles.sourceLine}
+          className="font-sans text-[13px] text-muted-foreground text-center"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}

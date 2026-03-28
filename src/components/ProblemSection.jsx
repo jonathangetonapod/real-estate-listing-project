@@ -1,19 +1,18 @@
 import { motion } from 'framer-motion';
-import styles from './ProblemSection.module.css';
 
 const cards = [
   {
-    icon: '\uD83D\uDCB8',
+    indicator: 'bg-orange',
     title: 'Zillow leads cost $1,200+/mo. You share them with 47 agents.',
     body: "You\u2019re paying for a phone number that 47 other agents also bought. By the time you call, the homeowner is annoyed and you\u2019re competing on speed, not value.",
   },
   {
-    icon: '\u23F0',
+    indicator: 'bg-charcoal',
     title: 'Cold calling works. It just eats your whole morning.',
     body: "You can dial 100 numbers for 3 conversations, or email 500 verified sellers this week. Same hustle, 25x the reach. ListingPitch warms up your pipeline so every call is to someone who already knows your name.",
   },
   {
-    icon: '\uD83D\uDDD1\uFE0F',
+    indicator: 'bg-danger',
     title: 'Generic templates get deleted.',
     body: "Homeowners can smell a mass email from a mile away. If it doesn\u2019t feel personal, it\u2019s spam. If it references their actual property data and nearby comps, it\u2019s a conversation.",
   },
@@ -39,10 +38,10 @@ const cardVariants = {
 
 export function ProblemSection() {
   return (
-    <section className={styles.section}>
-      <div className={styles.inner}>
+    <section className="bg-white px-6 py-20">
+      <div className="mx-auto max-w-7xl">
         <motion.h2
-          className={styles.heading}
+          className="mx-auto mb-14 max-w-2xl text-center font-heading text-4xl font-bold leading-tight text-charcoal md:text-[44px]"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-60px' }}
@@ -52,7 +51,7 @@ export function ProblemSection() {
         </motion.h2>
 
         <motion.div
-          className={styles.cards}
+          className="mx-auto grid max-w-[500px] grid-cols-1 gap-6 md:max-w-none md:grid-cols-3"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -61,12 +60,16 @@ export function ProblemSection() {
           {cards.map((card) => (
             <motion.div
               key={card.title}
-              className={styles.card}
+              className="rounded-xl border border-gray-200 bg-white p-8"
               variants={cardVariants}
             >
-              <span className={styles.icon}>{card.icon}</span>
-              <h3 className={styles.cardTitle}>{card.title}</h3>
-              <p className={styles.cardBody}>{card.body}</p>
+              <span className={`mb-4 block h-2.5 w-2.5 rounded-full ${card.indicator}`} />
+              <h3 className="mb-3 font-heading text-xl font-bold leading-snug text-charcoal">
+                {card.title}
+              </h3>
+              <p className="font-sans text-[15px] leading-relaxed text-gray-600">
+                {card.body}
+              </p>
             </motion.div>
           ))}
         </motion.div>

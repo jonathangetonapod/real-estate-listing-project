@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import styles from './StatStrip.module.css';
 
 function useCountUp(target, duration = 2000, shouldStart = false) {
   const [value, setValue] = useState(0);
@@ -53,9 +52,13 @@ function StatItem({ target, display, label, shouldAnimate }) {
   const count = useCountUp(target, 2000, shouldAnimate);
 
   return (
-    <div className={styles.stat}>
-      <div className={styles.value}>{display(count)}</div>
-      <div className={styles.label}>{label}</div>
+    <div className="min-w-[120px] text-center">
+      <div className="font-mono text-3xl font-bold leading-tight text-orange md:text-4xl">
+        {display(count)}
+      </div>
+      <div className="mt-1 text-sm text-gray-500">
+        {label}
+      </div>
     </div>
   );
 }
@@ -67,13 +70,13 @@ export function StatStrip() {
   return (
     <motion.section
       ref={ref}
-      className={styles.strip}
+      className="bg-dark px-6 py-8"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
     >
-      <div className={styles.inner}>
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-8 md:gap-16">
         {stats.map((stat) => (
           <StatItem
             key={stat.label}

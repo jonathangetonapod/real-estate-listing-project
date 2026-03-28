@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import styles from './AIComparison.module.css';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 // Data sources we actually have access to:
 // - Owner name (public records / skip-trace)
@@ -99,7 +100,7 @@ function highlightText(text, highlights) {
 
   return parts.map((part, i) =>
     part.highlighted ? (
-      <mark key={i} className={styles.highlight}>{part.text}</mark>
+      <mark key={i} className="bg-orange/12 text-charcoal italic px-0.5 rounded-sm">{part.text}</mark>
     ) : (
       <span key={i}>{part.text}</span>
     )
@@ -111,22 +112,22 @@ export function AIComparison() {
   const example = examples[activeIndex];
 
   return (
-    <section className={styles.section}>
-      <div className={styles.container}>
+    <section className="bg-lime py-20 px-5 sm:py-[60px] sm:px-4">
+      <div className="mx-auto max-w-[1100px]">
         <motion.h2
-          className={styles.heading}
+          className="font-heading text-4xl sm:text-[26px] md:text-[30px] lg:text-[44px] font-bold text-charcoal text-center mb-3 leading-tight"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
           viewport={{ once: true, margin: '-80px' }}
         >
           Not Another Template Tool.<br />
-          <span className={styles.headingAccent}>This Actually Sounds Like You.</span>
+          <span className="text-charcoal/60 italic">This Actually Sounds Like You.</span>
         </motion.h2>
 
         {/* Carousel tabs */}
         <motion.div
-          className={styles.tabs}
+          className="flex justify-center gap-2 mb-6 flex-wrap"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
@@ -135,7 +136,13 @@ export function AIComparison() {
           {examples.map((ex, i) => (
             <button
               key={i}
-              className={`${styles.tab} ${i === activeIndex ? styles.tabActive : ''}`}
+              className={cn(
+                'rounded-3xl px-5 py-2 font-sans text-sm font-semibold cursor-pointer transition-all duration-200 border',
+                'sm:px-3.5 sm:py-1.5 sm:text-[13px]',
+                i === activeIndex
+                  ? 'bg-charcoal text-white border-charcoal'
+                  : 'bg-charcoal/8 border-charcoal/12 text-charcoal hover:bg-charcoal/15'
+              )}
               onClick={() => setActiveIndex(i)}
             >
               {ex.type}
@@ -147,61 +154,77 @@ export function AIComparison() {
         <AnimatePresence mode="wait">
           <motion.div
             key={`context-${activeIndex}`}
-            className={styles.contextBar}
+            className="flex items-center justify-center gap-3 mb-5 flex-wrap md:flex-col md:gap-1.5"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25 }}
           >
-            <span className={styles.contextIcon}>📍</span>
-            <span className={styles.contextAddress}>{example.property}</span>
+            <span className="text-base">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-charcoal/40 mr-1" />
+            </span>
+            <span className="font-sans text-[15px] font-semibold text-charcoal">
+              {example.property}
+            </span>
             {example.daysExpired && (
-              <span className={styles.contextBadge} data-type="expired">
+              <Badge variant="outline" className="font-mono text-xs font-medium px-3 py-1 rounded-full bg-[#FFE8E8] text-danger border-transparent">
                 Expired {example.daysExpired}d ago
-              </span>
+              </Badge>
             )}
             {example.daysListed && (
-              <span className={styles.contextBadge} data-type="fsbo">
+              <Badge variant="outline" className="font-mono text-xs font-medium px-3 py-1 rounded-full bg-[#FFF3E0] text-orange border-transparent">
                 Listed {example.daysListed}d (FSBO)
-              </span>
+              </Badge>
             )}
-            <span className={styles.contextBadge} data-type="type">
+            <Badge variant="outline" className="font-mono text-xs font-medium px-3 py-1 rounded-full bg-charcoal/8 text-charcoal border-transparent">
               {example.type}
-            </span>
+            </Badge>
           </motion.div>
         </AnimatePresence>
 
         {/* Email comparison cards */}
-        <div className={styles.cards}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4 max-w-[960px] mx-auto mb-6">
           <AnimatePresence mode="wait">
             {/* Generic */}
             <motion.div
               key={`generic-${activeIndex}`}
-              className={styles.card}
+              className="bg-white rounded-xl overflow-hidden border-2 border-transparent"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3 }}
             >
-              <div className={styles.cardHeader}>
-                <span className={styles.iconX}>✕</span>
-                <span className={styles.cardLabel}>Generic template</span>
-                <span className={styles.cardBadgeBad}>Low response rate</span>
+              <div className="flex items-center gap-2 px-6 py-4 border-b border-[#eee] sm:px-4 sm:py-3">
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#FFE8E8] text-danger text-sm font-bold leading-none">
+                  ✕
+                </span>
+                <span className="font-sans text-[15px] font-semibold text-charcoal">
+                  Generic template
+                </span>
+                <Badge variant="outline" className="ml-auto font-mono text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-[#FFE8E8] text-danger border-transparent">
+                  Low response rate
+                </Badge>
               </div>
-              <div className={styles.emailMockup}>
-                <div className={styles.emailSubject}>
-                  <span className={styles.emailSubjectLabel}>Subject:</span>
+              <div className="p-5 px-6 sm:p-4">
+                <div className="font-sans text-sm font-semibold text-charcoal mb-3">
+                  <span className="font-normal text-muted-foreground mr-1.5">Subject:</span>
                   {example.generic.subject}
                 </div>
-                <div className={styles.emailDivider} />
-                <p className={styles.emailBody}>
+                <div className="h-px bg-[#eee] mb-3.5" />
+                <p className="font-sans text-sm italic text-[#555555] leading-7">
                   &ldquo;{example.generic.body}&rdquo;
                 </p>
               </div>
-              <div className={styles.cardFooterBad}>
-                <span>⚠️ No personalization</span>
-                <span>⚠️ No property data</span>
-                <span>⚠️ Feels like spam</span>
+              <div className="flex flex-wrap gap-2 px-6 py-3.5 bg-[#FFF8F6] border-t border-[#FFE8E8] font-sans text-xs font-medium text-danger md:flex-col md:gap-1 sm:px-4 sm:py-3">
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-danger" /> No personalization
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-danger" /> No property data
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-danger" /> Feels like spam
+                </span>
               </div>
             </motion.div>
           </AnimatePresence>
@@ -210,48 +233,69 @@ export function AIComparison() {
             {/* AI */}
             <motion.div
               key={`ai-${activeIndex}`}
-              className={`${styles.card} ${styles.cardAI}`}
+              className="bg-white rounded-xl overflow-hidden border-2 border-success shadow-[0_4px_24px_rgba(1,159,17,0.1)]"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3, delay: 0.1 }}
             >
-              <div className={styles.cardHeader}>
-                <span className={styles.iconCheck}>✓</span>
-                <span className={styles.cardLabel}>ListingPitch AI</span>
-                <span className={styles.cardBadgeGood}>3-5x higher reply rate</span>
+              <div className="flex items-center gap-2 px-6 py-4 border-b border-[#eee] sm:px-4 sm:py-3">
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#e6f9e9] text-success text-sm font-bold leading-none">
+                  ✓
+                </span>
+                <span className="font-sans text-[15px] font-semibold text-charcoal">
+                  ListingPitch AI
+                </span>
+                <Badge variant="outline" className="ml-auto font-mono text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-[#e6f9e9] text-success border-transparent">
+                  3-5x higher reply rate
+                </Badge>
               </div>
-              <div className={styles.emailMockup}>
-                <div className={styles.emailSubject}>
-                  <span className={styles.emailSubjectLabel}>Subject:</span>
+              <div className="p-5 px-6 sm:p-4">
+                <div className="font-sans text-sm font-semibold text-charcoal mb-3">
+                  <span className="font-normal text-muted-foreground mr-1.5">Subject:</span>
                   {example.ai.subject}
                 </div>
-                <div className={styles.emailDivider} />
-                <p className={styles.emailBody}>
+                <div className="h-px bg-[#eee] mb-3.5" />
+                <p className="font-sans text-sm italic text-[#555555] leading-7">
                   &ldquo;{highlightText(example.ai.body, example.ai.highlights)}&rdquo;
                 </p>
               </div>
-              <div className={styles.dataSources}>
-                <span className={styles.dataSourceLabel}>Data used:</span>
+              <div className="flex flex-wrap items-center gap-1.5 px-6 py-3 border-t border-[#eee]">
+                <span className="font-sans text-[11px] font-semibold text-[#999] uppercase tracking-wide">
+                  Data used:
+                </span>
                 {example.dataUsed.map((src, i) => (
-                  <span key={i} className={styles.dataSourceTag}>{src}</span>
+                  <Badge key={i} variant="outline" className="font-mono text-[10px] font-medium px-2 py-0.5 rounded bg-success/6 text-success border-success/15">
+                    {src}
+                  </Badge>
                 ))}
               </div>
-              <div className={styles.cardFooterGood}>
-                <span>✓ Uses real MLS comps & public records</span>
-                <span>✓ Matches your writing voice</span>
-                <span>✓ Reply lands in your inbox instantly</span>
+              <div className="flex flex-wrap gap-2 px-6 py-3.5 bg-[#F0FDF4] border-t border-[#d1fae5] font-sans text-xs font-medium text-success md:flex-col md:gap-1 sm:px-4 sm:py-3">
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" /> Uses real MLS comps & public records
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" /> Matches your writing voice
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" /> Reply lands in your inbox instantly
+                </span>
               </div>
             </motion.div>
           </AnimatePresence>
         </div>
 
         {/* Carousel dots */}
-        <div className={styles.dots}>
+        <div className="flex justify-center gap-2 mb-8">
           {examples.map((_, i) => (
             <button
               key={i}
-              className={`${styles.dot} ${i === activeIndex ? styles.dotActive : ''}`}
+              className={cn(
+                'h-2.5 rounded-full border-none cursor-pointer transition-all duration-200 p-0',
+                i === activeIndex
+                  ? 'bg-charcoal w-7 rounded-[5px]'
+                  : 'bg-charcoal/15 w-2.5 hover:bg-charcoal/30'
+              )}
               onClick={() => setActiveIndex(i)}
               aria-label={`Example ${i + 1}`}
             />
@@ -259,7 +303,7 @@ export function AIComparison() {
         </div>
 
         <motion.p
-          className={styles.callout}
+          className="font-sans text-base text-charcoal text-center max-w-[700px] mx-auto leading-7"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}

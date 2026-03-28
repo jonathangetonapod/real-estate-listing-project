@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
-import styles from './Pricing.module.css';
+import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 const starterFeatures = [
   '1 farm area (up to 3 zip codes)',
@@ -28,11 +30,60 @@ const fadeIn = {
   },
 };
 
+function PricingCard({ planName, price, features, featured = false }) {
+  return (
+    <Card
+      className={cn(
+        'flex-1 rounded-xl bg-white py-0 ring-0',
+        featured && 'ring-2 ring-orange'
+      )}
+    >
+      <CardContent className="flex flex-col p-8">
+        <span
+          className={cn(
+            'font-sans text-sm font-semibold uppercase tracking-wide text-gray-400',
+            featured && 'text-orange'
+          )}
+        >
+          {planName}
+        </span>
+
+        <div className="mt-3 mb-7 flex items-baseline gap-1">
+          <span className="font-heading text-5xl font-bold leading-none text-charcoal">
+            {price}
+          </span>
+          <span className="font-sans text-lg text-gray-400">/month</span>
+        </div>
+
+        <ul className="mb-8 flex-1 list-none space-y-0">
+          {features.map((feature) => (
+            <li
+              key={feature}
+              className="flex items-start gap-2.5 py-2 font-sans text-[15px] leading-relaxed text-charcoal"
+            >
+              <span className="mt-0.5 shrink-0 text-base text-success">
+                &#10003;
+              </span>
+              <span>{feature}</span>
+            </li>
+          ))}
+        </ul>
+
+        <Button
+          className="h-auto w-full rounded-lg bg-orange px-6 py-4 font-sans text-base font-semibold text-white transition-colors hover:bg-orange/90"
+        >
+          Start Free Preview
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function Pricing() {
   return (
-    <section id="pricing" className={styles.section}>
+    <section id="pricing" className="bg-light-bg px-5 py-20">
       <motion.h2
-        className={styles.heading}
+        className="mx-auto mb-12 text-center font-heading text-4xl font-bold leading-tight text-dark md:text-[44px]"
         variants={fadeIn}
         initial="hidden"
         whileInView="visible"
@@ -41,72 +92,66 @@ export function Pricing() {
         One Listing Pays for 2+ Years of ListingPitch
       </motion.h2>
 
+      {/* Zillow vs ListingPitch anchor */}
       <motion.div
-        className={styles.anchor}
+        className="-mt-6 mx-auto mb-10 flex max-w-xl items-center overflow-hidden rounded-xl border border-gray-300 bg-white"
         variants={fadeIn}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-60px' }}
       >
-        <div className={styles.anchorBad}>
-          <span className={styles.anchorLabel}>Zillow</span>
-          <span className={styles.anchorPrice}>$1,200+/mo</span>
-          <span className={styles.anchorNote}>Shared with 47 agents</span>
+        <div className="flex-1 bg-red-50 px-6 py-5 text-center">
+          <span className="block font-sans text-xs font-semibold uppercase tracking-wide text-gray-400">
+            Zillow
+          </span>
+          <span className="block font-mono text-2xl font-bold text-red-700 line-through">
+            $1,200+/mo
+          </span>
+          <span className="mt-1 block font-sans text-xs text-gray-400">
+            Shared with 47 agents
+          </span>
         </div>
-        <div className={styles.anchorDivider}>vs</div>
-        <div className={styles.anchorGood}>
-          <span className={styles.anchorLabel}>ListingPitch</span>
-          <span className={styles.anchorPrice}>$199/mo</span>
-          <span className={styles.anchorNote}>Exclusive to your zip code</span>
+
+        <div className="px-4 font-sans text-sm font-semibold text-gray-400">
+          vs
+        </div>
+
+        <div className="flex-1 bg-green-50 px-6 py-5 text-center">
+          <span className="block font-sans text-xs font-semibold uppercase tracking-wide text-gray-400">
+            ListingPitch
+          </span>
+          <span className="block font-mono text-2xl font-bold text-green-600">
+            $199/mo
+          </span>
+          <span className="mt-1 block font-sans text-xs text-gray-400">
+            Exclusive to your zip code
+          </span>
         </div>
       </motion.div>
 
+      {/* Pricing cards */}
       <motion.div
-        className={styles.grid}
+        className="mx-auto flex max-w-3xl flex-col items-stretch gap-6 md:flex-row"
         variants={fadeIn}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-80px' }}
       >
-        {/* Starter Card */}
-        <div className={styles.card}>
-          <span className={styles.planName}>Starter</span>
-          <div className={styles.priceRow}>
-            <span className={styles.price}>$199</span>
-            <span className={styles.pricePeriod}>/month</span>
-          </div>
-          <ul className={styles.features}>
-            {starterFeatures.map((feature) => (
-              <li key={feature} className={styles.featureItem}>
-                <span className={styles.checkmark}>&#10003;</span>
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-          <button className={styles.ctaButton}>Start Free Preview</button>
-        </div>
-
-        {/* Growth Card (Featured) */}
-        <div className={styles.cardFeatured}>
-          <span className={styles.planNameFeatured}>Growth — Most Popular</span>
-          <div className={styles.priceRow}>
-            <span className={styles.price}>$299</span>
-            <span className={styles.pricePeriod}>/month</span>
-          </div>
-          <ul className={styles.features}>
-            {growthFeatures.map((feature) => (
-              <li key={feature} className={styles.featureItem}>
-                <span className={styles.checkmark}>&#10003;</span>
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-          <button className={styles.ctaButton}>Start Free Preview</button>
-        </div>
+        <PricingCard
+          planName="Starter"
+          price="$199"
+          features={starterFeatures}
+        />
+        <PricingCard
+          planName="Growth — Most Popular"
+          price="$299"
+          features={growthFeatures}
+          featured
+        />
       </motion.div>
 
       <motion.p
-        className={styles.disclaimer}
+        className="mt-5 text-center font-sans text-sm text-gray-400"
         variants={fadeIn}
         initial="hidden"
         whileInView="visible"
@@ -116,7 +161,7 @@ export function Pricing() {
       </motion.p>
 
       <motion.p
-        className={styles.comparison}
+        className="mx-auto mt-6 max-w-2xl text-center font-sans text-base leading-relaxed text-gray-500"
         variants={fadeIn}
         initial="hidden"
         whileInView="visible"

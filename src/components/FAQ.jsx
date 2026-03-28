@@ -1,6 +1,10 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import styles from './FAQ.module.css';
+import { motion } from 'framer-motion';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/ui/accordion';
 
 const faqData = [
   {
@@ -53,42 +57,11 @@ const faqData = [
   },
 ];
 
-function FAQItem({ question, answer }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className={styles.item}>
-      <button
-        className={styles.question}
-        onClick={() => setIsOpen((prev) => !prev)}
-        aria-expanded={isOpen}
-      >
-        <span className={styles.questionText}>{question}</span>
-        <span className={isOpen ? styles.iconOpen : styles.icon}>+</span>
-      </button>
-
-      <AnimatePresence initial={false}>
-        {isOpen && (
-          <motion.div
-            className={styles.answerWrapper}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-          >
-            <p className={styles.answer}>{answer}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
 export function FAQ() {
   return (
-    <section id="faq" className={styles.section}>
+    <section id="faq" className="bg-white px-5 py-20">
       <motion.h2
-        className={styles.heading}
+        className="mx-auto mb-12 text-center font-heading text-4xl font-bold leading-tight text-dark"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-80px' }}
@@ -97,18 +70,33 @@ export function FAQ() {
         Questions Agents Ask Before Signing Up
       </motion.h2>
 
-      <div className={styles.list}>
-        {faqData.map((item, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.4, delay: index * 0.05, ease: 'easeOut' }}
-          >
-            <FAQItem question={item.q} answer={item.a} />
-          </motion.div>
-        ))}
+      <div className="mx-auto max-w-2xl">
+        <Accordion>
+          {faqData.map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{
+                duration: 0.4,
+                delay: index * 0.05,
+                ease: 'easeOut',
+              }}
+            >
+              <AccordionItem value={`faq-${index}`}>
+                <AccordionTrigger className="py-5 font-heading text-lg font-bold leading-snug text-dark hover:no-underline">
+                  {item.q}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <p className="pb-5 font-sans text-[15px] leading-relaxed text-gray-500">
+                    {item.a}
+                  </p>
+                </AccordionContent>
+              </AccordionItem>
+            </motion.div>
+          ))}
+        </Accordion>
       </div>
     </section>
   );

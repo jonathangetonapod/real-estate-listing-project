@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import styles from './Navbar.module.css';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -25,60 +26,107 @@ export function Navbar() {
 
   return (
     <motion.div
-      className={styles.navWrapper}
+      className="sticky top-3 z-[1000] flex justify-center px-4"
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
     >
       <nav
-        className={`${styles.nav} ${scrolled ? styles.navScrolled : ''}`}
+        className={cn(
+          'relative w-full max-w-5xl flex items-center justify-between px-6 py-3 bg-white border border-border rounded-xl transition-shadow duration-300',
+          scrolled && 'shadow-sm'
+        )}
       >
-        <div className={styles.logo}>
-          <span className={styles.logoCharcoal}>Listing</span>
-          <span className={styles.logoOrange}>Pitch</span>
+        {/* Logo */}
+        <div className="font-heading text-[22px] font-bold leading-none cursor-pointer select-none">
+          <span className="text-charcoal">Listing</span>
+          <span className="text-orange">Pitch</span>
         </div>
 
-        <ul className={styles.links}>
+        {/* Desktop links */}
+        <ul className="hidden md:flex items-center gap-8 list-none">
           {navLinks.map((link) => (
             <li key={link.label}>
-              <a className={styles.link} href={link.href}>
+              <a
+                className="font-sans text-sm font-medium text-charcoal whitespace-nowrap transition-colors duration-200 hover:text-orange"
+                href={link.href}
+              >
                 {link.label}
               </a>
             </li>
           ))}
         </ul>
 
-        <div className={`${styles.actions} ${styles.desktopActions}`}>
-          <button className={styles.btnOutline}>See a Sample List</button>
-          <button className={styles.btnSolid}>Start Free Preview</button>
+        {/* Desktop CTAs */}
+        <div className="hidden md:flex items-center gap-4">
+          <Button
+            variant="outline"
+            className="rounded-full border-orange text-orange font-sans text-sm font-semibold px-6 py-2.5 hover:bg-orange hover:text-white transition-colors duration-200"
+          >
+            See a Sample List
+          </Button>
+          <Button
+            className="rounded-full bg-orange text-white font-sans text-sm font-semibold px-6 py-2.5 border-orange hover:bg-orange/90 transition-colors duration-200"
+          >
+            Start Free Preview
+          </Button>
         </div>
 
+        {/* Hamburger */}
         <button
-          className={`${styles.hamburger} ${mobileOpen ? styles.hamburgerOpen : ''}`}
+          className="flex md:hidden flex-col justify-center items-center gap-[5px] w-9 h-9 bg-transparent border-none cursor-pointer p-1"
           onClick={toggleMobile}
           aria-label="Toggle menu"
         >
-          <span />
-          <span />
-          <span />
+          <span
+            className={cn(
+              'block w-[22px] h-0.5 bg-charcoal rounded-sm transition-all duration-300',
+              mobileOpen && 'translate-y-[7px] rotate-45'
+            )}
+          />
+          <span
+            className={cn(
+              'block w-[22px] h-0.5 bg-charcoal rounded-sm transition-all duration-300',
+              mobileOpen && 'opacity-0'
+            )}
+          />
+          <span
+            className={cn(
+              'block w-[22px] h-0.5 bg-charcoal rounded-sm transition-all duration-300',
+              mobileOpen && '-translate-y-[7px] -rotate-45'
+            )}
+          />
         </button>
 
+        {/* Mobile menu */}
         <div
-          className={`${styles.mobileMenu} ${mobileOpen ? styles.mobileMenuOpen : ''}`}
+          className={cn(
+            'absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-border rounded-xl p-6 flex-col gap-4 shadow-[0_8px_32px_rgba(0,0,0,0.1)]',
+            mobileOpen ? 'flex md:hidden' : 'hidden'
+          )}
         >
           {navLinks.map((link) => (
             <a
               key={link.label}
-              className={styles.link}
+              className="font-sans text-base font-medium text-charcoal py-2 transition-colors duration-200 hover:text-orange"
               href={link.href}
               onClick={() => setMobileOpen(false)}
             >
               {link.label}
             </a>
           ))}
-          <div className={styles.actions}>
-            <button className={styles.btnOutline}>See a Sample List</button>
-            <button className={styles.btnSolid}>Start Free Preview</button>
+          <div className="flex flex-col gap-4 w-full">
+            <Button
+              variant="outline"
+              className="w-full rounded-full border-orange text-orange font-sans text-sm font-semibold px-6 py-2.5 hover:bg-orange hover:text-white transition-colors duration-200"
+            >
+              See a Sample List
+            </Button>
+            <Button
+              className="w-full rounded-full bg-orange text-white font-sans text-sm font-semibold px-6 py-2.5 border-orange hover:bg-orange/90 transition-colors duration-200"
+            >
+              Start Free Preview
+            </Button>
           </div>
         </div>
       </nav>

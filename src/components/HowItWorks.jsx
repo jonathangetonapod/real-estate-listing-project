@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import styles from './HowItWorks.module.css';
+import { cn } from '@/lib/utils';
 
 const steps = [
   {
@@ -54,10 +54,10 @@ const stepVariants = {
 
 export function HowItWorks() {
   return (
-    <section className={styles.section} id="how-it-works">
-      <div className={styles.container}>
+    <section className="bg-light-bg py-20 px-5 sm:py-[60px]" id="how-it-works">
+      <div className="mx-auto max-w-[1100px]">
         <motion.h2
-          className={styles.heading}
+          className="font-heading text-4xl sm:text-[28px] md:text-[34px] lg:text-[44px] font-bold text-dark text-center mb-14 sm:mb-10 leading-tight"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-80px' }}
@@ -67,7 +67,7 @@ export function HowItWorks() {
         </motion.h2>
 
         <motion.div
-          className={styles.steps}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -76,12 +76,18 @@ export function HowItWorks() {
           {steps.map((step) => (
             <motion.div
               key={step.number}
-              className={styles.step}
+              className="flex flex-col items-center text-center p-5 sm:p-6"
               variants={stepVariants}
             >
-              <div className={styles.numberCircle}>{step.number}</div>
-              <h3 className={styles.stepTitle}>{step.title}</h3>
-              <p className={styles.stepDescription}>{step.description}</p>
+              <div className="w-10 h-10 rounded-full bg-orange text-white flex items-center justify-center font-sans text-lg font-bold mb-5 shrink-0">
+                {step.number}
+              </div>
+              <h3 className="font-heading text-lg font-bold text-dark mb-3">
+                {step.title}
+              </h3>
+              <p className="font-sans text-sm text-[#555555] leading-relaxed">
+                {step.description}
+              </p>
             </motion.div>
           ))}
         </motion.div>

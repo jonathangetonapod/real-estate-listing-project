@@ -1,5 +1,3 @@
-import styles from './Footer.module.css';
-
 const navLinks = [
   { label: 'How It Works', href: '#how-it-works' },
   { label: 'Pricing', href: '#pricing' },
@@ -10,22 +8,26 @@ const navLinks = [
 
 export function Footer() {
   return (
-    <footer className={styles.footer}>
-      <div className={styles.inner}>
-        <div className={styles.logo}>
-          Listing<span className={styles.logoAccent}>Pitch</span>
+    <footer className="border-t border-white/10 bg-dark px-5 py-10">
+      <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-5 text-center md:flex-row md:text-left">
+        <div className="font-heading text-lg font-bold text-white">
+          Listing<span className="text-orange">Pitch</span>
         </div>
 
-        <nav className={styles.links}>
+        <nav className="flex flex-wrap items-center justify-center gap-6">
           {navLinks.map((link) => (
-            <a key={link.label} href={link.href} className={styles.link}>
+            <a
+              key={link.label}
+              href={link.href}
+              className="font-sans text-sm text-gray-400 transition-colors hover:text-white"
+            >
               {link.label}
             </a>
           ))}
         </nav>
       </div>
 
-      <p className={styles.copyright}>
+      <p className="mt-6 text-center font-sans text-[13px] text-[#666]">
         &copy; 2026 ListingPitch. Not affiliated with any MLS or brokerage.
       </p>
     </footer>
