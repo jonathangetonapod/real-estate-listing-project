@@ -1304,6 +1304,18 @@ function LeadsTab() {
                             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Time</p>
                             <p className="font-sans text-sm text-gray-600">{lead.days}</p>
                           </div>
+                          <div>
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Match</p>
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-8 h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                                <div
+                                  className={cn('h-full rounded-full', lead.match >= 90 ? 'bg-success' : lead.match >= 80 ? 'bg-orange' : 'bg-yellow-500')}
+                                  style={{ width: `${lead.match}%` }}
+                                />
+                              </div>
+                              <span className="font-mono text-sm font-bold text-charcoal">{lead.match}</span>
+                            </div>
+                          </div>
                         </div>
 
                         {/* Right: Badges + Expand */}
