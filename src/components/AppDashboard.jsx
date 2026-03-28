@@ -29,6 +29,9 @@ import {
   Home,
   Info,
   Inbox,
+  ChevronDown,
+  ExternalLink,
+  XCircle,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -784,123 +787,119 @@ function OverviewTab({ onNavigate }) {
 const filterOptions = ['All', 'Expired', 'FSBO', 'Pre-Foreclosure', 'High Equity'];
 
 function LeadsTab() {
+  const [expandedLead, setExpandedLead] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedLead, setSelectedLead] = useState(null);
-  const [approvedLeads, setApprovedLeads] = useState({});
-  const [showMobileProfile, setShowMobileProfile] = useState(false);
+  const [activeOrder, setActiveOrder] = useState('All');
+  const [contactedLeads, setContactedLeads] = useState({});
+  const [skippedLeads, setSkippedLeads] = useState({});
 
-  // Extended data for each lead (keyed by index in the leads array)
+  // Extended property data for each lead (keyed by index in the leads array)
   const extendedLeadData = [
     {
-      insight: 'This home at 4821 Oakwood Dr was listed at $459K and expired 47 days ago after sitting on the market for 6 months. The homeowner has $185K in equity. Properties on this block are selling in 20-30 days, which suggests a pricing issue, not a demand issue. A well-positioned pitch about recent comps could re-engage this seller.',
-      subject: 'Your 4821 Oakwood Dr Home — Quick Question',
-      body: 'Hi Michael,\n\nI noticed your listing at 4821 Oakwood Dr expired recently. Based on recent comparable sales in Riverside Heights, homes similar to yours are closing in 20-30 days when priced right.\n\nI have a strategy that could get your home sold quickly and close to your original asking price. Would you be open to a quick conversation this week?\n\nBest,\nSarah Johnson',
-      timeline: [
-        { label: 'Lead delivered', date: 'Mar 28, 9:00 AM', status: 'done' },
-        { label: 'AI pitch drafted', date: 'Mar 28, 9:02 AM', status: 'done' },
-        { label: 'Email sent', date: null, status: 'pending' },
-        { label: 'Opened', date: null, status: 'future' },
-        { label: 'Replied', date: null, status: 'future' },
-      ],
+      insight: 'This home expired after 6 months on market. Properties on this block are selling in 20-30 days, suggesting a pricing issue, not a demand issue. $185K in equity means the seller has room to negotiate. A well-positioned pitch about recent comps could re-engage this seller.',
+      estimatedValue: '$485K',
+      estimatedEquity: '$185K',
+      daysOnMarket: '47 days',
+      leadType: 'Expired Listing',
+      originalListPrice: '$459K',
+      lastListed: 'Nov 2025',
     },
     {
-      insight: 'Sarah Kim listed her Canyon Crest home as FSBO 12 days ago at $392K. Similar homes with agent representation sold for 8-12% more in this zip code last quarter. She has $240K in equity and likely wants to save on commission, but leaving significant money on the table.',
-      subject: 'A Thought on Your 1203 Maple Ridge Listing',
-      body: 'Hi Sarah,\n\nI saw your FSBO listing on Maple Ridge Ln and wanted to share something interesting. Homes in Canyon Crest that sold with professional marketing averaged 10% higher sale prices this quarter.\n\nWith your equity position, that could mean an extra $35-40K in your pocket. Happy to walk you through the numbers if you are interested.\n\nBest,\nSarah Johnson',
-      timeline: [
-        { label: 'Lead delivered', date: 'Mar 27, 8:30 AM', status: 'done' },
-        { label: 'AI pitch drafted', date: 'Mar 27, 8:32 AM', status: 'done' },
-        { label: 'Email sent', date: null, status: 'pending' },
-        { label: 'Opened', date: null, status: 'future' },
-        { label: 'Replied', date: null, status: 'future' },
-      ],
+      insight: 'Sarah Kim listed her Canyon Crest home as FSBO 12 days ago at $392K. Similar homes with agent representation sold for 8-12% more in this zip code last quarter. She has $240K in equity and likely wants to save on commission, but is leaving significant money on the table.',
+      estimatedValue: '$392K',
+      estimatedEquity: '$240K',
+      daysOnMarket: '12 days',
+      leadType: 'FSBO',
+      originalListPrice: '$392K',
+      lastListed: 'Mar 2026',
     },
     {
       insight: 'David Hernandez received a Notice of Default 34 days ago on his Palm Canyon property valued at $520K. With $310K in equity, he has significant motivation to sell before foreclosure proceedings advance. Time-sensitive outreach emphasizing a quick sale to protect his equity could be very effective.',
-      subject: 'Protecting Your Equity at 892 Sunset Blvd',
-      body: 'Hi David,\n\nI work with homeowners in Palm Canyon and wanted to reach out regarding your property at 892 Sunset Blvd. I understand navigating financial challenges can be stressful.\n\nWith the equity you have built, there are options that could protect your investment. I would be happy to discuss a confidential plan. No pressure.\n\nBest,\nSarah Johnson',
-      timeline: [
-        { label: 'Lead delivered', date: 'Mar 26, 9:00 AM', status: 'done' },
-        { label: 'AI pitch drafted', date: 'Mar 26, 9:01 AM', status: 'done' },
-        { label: 'Email sent', date: 'Mar 26, 10:00 AM', status: 'done' },
-        { label: 'Opened', date: null, status: 'pending' },
-        { label: 'Replied', date: null, status: 'future' },
-      ],
+      estimatedValue: '$520K',
+      estimatedEquity: '$310K',
+      daysOnMarket: '34 days (NOD)',
+      leadType: 'Pre-Foreclosure',
+      originalListPrice: '$540K',
+      lastListed: 'Sep 2025',
     },
     {
       insight: 'Linda Chen\'s Eastlake listing expired 21 days ago after being priced at $415K. Comparable homes in Eastlake closed at $400-430K in the last 60 days, suggesting the property was within range. A fresh marketing approach and updated staging could make the difference.',
-      subject: 'Fresh Eyes on Your 2710 Harbor View Home',
-      body: 'Hi Linda,\n\nI noticed your home at 2710 Harbor View Dr came off the market recently. The Eastlake market is still active — three similar homes closed in the last month between $400-430K.\n\nSometimes a fresh approach is all it takes. I have a few ideas I think could work well for your property. Would you like to chat?\n\nBest,\nSarah Johnson',
-      timeline: [
-        { label: 'Lead delivered', date: 'Mar 28, 9:00 AM', status: 'done' },
-        { label: 'AI pitch drafted', date: 'Mar 28, 9:03 AM', status: 'done' },
-        { label: 'Email sent', date: null, status: 'pending' },
-        { label: 'Opened', date: null, status: 'future' },
-        { label: 'Replied', date: null, status: 'future' },
-      ],
+      estimatedValue: '$415K',
+      estimatedEquity: '$195K',
+      daysOnMarket: '21 days',
+      leadType: 'Expired Listing',
+      originalListPrice: '$415K',
+      lastListed: 'Feb 2026',
     },
     {
       insight: 'Robert Williams has been trying to sell his Northpark FSBO for 45 days at $349K with no traction. His equity is relatively modest at $120K, but the property sits in a high-demand area where agent-listed homes sell in under 3 weeks. He likely needs professional exposure to reach the right buyers.',
-      subject: 'Getting More Eyes on 558 Palm Ave',
-      body: 'Hi Robert,\n\nI have been following your listing at 558 Palm Ave. Northpark is a great area — agent-listed homes here are moving in under three weeks.\n\nI have some marketing strategies that could dramatically increase your exposure. Would you be open to a quick call to explore your options?\n\nBest,\nSarah Johnson',
-      timeline: [
-        { label: 'Lead delivered', date: 'Mar 27, 9:00 AM', status: 'done' },
-        { label: 'AI pitch drafted', date: 'Mar 27, 9:02 AM', status: 'done' },
-        { label: 'Email sent', date: null, status: 'pending' },
-        { label: 'Opened', date: null, status: 'future' },
-        { label: 'Replied', date: null, status: 'future' },
-      ],
+      estimatedValue: '$349K',
+      estimatedEquity: '$120K',
+      daysOnMarket: '45 days',
+      leadType: 'FSBO',
+      originalListPrice: '$349K',
+      lastListed: 'Feb 2026',
     },
     {
       insight: 'Maria Gonzalez has owned her Oceanside property for 15 years and has built $420K in equity on a $680K home. Long-term owners in this bracket often consider downsizing or relocating. Her profile matches sellers who respond well to market-timing pitches showing peak equity realization.',
-      subject: 'Your Oceanside Home\'s Value May Surprise You',
-      body: 'Hi Maria,\n\nAs a long-time homeowner at 1847 Vista Del Mar, you have built impressive equity in a rising market. Oceanside properties like yours are commanding premium prices right now.\n\nI put together a quick market analysis for your neighborhood — the numbers are compelling. Would you like me to send it over?\n\nBest,\nSarah Johnson',
-      timeline: [
-        { label: 'Lead delivered', date: 'Mar 25, 9:00 AM', status: 'done' },
-        { label: 'AI pitch drafted', date: 'Mar 25, 9:01 AM', status: 'done' },
-        { label: 'Email sent', date: 'Mar 25, 10:00 AM', status: 'done' },
-        { label: 'Opened', date: 'Mar 26, 2:15 PM', status: 'done' },
-        { label: 'Replied', date: null, status: 'pending' },
-      ],
+      estimatedValue: '$680K',
+      estimatedEquity: '$420K',
+      daysOnMarket: '15 years owned',
+      leadType: 'High Equity',
+      originalListPrice: 'N/A',
+      lastListed: 'Never listed',
     },
   ];
 
-  // Status filter tabs with counts
-  const statusFilters = [
+  // Lead type filter tabs
+  const typeFilters = [
     { key: 'All', count: leads.length },
-    { key: 'New', count: leads.filter(l => l.stage === 'New').length },
-    { key: 'Emailed', count: leads.filter(l => l.stage === 'Sent' || l.stage === 'Drafted').length },
-    { key: 'Responded', count: leads.filter(l => l.stage === 'Opened' || l.stage === 'Replied').length },
+    { key: 'Expired', count: leads.filter(l => l.type === 'Expired').length },
+    { key: 'FSBO', count: leads.filter(l => l.type === 'FSBO').length },
+    { key: 'Pre-Foreclosure', count: leads.filter(l => l.type === 'Pre-Foreclosure').length },
+    { key: 'High Equity', count: leads.filter(l => l.type === 'High Equity').length },
   ];
 
-  const handleApprove = useCallback((index, e) => {
+  // Unique order months for grouping toggle
+  const orderMonths = ['All', ...Array.from(new Set(leads.map(l => l.order)))];
+
+  const typeDotColor = (type) => {
+    switch (type) {
+      case 'Expired': return 'bg-danger';
+      case 'FSBO': return 'bg-orange';
+      case 'Pre-Foreclosure': return 'bg-yellow-500';
+      case 'High Equity': return 'bg-success';
+      default: return 'bg-gray-400';
+    }
+  };
+
+  const pipelineStages = ['New', 'Drafted', 'Sent', 'Opened', 'Replied'];
+
+  const handleToggleExpand = useCallback((index) => {
+    setExpandedLead(prev => prev === index ? null : index);
+  }, []);
+
+  const handleMarkContacted = useCallback((index, e) => {
     e.stopPropagation();
-    setApprovedLeads(prev => ({ ...prev, [index]: true }));
-    setTimeout(() => {
-      setApprovedLeads(prev => ({ ...prev, [index]: false }));
-    }, 1500);
+    setContactedLeads(prev => ({ ...prev, [index]: true }));
   }, []);
 
-  const handleSelectLead = useCallback((index) => {
-    setSelectedLead(index);
-    setShowMobileProfile(true);
+  const handleSkipLead = useCallback((index, e) => {
+    e.stopPropagation();
+    setSkippedLeads(prev => ({ ...prev, [index]: !prev[index] }));
   }, []);
 
-  const handleMobileBack = useCallback(() => {
-    setShowMobileProfile(false);
-  }, []);
-
+  // Filter by lead type and search query
   const filtered = leads.map((l, i) => ({ ...l, _origIndex: i })).filter((l) => {
-    let matchesFilter = activeFilter === 'All';
-    if (activeFilter === 'New') matchesFilter = l.stage === 'New';
-    if (activeFilter === 'Emailed') matchesFilter = l.stage === 'Sent' || l.stage === 'Drafted';
-    if (activeFilter === 'Responded') matchesFilter = l.stage === 'Opened' || l.stage === 'Replied';
+    const matchesType = activeFilter === 'All' || l.type === activeFilter;
+    const matchesOrder = activeOrder === 'All' || l.order === activeOrder;
     const matchesSearch =
       searchQuery === '' ||
       l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.address.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
+      l.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      l.email.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesType && matchesOrder && matchesSearch;
   });
 
   // Group filtered leads by order
@@ -912,307 +911,268 @@ function LeadsTab() {
   }, {});
   const orderGroups = Object.entries(groupedByOrder);
 
-  const statusDot = (stage) => {
-    if (stage === 'Opened' || stage === 'Replied') return 'bg-green-500';
-    if (stage === 'Sent' || stage === 'Drafted') return 'bg-orange';
-    return 'bg-gray-400';
-  };
-
-  const selected = selectedLead !== null ? leads[selectedLead] : null;
-  const selectedExt = selectedLead !== null ? extendedLeadData[selectedLead] : null;
-
-  // Seller profile panel content (shared between desktop and mobile)
-  const renderProfile = () => {
-    if (!selected || !selectedExt) {
-      return (
-        <div className="flex flex-col items-center justify-center h-full py-24 text-center px-8">
-          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-            <Users className="h-6 w-6 text-gray-400" />
-          </div>
-          <p className="text-sm font-medium text-gray-500">Select a seller to view their profile</p>
-        </div>
-      );
-    }
-
-    return (
-      <motion.div
-        key={selectedLead}
-        initial={{ opacity: 0, x: 12 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -12 }}
-        transition={{ duration: 0.2 }}
-        className="space-y-5 p-5 overflow-y-auto"
-      >
-        {/* 1. Property Header */}
-        <div className="space-y-4">
-          <div>
-            <h2 className="font-heading text-xl font-bold text-charcoal">{selected.address}</h2>
-            <p className="text-sm text-muted-foreground mt-1">{selected.name}</p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={cn('inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium', typeBadgeClass(selected.type))}>
-              {selected.type}
-            </span>
-            <span className={cn('inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium', stageBadgeClass(selected.stage))}>
-              {selected.stage}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-            {[
-              { label: 'Estimated Value', value: selected.price },
-              { label: 'Equity', value: selected.equity },
-              { label: 'Time', value: selected.days },
-              { label: 'Lead Type', value: selected.type },
-            ].map((metric) => (
-              <div key={metric.label} className="rounded-xl bg-gray-50 border border-gray-100 p-3 text-center">
-                <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{metric.label}</p>
-                <p className="text-sm font-semibold text-charcoal mt-1">{metric.value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 2. Why This Seller */}
-        <div className="rounded-xl bg-light-bg border border-gray-100 p-5">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center shrink-0 mt-0.5">
-              <Info className="h-4 w-4 text-orange" />
-            </div>
-            <div>
-              <h3 className="font-heading text-sm font-semibold text-charcoal mb-2">Why This Seller</h3>
-              <p className="text-sm leading-relaxed text-gray-600">{selectedExt.insight}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* 3. Email Pitch */}
-        <Card className="rounded-xl">
-          <CardContent className="p-5 space-y-4">
-            <h3 className="font-heading text-sm font-semibold text-charcoal">Email Pitch</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex gap-2">
-                <span className="font-medium text-muted-foreground w-14 shrink-0">From:</span>
-                <span>Sarah Johnson via OffMarket</span>
-              </div>
-              <div className="flex gap-2">
-                <span className="font-medium text-muted-foreground w-14 shrink-0">To:</span>
-                <span>{selected.email}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-muted-foreground w-14 shrink-0 text-sm">Subject:</span>
-                <Input
-                  defaultValue={selectedExt.subject}
-                  className="h-8 text-sm font-medium"
-                />
-              </div>
-            </div>
-            <textarea
-              defaultValue={selectedExt.body}
-              className="w-full min-h-[200px] rounded-xl bg-light-bg p-4 text-sm leading-relaxed text-foreground resize-none border border-gray-100 outline-none focus:ring-1 focus:ring-orange/30"
-            />
-            <div className="flex items-center gap-2 flex-wrap">
-              {['MLS listing', 'Sold comps', selected.days, `Equity: ${selected.equity}`].map((tag) => (
-                <span key={tag} className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">{tag}</span>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 pt-3 border-t border-border">
-              <Button variant="outline" size="sm" className="rounded-lg">Skip</Button>
-              <Button
-                size="sm"
-                onClick={(e) => handleApprove(selectedLead, e)}
-                className={cn(
-                  'ml-auto rounded-lg transition-all duration-300',
-                  approvedLeads[selectedLead]
-                    ? 'bg-success text-white hover:bg-success scale-105'
-                    : 'bg-orange text-white hover:bg-orange-hover'
-                )}
-              >
-                {approvedLeads[selectedLead] ? (
-                  <><CheckCircle2 className="w-4 h-4 mr-1" /> Sent!</>
-                ) : (
-                  'Approve & Send'
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 4. Activity Timeline */}
-        <Card className="rounded-xl">
-          <CardContent className="p-5">
-            <h3 className="font-heading text-sm font-semibold text-charcoal mb-4">Activity Timeline</h3>
-            <div className="space-y-0">
-              {selectedExt.timeline.map((event, idx) => {
-                const isLast = idx === selectedExt.timeline.length - 1;
-                const isDone = event.status === 'done';
-                const isPending = event.status === 'pending';
-                return (
-                  <div key={idx} className="flex gap-3">
-                    {/* Dot and line */}
-                    <div className="flex flex-col items-center">
-                      <div className={cn(
-                        'w-3 h-3 rounded-full border-2 shrink-0 mt-0.5',
-                        isDone ? 'bg-green-500 border-green-500' : isPending ? 'bg-orange border-orange' : 'bg-white border-gray-300'
-                      )}>
-                        {isDone && <Check className="w-2 h-2 text-white m-auto" style={{ display: 'block', marginTop: '-1px' }} />}
-                      </div>
-                      {!isLast && (
-                        <div className={cn(
-                          'w-px flex-1 min-h-[24px]',
-                          isDone ? 'bg-green-300' : 'bg-gray-200 border-dashed'
-                        )} style={!isDone ? { backgroundImage: 'repeating-linear-gradient(to bottom, #d1d5db 0px, #d1d5db 3px, transparent 3px, transparent 6px)', backgroundColor: 'transparent' } : {}} />
-                      )}
-                    </div>
-                    {/* Content */}
-                    <div className={cn('pb-4', !isDone && !isPending && 'opacity-40')}>
-                      <p className={cn('text-sm font-medium', isDone ? 'text-charcoal' : 'text-gray-500')}>{event.label}</p>
-                      <p className="text-xs text-muted-foreground">{event.date || 'Not yet'}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-    );
-  };
-
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-140px)] -mt-2 -mb-4 gap-0">
-      {/* Left Panel: Lead List */}
-      <div className={cn(
-        'w-full md:w-80 shrink-0 border-r border-border bg-white flex flex-col overflow-hidden rounded-xl md:rounded-r-none',
-        showMobileProfile ? 'hidden md:flex' : 'flex'
-      )}>
-        {/* Status filter tabs */}
-        <div className="flex items-center gap-1 px-3 pt-3 pb-2 flex-wrap">
-          {statusFilters.map((f) => (
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-bold text-charcoal">Seller Leads</h1>
+          <p className="text-sm text-muted-foreground mt-1">People in your market who may be ready to sell.</p>
+        </div>
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, address, email..."
+            className="pl-9 h-9 text-sm"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Filter Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+        <div className="flex items-center gap-1 flex-wrap">
+          {typeFilters.map((f) => (
             <button
               key={f.key}
-              onClick={() => setActiveFilter(f.key === 'Emailed' || f.key === 'Responded' || f.key === 'New' ? f.key : 'All')}
+              onClick={() => setActiveFilter(f.key)}
               className={cn(
-                'rounded-lg px-2.5 py-1 text-xs font-medium transition-colors whitespace-nowrap',
-                (activeFilter === f.key || (activeFilter === 'All' && f.key === 'All'))
+                'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap',
+                activeFilter === f.key
                   ? 'bg-charcoal text-white'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               )}
             >
-              {f.key} ({f.count})
+              {f.key}{f.key !== 'All' ? ` (${f.count})` : ''}
             </button>
           ))}
         </div>
-
-        {/* Search */}
-        <div className="px-3 pb-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Search sellers..."
-              className="pl-8 h-8 text-sm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+        <div className="flex items-center gap-1 flex-wrap">
+          {orderMonths.map((month) => (
+            <button
+              key={month}
+              onClick={() => setActiveOrder(month)}
+              className={cn(
+                'rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors whitespace-nowrap border',
+                activeOrder === month
+                  ? 'border-charcoal bg-charcoal/5 text-charcoal'
+                  : 'border-transparent text-muted-foreground hover:border-gray-200 hover:text-foreground'
+              )}
+            >
+              {month === 'All' ? 'All Orders' : month}
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* Scrollable lead cards grouped by order */}
-        <div className="flex-1 overflow-y-auto px-2 pb-2">
-          {orderGroups.map(([orderName, orderLeads]) => (
-            <div key={orderName} className="mb-3">
-              <div className="flex items-center gap-2 px-2 py-2">
-                <div className="h-px flex-1 bg-gray-200" />
-                <span className="font-mono text-[10px] font-medium text-gray-400 uppercase tracking-wider shrink-0">
-                  {orderName} Order · {orderLeads.length} leads
-                </span>
-                <div className="h-px flex-1 bg-gray-200" />
-              </div>
-              <div className="space-y-1">
-                {orderLeads.map((lead) => {
-                  const idx = lead._origIndex;
-                  const isSelected = selectedLead === idx;
-                  return (
+      {/* Lead Cards */}
+      <div className="space-y-6">
+        {orderGroups.map(([orderName, orderLeads]) => (
+          <div key={orderName}>
+            {/* Order Group Header */}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-px flex-1 bg-gray-200" />
+              <span className="font-mono text-[11px] font-medium text-gray-400 uppercase tracking-wider shrink-0">
+                {orderName} Order — {orderLeads.length} {orderLeads.length === 1 ? 'lead' : 'leads'}
+              </span>
+              <div className="h-px flex-1 bg-gray-200" />
+            </div>
+
+            <div className="space-y-3">
+              {orderLeads.map((lead) => {
+                const idx = lead._origIndex;
+                const isExpanded = expandedLead === idx;
+                const ext = extendedLeadData[idx];
+                const isContacted = contactedLeads[idx];
+                const isSkipped = skippedLeads[idx];
+                const currentStageIndex = pipelineStages.indexOf(lead.stage);
+
+                return (
+                  <div key={idx} className={cn('rounded-xl border transition-all duration-200', isSkipped ? 'opacity-40' : '', isExpanded ? 'border-orange/30 ring-1 ring-orange/10' : 'border-border hover:border-orange/20')}>
+                    {/* Main Row */}
                     <button
-                      key={idx}
-                      onClick={() => handleSelectLead(idx)}
-                      className={cn(
-                        'w-full text-left p-3 rounded-xl border transition-all duration-150 cursor-pointer',
-                        isSelected
-                          ? 'border-orange bg-orange/[0.02] ring-1 ring-orange/15'
-                          : 'border-transparent hover:border-orange/30 hover:bg-muted/30'
-                      )}
+                      onClick={() => handleToggleExpand(idx)}
+                      className="w-full text-left p-5 cursor-pointer"
                     >
-                      <div className="flex items-start gap-2.5">
-                        <div className={cn('w-2 h-2 rounded-full shrink-0 mt-1.5', statusDot(lead.stage))} />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-sans text-sm font-semibold text-charcoal truncate">{lead.name}</p>
-                          <p className="font-sans text-xs text-gray-400 truncate">{lead.address}</p>
-                          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                            <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium', typeBadgeClass(lead.type))}>
-                              {lead.type}
-                            </span>
-                            <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium', stageBadgeClass(lead.stage))}>
-                              {lead.stage}
-                            </span>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        {/* Left: Identity */}
+                        <div className="flex items-start gap-3 sm:w-[280px] shrink-0">
+                          <div className={cn('w-2.5 h-2.5 rounded-full shrink-0 mt-1.5', typeDotColor(lead.type))} />
+                          <div className="min-w-0">
+                            <p className="font-sans text-base font-semibold text-charcoal truncate">{lead.name}</p>
+                            <p className="font-sans text-sm text-gray-500 truncate">{lead.address}</p>
+                            <p className="font-mono text-xs text-gray-400 truncate">{lead.email}</p>
                           </div>
+                        </div>
+
+                        {/* Middle: Property Stats */}
+                        <div className="flex items-center gap-6 flex-1 flex-wrap">
+                          <div>
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Price</p>
+                            <p className="font-mono font-bold text-charcoal">{lead.price}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Equity</p>
+                            <p className="font-mono font-bold text-success">{lead.equity}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Time</p>
+                            <p className="font-sans text-sm text-gray-600">{lead.days}</p>
+                          </div>
+                        </div>
+
+                        {/* Right: Badges + Expand */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={cn('inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium', typeBadgeClass(lead.type))}>
+                            {lead.type}
+                          </span>
+                          <span className={cn('inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium', stageBadgeClass(lead.stage))}>
+                            {isContacted ? 'Contacted' : lead.stage}
+                          </span>
+                          <ChevronDown className={cn('h-4 w-4 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
                         </div>
                       </div>
                     </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
 
-          {filtered.length === 0 && leads.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-              <div className="w-10 h-10 rounded-full bg-orange/10 flex items-center justify-center mb-3">
-                <Clock className="h-5 w-5 text-orange" />
-              </div>
-              <p className="text-xs font-medium text-charcoal mb-0.5">Leads are being prepared</p>
-              <p className="text-xs text-muted-foreground">Check back in a few hours.</p>
-            </div>
-          )}
-          {filtered.length === 0 && leads.length > 0 && (
-            <div className="text-center py-8 text-muted-foreground text-xs">
-              No leads match your filters.
-            </div>
-          )}
-        </div>
-      </div>
+                    {/* Expandable Detail Panel */}
+                    <AnimatePresence initial={false}>
+                      {isExpanded && ext && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25, ease: 'easeInOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-5 pb-5 pt-0">
+                            <div className="border-t border-gray-100 pt-5">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* Column 1: Property Details */}
+                                <div className="space-y-3">
+                                  <h4 className="font-heading text-sm font-semibold text-charcoal flex items-center gap-2">
+                                    <Home className="h-4 w-4 text-gray-400" />
+                                    Property Details
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {[
+                                      { label: 'Estimated Value', value: ext.estimatedValue },
+                                      { label: 'Estimated Equity', value: ext.estimatedEquity },
+                                      { label: 'Days on Market', value: ext.daysOnMarket },
+                                      { label: 'Lead Type', value: ext.leadType },
+                                      { label: 'Original List Price', value: ext.originalListPrice },
+                                      { label: 'Last Listed', value: ext.lastListed },
+                                    ].map((item) => (
+                                      <div key={item.label} className="flex justify-between items-center">
+                                        <span className="text-xs text-muted-foreground">{item.label}</span>
+                                        <span className="text-sm font-medium text-charcoal">{item.value}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
 
-      {/* Right Panel: Seller Profile (desktop) */}
-      <div className="hidden md:flex flex-1 flex-col overflow-y-auto bg-white rounded-xl md:rounded-l-none">
-        <AnimatePresence mode="wait">
-          {renderProfile()}
-        </AnimatePresence>
-      </div>
+                                {/* Column 2: Why This Seller */}
+                                <div className="space-y-3">
+                                  <h4 className="font-heading text-sm font-semibold text-charcoal flex items-center gap-2">
+                                    <Info className="h-4 w-4 text-orange" />
+                                    Why This Seller
+                                  </h4>
+                                  <div className="rounded-xl bg-light-bg border border-gray-100 p-4">
+                                    <p className="text-sm leading-relaxed text-gray-600">{ext.insight}</p>
+                                  </div>
+                                </div>
 
-      {/* Mobile Profile Overlay */}
-      <AnimatePresence>
-        {showMobileProfile && selected && (
-          <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="md:hidden fixed inset-0 z-50 bg-white overflow-y-auto"
-          >
-            {/* Mobile back header */}
-            <div className="sticky top-0 z-10 bg-white border-b border-border px-4 py-3 flex items-center gap-3">
-              <button
-                onClick={handleMobileBack}
-                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-              >
-                <ArrowRight className="h-4 w-4 rotate-180" />
-                <span>Back</span>
-              </button>
-              <span className="text-sm font-medium text-charcoal truncate">{selected.name}</span>
+                                {/* Column 3: Quick Actions */}
+                                <div className="space-y-3">
+                                  <h4 className="font-heading text-sm font-semibold text-charcoal">Quick Actions</h4>
+                                  <div className="space-y-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="w-full justify-start rounded-lg text-sm"
+                                    >
+                                      <ExternalLink className="h-3.5 w-3.5 mr-2" />
+                                      View Email Pitch
+                                    </Button>
+                                    <Button
+                                      variant={isContacted ? 'default' : 'outline'}
+                                      size="sm"
+                                      className={cn(
+                                        'w-full justify-start rounded-lg text-sm',
+                                        isContacted && 'bg-success text-white hover:bg-success'
+                                      )}
+                                      onClick={(e) => handleMarkContacted(idx, e)}
+                                    >
+                                      {isContacted ? (
+                                        <><CheckCircle2 className="h-3.5 w-3.5 mr-2" /> Contacted</>
+                                      ) : (
+                                        <><Check className="h-3.5 w-3.5 mr-2" /> Mark as Contacted</>
+                                      )}
+                                    </Button>
+                                    <button
+                                      onClick={(e) => handleSkipLead(idx, e)}
+                                      className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+                                    >
+                                      <XCircle className="h-3.5 w-3.5 mr-2 inline" />
+                                      {isSkipped ? 'Undo Skip' : 'Skip This Lead'}
+                                    </button>
+                                  </div>
+
+                                  {/* Mini Pipeline Indicator */}
+                                  <div className="pt-3 border-t border-gray-100">
+                                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Pipeline Stage</p>
+                                    <div className="flex items-center gap-1">
+                                      {pipelineStages.map((stage, sIdx) => (
+                                        <div key={stage} className="flex items-center gap-1">
+                                          <div
+                                            className={cn(
+                                              'w-2 h-2 rounded-full',
+                                              sIdx <= currentStageIndex ? 'bg-orange' : 'bg-gray-200'
+                                            )}
+                                            title={stage}
+                                          />
+                                          {sIdx < pipelineStages.length - 1 && (
+                                            <div className={cn('w-3 h-px', sIdx < currentStageIndex ? 'bg-orange' : 'bg-gray-200')} />
+                                          )}
+                                        </div>
+                                      ))}
+                                      <span className="text-[10px] text-muted-foreground ml-2">{isContacted ? 'Contacted' : lead.stage}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
             </div>
-            {renderProfile()}
-          </motion.div>
+          </div>
+        ))}
+
+        {/* Empty States */}
+        {filtered.length === 0 && leads.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+            <div className="w-12 h-12 rounded-full bg-orange/10 flex items-center justify-center mb-4">
+              <Clock className="h-6 w-6 text-orange" />
+            </div>
+            <p className="text-sm font-medium text-charcoal mb-1">Leads are being prepared</p>
+            <p className="text-sm text-muted-foreground">Check back in a few hours.</p>
+          </div>
         )}
-      </AnimatePresence>
+        {filtered.length === 0 && leads.length > 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <Search className="h-6 w-6 text-gray-400" />
+            </div>
+            <p className="text-sm font-medium text-charcoal mb-1">No leads match your filters</p>
+            <p className="text-sm text-muted-foreground">Try adjusting your search or filter criteria.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
