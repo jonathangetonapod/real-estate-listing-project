@@ -317,12 +317,74 @@ function FarmAreaTab() {
           ))}
         </div>
 
-        {/* Request new leads */}
-        <div className="mt-8 rounded-xl border border-dashed border-gray-300 p-6 text-center">
-          <p className="font-sans text-sm text-gray-400 mb-3">Next delivery available in 2 days</p>
-          <Button variant="outline" className="rounded-lg" disabled>
-            <Clock className="w-4 h-4 mr-2" /> Request New Leads (available Apr 1)
-          </Button>
+        {/* New Order CTA — the exciting part */}
+        <div className="mt-8">
+          <Card className="rounded-xl overflow-hidden border-2 border-orange/20">
+            <CardContent className="p-0">
+              <div className="bg-gradient-to-r from-orange/[0.06] to-orange/[0.02] p-6 md:p-8">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Badge className="bg-orange/10 text-orange border-orange/20 rounded-full text-xs font-mono">
+                        New batch available
+                      </Badge>
+                    </div>
+                    <h3 className="font-heading text-xl md:text-2xl font-bold text-charcoal mb-2">
+                      Ready for your next 250 sellers?
+                    </h3>
+                    <p className="font-sans text-sm text-gray-500 mb-4 max-w-md">
+                      Your last batch had a 7.5% reply rate. That&apos;s 3x the industry average. Request fresh leads to keep your pipeline full.
+                    </p>
+
+                    {/* Last batch stats */}
+                    <div className="flex gap-6 mb-4">
+                      <div>
+                        <div className="font-mono text-2xl font-bold text-charcoal">248</div>
+                        <div className="font-sans text-xs text-gray-400">leads last batch</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-2xl font-bold text-orange">14</div>
+                        <div className="font-sans text-xs text-gray-400">sellers responded</div>
+                      </div>
+                      <div>
+                        <div className="font-mono text-2xl font-bold text-success">3</div>
+                        <div className="font-sans text-xs text-gray-400">appointments booked</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center md:items-end gap-3">
+                    <Button
+                      onClick={() => setFarmState('form')}
+                      className="h-14 rounded-xl bg-orange text-white font-sans text-base font-semibold px-8 hover:bg-orange/90 transition-colors w-full md:w-auto"
+                    >
+                      <Plus className="w-5 h-5 mr-2" />
+                      Order New Leads
+                    </Button>
+                    <p className="font-sans text-xs text-gray-400">250 leads included in your plan</p>
+                  </div>
+                </div>
+
+                {/* What you'll get preview */}
+                <div className="mt-6 pt-6 border-t border-orange/10">
+                  <p className="font-sans text-xs text-gray-400 uppercase tracking-wide mb-3">What you&apos;ll get</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                      { label: 'Verified seller leads', value: '250' },
+                      { label: 'Email pitches written', value: '250' },
+                      { label: 'Skip-traced emails', value: 'Included' },
+                      { label: 'Delivered in', value: '12 hours' },
+                    ].map((item, i) => (
+                      <div key={i} className="rounded-lg bg-white/60 p-3">
+                        <div className="font-mono text-sm font-bold text-charcoal">{item.value}</div>
+                        <div className="font-sans text-xs text-gray-400">{item.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -339,12 +401,12 @@ function FarmAreaTab() {
         <div className="w-16 h-16 rounded-full bg-orange/10 flex items-center justify-center mx-auto mb-6">
           <Clock className="w-8 h-8 text-orange" />
         </div>
-        <h2 className="font-heading text-3xl font-bold text-charcoal mb-3">Lead Request Submitted</h2>
+        <h2 className="font-heading text-3xl font-bold text-charcoal mb-3">Order Confirmed</h2>
         <p className="font-sans text-lg text-gray-500 mb-2">
-          We&apos;re pulling {zipCodes.length * 80}+ motivated sellers across {zipCodes.length} zip code{zipCodes.length > 1 ? 's' : ''}.
+          We&apos;re sourcing {zipCodes.length * 80}+ motivated sellers across {zipCodes.length} zip code{zipCodes.length > 1 ? 's' : ''}.
         </p>
         <p className="font-sans text-base text-gray-400 mb-8">
-          Your leads will be ready in your dashboard within 12 hours.
+          Your leads and email pitches will be in your dashboard within 12 hours.
         </p>
         <div className="inline-flex items-center gap-3 rounded-xl bg-light-bg border border-gray-200 px-6 py-4">
           <Clock className="w-5 h-5 text-orange" />
@@ -360,9 +422,12 @@ function FarmAreaTab() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-8">
-        <h2 className="font-heading text-2xl font-bold text-charcoal mb-2">Set Up Your Farm Area</h2>
+        <button onClick={() => setFarmState('delivered')} className="font-sans text-sm text-gray-400 hover:text-charcoal transition-colors mb-4 flex items-center gap-1">
+          <ArrowRight className="w-3 h-3 rotate-180" /> Back to My Market
+        </button>
+        <h2 className="font-heading text-2xl font-bold text-charcoal mb-2">Order New Leads</h2>
         <p className="font-sans text-base text-gray-500">
-          Tell us where you work. We&apos;ll deliver 250 verified motivated seller leads within 12 hours.
+          Tell us your market. 250 verified sellers with email pitches, delivered in 12 hours.
         </p>
       </div>
 
@@ -524,7 +589,7 @@ function FarmAreaTab() {
         disabled={zipCodes.length === 0 || selectedTypes.length === 0}
         className="w-full h-auto rounded-xl bg-orange text-white font-sans text-base font-semibold py-4 hover:bg-orange/90 transition-colors disabled:opacity-50"
       >
-        Request My Leads <ArrowRight className="w-4 h-4 ml-2" />
+        Place My Order <ArrowRight className="w-4 h-4 ml-2" />
       </Button>
 
       <p className="font-sans text-xs text-gray-400 text-center mt-3">
