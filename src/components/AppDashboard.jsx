@@ -2808,7 +2808,7 @@ export default function AppDashboard() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-20 md:pb-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 md:pb-16">
           <FadePanel tabKey={activeTab}>
             {activeTab === 'overview' && <OverviewTab onNavigate={handleNavClick} />}
             {activeTab === 'farm' && <FarmAreaTab />}
