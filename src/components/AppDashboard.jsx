@@ -927,6 +927,33 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+          {/* Variation Picker */}
+          {!isReadOnly && currentStep.variations?.length > 1 && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Variation</span>
+              {['A', 'B', 'C'].slice(0, currentStep.variations.length).map((label, vi) => (
+                <button
+                  key={vi}
+                  onClick={() => {
+                    setSteps(prev => prev.map((s, i) => i === activeStep
+                      ? { ...s, body: s.variations[vi], activeVariation: vi }
+                      : s
+                    ));
+                  }}
+                  className={cn(
+                    'w-7 h-7 rounded-lg text-xs font-bold transition-colors',
+                    currentStep.activeVariation === vi
+                      ? 'bg-charcoal text-white'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-charcoal'
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+              <span className="text-[10px] text-gray-400 ml-1">Pick a style, then edit</span>
+            </div>
+          )}
+
           {isReadOnly ? (
             <div className="rounded-xl bg-light-bg border border-gray-100 p-4">
               <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">{currentStep.body}</p>
@@ -1174,33 +1201,47 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
     const firstName = lead.name.split(' ')[0];
     const street = lead.address.split(',')[0];
     const neighborhood = lead.address.split(',')[1]?.trim() || '';
+    const t = lead.type;
+    const sign = `Best regards,\nSarah Johnson\nOffMarket Real Estate`;
 
-    // Step 1: Initial outreach
-    const step1Subject = {
+    // --- Step 1 variations ---
+    const s1Subject = {
       'Expired': `Your ${street} Home — a Confidential Buyer May Be Interested`,
       'FSBO': `${street} — What Agent-Listed Homes Nearby Are Selling For`,
       'Pre-Foreclosure': `${street} — Protecting Your ${lead.equity} in Equity`,
       'High Equity': `${street} — Is Now the Right Time to Maximize Your Equity?`,
-    };
+    }[t] || `Your ${street} Property — A Quick Question`;
 
-    const step1Body = {
-      'Expired': `Hi ${firstName},\n\nI noticed your home at ${street} came off the market after ${lead.days.replace('d expired', ' days')}. That can be frustrating, and I wanted to reach out because I may be able to help.\n\nI specialize in the ${neighborhood} area and have been tracking comparable sales nearby. Homes similar to yours — ${lead.sqft} sq ft, built in ${lead.yearBuilt} — have recently sold between ${lead.price} and above, which tells me there's genuine buyer demand in your price range.\n\nWith ${lead.equity} in equity and current rates at ${lead.interestRate}, you're in a strong position. I have a few strategies that have worked well for other homeowners in your situation — including off-market exposure to pre-qualified buyers.\n\nWould you be open to a quick 10-minute call this week? No pressure at all.\n\nBest regards,\nSarah Johnson\nRiverside Heights Specialist\nOffMarket Real Estate`,
-      'FSBO': `Hi ${firstName},\n\nI saw your listing at ${street} and wanted to share some data that might be useful.\n\nIn the ${neighborhood} area, agent-represented homes similar to yours (${lead.sqft} sq ft, built ${lead.yearBuilt}) have sold for 8-12% more than FSBO listings over the past quarter. With your ${lead.equity} in equity, that difference could mean an extra $30-50K in your pocket.\n\nI'm not here to pressure you — I know you chose FSBO for a reason. But if you'd like to see the comps and decide for yourself, I'm happy to share them.\n\nWould a quick call work this week?\n\nBest regards,\nSarah Johnson\n${neighborhood} Specialist\nOffMarket Real Estate`,
-      'Pre-Foreclosure': `Hi ${firstName},\n\nI understand you may be navigating a difficult situation with your property at ${street}, and I wanted to reach out with care.\n\nYour home is valued at approximately ${lead.price} with ${lead.equity} in equity — that's significant, and worth protecting. I specialize in helping homeowners in ${neighborhood} explore their options quickly and discreetly, whether that's a fast sale, a short sale, or another path forward.\n\nTime matters in these situations, and I'd love to help you understand all your options before they narrow.\n\nWould a confidential 10-minute call work for you this week?\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate`,
-      'High Equity': `Hi ${firstName},\n\nI've been tracking the ${neighborhood} market closely, and homeowners like you — with ${lead.equity} in equity built over ${lead.days.replace('yr owned', ' years')} — are in an exceptional position right now.\n\nYour ${lead.sqft} sq ft property at ${street} sits in one of the most in-demand areas. Recent sales suggest you could realize a strong return, especially with current market conditions favoring sellers with established equity.\n\nI specialize in helping long-time owners maximize their position, whether you're considering downsizing, relocating, or simply exploring what your home is worth today.\n\nWould you be open to a no-obligation market analysis?\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate`,
-    };
+    const s1A = {
+      'Expired': `Hi ${firstName},\n\nI noticed your home at ${street} came off the market after ${lead.days.replace('d expired', ' days')}. That can be frustrating, and I wanted to reach out because I may be able to help.\n\nI specialize in the ${neighborhood} area and have been tracking comparable sales nearby. Homes similar to yours — ${lead.sqft} sq ft, built in ${lead.yearBuilt} — have recently sold between ${lead.price} and above, which tells me there's genuine buyer demand in your price range.\n\nWith ${lead.equity} in equity and current rates at ${lead.interestRate}, you're in a strong position. I have a few strategies that have worked well for other homeowners in your situation — including off-market exposure to pre-qualified buyers.\n\nWould you be open to a quick 10-minute call this week? No pressure at all.\n\n${sign}`,
+      'FSBO': `Hi ${firstName},\n\nI saw your listing at ${street} and wanted to share some data that might be useful.\n\nIn the ${neighborhood} area, agent-represented homes similar to yours (${lead.sqft} sq ft, built ${lead.yearBuilt}) have sold for 8-12% more than FSBO listings over the past quarter. With your ${lead.equity} in equity, that difference could mean an extra $30-50K in your pocket.\n\nI'm not here to pressure you — I know you chose FSBO for a reason. But if you'd like to see the comps and decide for yourself, I'm happy to share them.\n\nWould a quick call work this week?\n\n${sign}`,
+      'Pre-Foreclosure': `Hi ${firstName},\n\nI understand you may be navigating a difficult situation with your property at ${street}, and I wanted to reach out with care.\n\nYour home is valued at approximately ${lead.price} with ${lead.equity} in equity — that's significant, and worth protecting. I specialize in helping homeowners in ${neighborhood} explore their options quickly and discreetly.\n\nTime matters in these situations, and I'd love to help you understand all your options before they narrow.\n\nWould a confidential 10-minute call work for you this week?\n\n${sign}`,
+      'High Equity': `Hi ${firstName},\n\nI've been tracking the ${neighborhood} market closely, and homeowners like you — with ${lead.equity} in equity built over ${lead.days.replace('yr owned', ' years')} — are in an exceptional position right now.\n\nYour ${lead.sqft} sq ft property at ${street} sits in one of the most in-demand areas. I specialize in helping long-time owners maximize their position.\n\nWould you be open to a no-obligation market analysis?\n\n${sign}`,
+    }[t] || `Hi ${firstName},\n\nI noticed your property at ${street} and wanted to reach out.\n\n${sign}`;
 
-    // Step 2: Follow-up (Day 3)
-    const step2Body = `Hi ${firstName},\n\nI wanted to follow up on my note about your property at ${street}. I know you're busy, so I'll keep this brief.\n\nI pulled together a few comparable sales in ${neighborhood} that I think you'd find interesting — homes similar to yours that sold recently, and what that means for your ${lead.equity} in equity.\n\nI'd love to share them with you. Would a 10-minute call work sometime this week?\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate`;
+    const s1B = `Hi ${firstName},\n\nI came across your property at ${street} and thought you'd want to know — homes in ${neighborhood} are getting a lot of attention right now.\n\nWith ${lead.equity} in equity on a ${lead.sqft} sq ft home built in ${lead.yearBuilt}, you're in a strong position whether you're thinking about selling or just want to know where you stand.\n\nI put together a quick analysis of what similar homes have sold for recently. Happy to share it — no strings attached.\n\n${sign}`;
 
-    // Step 3: Final touch (Day 7)
-    const step3Body = `Hi ${firstName},\n\nI don't want to be a pest, so this will be my last note.\n\nI reached out because I genuinely believe I can help with your situation at ${street}. The ${neighborhood} market is moving, and with ${lead.equity} in equity, you have real options.\n\nIf now isn't the right time, I completely understand. But if you'd ever like a no-obligation conversation about what your property could sell for today, my door is always open.\n\nWishing you all the best,\nSarah Johnson\nOffMarket Real Estate`;
+    const s1C = `Hi ${firstName},\n\nI'll keep this short — I work with homeowners in ${neighborhood} and your property at ${street} caught my eye.\n\nBased on what I'm seeing in the market, your ${lead.sqft} sq ft home could be worth more than you think. ${lead.equity} in equity gives you real leverage.\n\nWould it be worth a quick conversation? I can share some numbers that might surprise you.\n\n${sign}`;
+
+    // --- Step 2 variations ---
+    const s2A = `Hi ${firstName},\n\nI wanted to follow up on my note about your property at ${street}. I know you're busy, so I'll keep this brief.\n\nI pulled together a few comparable sales in ${neighborhood} that I think you'd find interesting — homes similar to yours that sold recently, and what that means for your ${lead.equity} in equity.\n\nI'd love to share them with you. Would a 10-minute call work sometime this week?\n\n${sign}`;
+
+    const s2B = `Hi ${firstName},\n\nJust circling back on ${street}. Since I last reached out, I noticed another home in ${neighborhood} went under contract — further confirmation that buyers are actively looking in your area.\n\nYour ${lead.equity} in equity puts you in a great spot. If you're even slightly curious about what your options look like, I'd be happy to walk you through it.\n\nNo commitment needed — just a conversation.\n\n${sign}`;
+
+    const s2C = `Hi ${firstName},\n\nQuick follow-up — I recently helped a homeowner in a similar situation to yours (${lead.type.toLowerCase()} in ${neighborhood}) and they were surprised by how much interest they got.\n\nI think your property at ${street} has the same potential. With ${lead.equity} in equity, the math works in your favor.\n\nWorth 10 minutes to explore?\n\n${sign}`;
+
+    // --- Step 3 variations ---
+    const s3A = `Hi ${firstName},\n\nI don't want to be a pest, so this will be my last note.\n\nI reached out because I genuinely believe I can help with your situation at ${street}. The ${neighborhood} market is moving, and with ${lead.equity} in equity, you have real options.\n\nIf now isn't the right time, I completely understand. But if you'd ever like a no-obligation conversation about what your property could sell for today, my door is always open.\n\nWishing you all the best,\nSarah Johnson\nOffMarket Real Estate`;
+
+    const s3B = `Hi ${firstName},\n\nLast note from me on ${street} — I promise.\n\nI know timing is everything in real estate. If right now doesn't work, that's completely fine. But I wanted you to know that the ${neighborhood} market is strong, your ${lead.equity} in equity is significant, and I'm here whenever you're ready.\n\nFeel free to reach out anytime — even months from now.\n\nAll the best,\nSarah Johnson\nOffMarket Real Estate`;
+
+    const s3C = `Hi ${firstName},\n\nI'll leave you with this — your property at ${street} sits in one of the most active markets in ${neighborhood} right now. With ${lead.equity} in equity, you have more options than most homeowners realize.\n\nI'm not going anywhere. Whenever you're ready to explore what's possible, just reply to this email.\n\nTake care,\nSarah Johnson\nOffMarket Real Estate`;
 
     return {
       steps: [
-        { subject: step1Subject[lead.type] || `Your ${street} Property — A Quick Question`, body: step1Body[lead.type] || `Hi ${firstName},\n\nI noticed your property at ${street} and wanted to reach out...\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate` },
-        { body: step2Body },
-        { body: step3Body },
+        { subject: s1Subject, body: s1A, variations: [s1A, s1B, s1C], activeVariation: 0 },
+        { body: s2A, variations: [s2A, s2B, s2C], activeVariation: 0 },
+        { body: s3A, variations: [s3A, s3B, s3C], activeVariation: 0 },
       ],
       status: 'draft',
       lastEdited: new Date().toISOString(),
