@@ -34,7 +34,7 @@
 ### Sending & Tracking
 
 - [ ] **SEND-01**: Approved emails queue and send via Instantly.ai API
-- [ ] **SEND-02**: System tracks delivery status per email (Queued → Sent → Delivered)
+- [ ] **SEND-02**: System tracks delivery status per email (Queued -> Sent -> Delivered)
 - [ ] **SEND-03**: System tracks email opens via Instantly
 - [ ] **SEND-04**: Follow-up emails auto-queue if no reply after configurable days
 - [ ] **SEND-05**: Agent sees real-time send/open status in dashboard
@@ -48,7 +48,7 @@
 
 ### Pipeline
 
-- [ ] **PIPE-01**: Leads move through stages: New → Drafted → Approved → Sent → Opened → Replied → Appointment → Listed
+- [ ] **PIPE-01**: Leads move through stages: New -> Drafted -> Approved -> Sent -> Opened -> Replied -> Appointment -> Listed
 - [ ] **PIPE-02**: Agent can manually move leads between pipeline stages
 - [ ] **PIPE-03**: Agent can view pipeline as a list with status filters
 
@@ -100,44 +100,44 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | TBD | Pending |
-| AUTH-02 | TBD | Pending |
-| AUTH-03 | TBD | Pending |
-| AUTH-04 | TBD | Pending |
-| AUTH-05 | TBD | Pending |
-| LEAD-01 | TBD | Pending |
-| LEAD-02 | TBD | Pending |
-| LEAD-03 | TBD | Pending |
-| LEAD-04 | TBD | Pending |
-| LEAD-05 | TBD | Pending |
-| LEAD-06 | TBD | Pending |
-| EMAIL-01 | TBD | Pending |
-| EMAIL-02 | TBD | Pending |
-| EMAIL-03 | TBD | Pending |
-| EMAIL-04 | TBD | Pending |
-| EMAIL-05 | TBD | Pending |
-| EMAIL-06 | TBD | Pending |
-| SEND-01 | TBD | Pending |
-| SEND-02 | TBD | Pending |
-| SEND-03 | TBD | Pending |
-| SEND-04 | TBD | Pending |
-| SEND-05 | TBD | Pending |
-| REPLY-01 | TBD | Pending |
-| REPLY-02 | TBD | Pending |
-| REPLY-03 | TBD | Pending |
-| REPLY-04 | TBD | Pending |
-| PIPE-01 | TBD | Pending |
-| PIPE-02 | TBD | Pending |
-| PIPE-03 | TBD | Pending |
-| PAY-01 | TBD | Pending |
-| PAY-02 | TBD | Pending |
-| PAY-03 | TBD | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Pending |
+| AUTH-05 | Phase 1 | Pending |
+| LEAD-01 | Phase 1 | Pending |
+| LEAD-02 | Phase 1 | Pending |
+| LEAD-03 | Phase 1 | Pending |
+| LEAD-04 | Phase 1 | Pending |
+| LEAD-05 | Phase 1 | Pending |
+| LEAD-06 | Phase 1 | Pending |
+| EMAIL-01 | Phase 2 | Pending |
+| EMAIL-02 | Phase 2 | Pending |
+| EMAIL-03 | Phase 2 | Pending |
+| EMAIL-04 | Phase 2 | Pending |
+| EMAIL-05 | Phase 2 | Pending |
+| EMAIL-06 | Phase 2 | Pending |
+| SEND-01 | Phase 3 | Pending |
+| SEND-02 | Phase 3 | Pending |
+| SEND-03 | Phase 3 | Pending |
+| SEND-04 | Phase 3 | Pending |
+| SEND-05 | Phase 3 | Pending |
+| REPLY-01 | Phase 4 | Pending |
+| REPLY-02 | Phase 4 | Pending |
+| REPLY-03 | Phase 4 | Pending |
+| REPLY-04 | Phase 4 | Pending |
+| PIPE-01 | Phase 2 | Pending |
+| PIPE-02 | Phase 2 | Pending |
+| PIPE-03 | Phase 2 | Pending |
+| PAY-01 | Phase 1 | Pending |
+| PAY-02 | Phase 1 | Pending |
+| PAY-03 | Phase 1 | Pending |
 
 **Coverage:**
 - v1 requirements: 32 total
-- Mapped to phases: 0
-- Unmapped: 32 ⚠️
+- Mapped to phases: 32
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after initial definition*
+*Last updated: 2026-03-28 after roadmap creation*
