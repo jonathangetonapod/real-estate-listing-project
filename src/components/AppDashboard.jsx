@@ -45,7 +45,7 @@ import {
 
 const leads = [
   {
-    name: 'Michael Torres', address: '4821 Oakwood Dr, Riverside Heights', type: 'Expired', price: '$485K', equity: '$185K', days: '47d expired', draft: 'Ready', stage: 'Drafted', email: 'mtorres@email.com', order: 'Mar 2026',
+    name: 'Michael Torres', address: '4821 Oakwood Dr, Riverside Heights', type: 'Expired', price: '$485K', equity: '$185K', days: '47d expired', draft: 'Ready', stage: 'Drafted', email: 'mtorres@email.com', order: 'Order #1024 · Mar 15, 2026',
     // CREXI-level property data
     propertyType: 'Single Family', sqft: '2,840', numberOfUnits: 1, yearBuilt: 2004, lotSizeAcres: '0.18', zoningCode: 'R-1', county: 'Riverside',
     // Financial
@@ -55,35 +55,35 @@ const leads = [
     phones: ['(951) 555-0142', '(951) 555-0198'], emails: ['mtorres@email.com', 'mike.torres@work.com'],
   },
   {
-    name: 'Sarah Kim', address: '1203 Maple Ridge Ln, Canyon Crest', type: 'FSBO', price: '$392K', equity: '$240K', days: '12d listed', draft: 'Ready', stage: 'Drafted', email: 'skim@email.com', order: 'Mar 2026',
+    name: 'Sarah Kim', address: '1203 Maple Ridge Ln, Canyon Crest', type: 'FSBO', price: '$392K', equity: '$240K', days: '12d listed', draft: 'Ready', stage: 'Drafted', email: 'skim@email.com', order: 'Order #1024 · Mar 15, 2026',
     propertyType: 'Single Family', sqft: '1,960', numberOfUnits: 1, yearBuilt: 2011, lotSizeAcres: '0.14', zoningCode: 'R-1', county: 'Riverside',
     soldPrice: '$392K', loanAmount: '$152K', lender: 'Chase', loanType: 'Conventional', interestRate: '3.75%', totalParcelValue: '$392K', improvementValue: '$310K', landValue: '$82K', taxBill: '$4,480', taxYear: 2024,
     ownerName: 'Sarah Kim', mailingAddress: '1203 Maple Ridge Ln, Canyon Crest, CA 92507', contactName: 'Sarah Kim',
     phones: ['(951) 555-0234'], emails: ['skim@email.com'],
   },
   {
-    name: 'David Hernandez', address: '892 Sunset Blvd, Palm Canyon', type: 'Pre-Foreclosure', price: '$520K', equity: '$310K', days: 'NOD 34d', draft: 'Sent', stage: 'Sent', email: 'dhernandez@email.com', order: 'Mar 2026',
+    name: 'David Hernandez', address: '892 Sunset Blvd, Palm Canyon', type: 'Pre-Foreclosure', price: '$520K', equity: '$310K', days: 'NOD 34d', draft: 'Sent', stage: 'Sent', email: 'dhernandez@email.com', order: 'Order #1031 · Mar 22, 2026',
     propertyType: 'Single Family', sqft: '3,200', numberOfUnits: 1, yearBuilt: 1998, lotSizeAcres: '0.22', zoningCode: 'R-1', county: 'Riverside',
     soldPrice: '$540K', loanAmount: '$210K', lender: 'Bank of America', loanType: 'FHA', interestRate: '4.50%', totalParcelValue: '$520K', improvementValue: '$415K', landValue: '$105K', taxBill: '$6,240', taxYear: 2024,
     ownerName: 'David Hernandez', mailingAddress: '892 Sunset Blvd, Palm Canyon, CA 92264', contactName: 'David Hernandez',
     phones: ['(760) 555-0312', '(760) 555-0318', '(951) 555-0401'], emails: ['dhernandez@email.com', 'd.hernandez@gmail.com'],
   },
   {
-    name: 'Linda Chen', address: '2710 Harbor View Dr, Eastlake', type: 'Expired', price: '$415K', equity: '$195K', days: '21d expired', draft: 'Ready', stage: 'New', email: 'lchen@email.com', order: 'Mar 2026',
+    name: 'Linda Chen', address: '2710 Harbor View Dr, Eastlake', type: 'Expired', price: '$415K', equity: '$195K', days: '21d expired', draft: 'Ready', stage: 'New', email: 'lchen@email.com', order: 'Order #1031 · Mar 22, 2026',
     propertyType: 'Townhouse', sqft: '2,100', numberOfUnits: 1, yearBuilt: 2008, lotSizeAcres: '0.08', zoningCode: 'R-2', county: 'San Diego',
     soldPrice: '$415K', loanAmount: '$220K', lender: 'US Bank', loanType: 'Conventional', interestRate: '6.00%', totalParcelValue: '$415K', improvementValue: '$340K', landValue: '$75K', taxBill: '$4,980', taxYear: 2024,
     ownerName: 'Linda Chen', mailingAddress: '2710 Harbor View Dr, Eastlake, CA 91915', contactName: 'Linda Chen',
     phones: ['(619) 555-0456'], emails: ['lchen@email.com', 'linda.chen@outlook.com'],
   },
   {
-    name: 'Robert Williams', address: '558 Palm Ave, Northpark', type: 'FSBO', price: '$349K', equity: '$120K', days: '45d listed', draft: 'Pending', stage: 'New', email: 'rwilliams@email.com', order: 'Feb 2026',
+    name: 'Robert Williams', address: '558 Palm Ave, Northpark', type: 'FSBO', price: '$349K', equity: '$120K', days: '45d listed', draft: 'Pending', stage: 'New', email: 'rwilliams@email.com', order: 'Order #1018 · Feb 28, 2026',
     propertyType: 'Condo', sqft: '1,540', numberOfUnits: 1, yearBuilt: 1995, lotSizeAcres: '0.04', zoningCode: 'R-3', county: 'San Diego',
     soldPrice: '$349K', loanAmount: '$229K', lender: 'Quicken Loans', loanType: 'Conventional', interestRate: '5.75%', totalParcelValue: '$349K', improvementValue: '$295K', landValue: '$54K', taxBill: '$3,920', taxYear: 2024,
     ownerName: 'Robert Williams', mailingAddress: '558 Palm Ave, Northpark, CA 92104', contactName: 'Robert Williams',
     phones: ['(619) 555-0589', '(619) 555-0612'], emails: ['rwilliams@email.com'],
   },
   {
-    name: 'Maria Gonzalez', address: '1847 Vista Del Mar, Oceanside', type: 'High Equity', price: '$680K', equity: '$420K', days: '15yr owned', draft: 'Sent', stage: 'Opened', email: 'mgonzalez@email.com', order: 'Feb 2026',
+    name: 'Maria Gonzalez', address: '1847 Vista Del Mar, Oceanside', type: 'High Equity', price: '$680K', equity: '$420K', days: '15yr owned', draft: 'Sent', stage: 'Opened', email: 'mgonzalez@email.com', order: 'Order #1018 · Feb 28, 2026',
     propertyType: 'Single Family', sqft: '3,680', numberOfUnits: 1, yearBuilt: 2001, lotSizeAcres: '0.31', zoningCode: 'R-1', county: 'San Diego',
     soldPrice: 'N/A', loanAmount: '$260K', lender: 'CitiMortgage', loanType: 'Conventional', interestRate: '3.25%', totalParcelValue: '$680K', improvementValue: '$520K', landValue: '$160K', taxBill: '$8,160', taxYear: 2024,
     ownerName: 'Maria Gonzalez', mailingAddress: '1847 Vista Del Mar, Oceanside, CA 92054', contactName: 'Maria Gonzalez',
@@ -1397,19 +1397,23 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
       </div>
 
       {/* Lead Cards */}
-      <div className="space-y-6">
+      <div className="space-y-5">
         {orderGroups.map(([orderName, orderLeads]) => (
-          <div key={orderName}>
+          <div key={orderName} className="rounded-xl border border-border bg-white overflow-hidden">
             {/* Order Group Header */}
-            <div className="flex items-center gap-3 mb-3">
-              <div className="h-px flex-1 bg-gray-200" />
-              <span className="font-mono text-[11px] font-medium text-gray-400 uppercase tracking-wider shrink-0">
-                {orderName} Order — {orderLeads.length} {orderLeads.length === 1 ? 'lead' : 'leads'}
+            <div className="px-4 py-3 bg-charcoal/[0.02] border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-1.5 h-5 rounded-full bg-orange" />
+                <span className="font-heading text-sm font-semibold text-charcoal">
+                  {orderName} Order
+                </span>
+              </div>
+              <span className="text-xs text-muted-foreground font-mono">
+                {orderLeads.length} {orderLeads.length === 1 ? 'lead' : 'leads'}
               </span>
-              <div className="h-px flex-1 bg-gray-200" />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="divide-y divide-gray-100">
               {orderLeads.map((lead) => {
                 const idx = lead._origIndex;
                 const isExpanded = expandedLead === idx;
@@ -1419,11 +1423,11 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
 
                 return (
                   <div key={idx} className={cn(
-                    'rounded-lg border transition-all duration-200 group',
+                    'transition-all duration-200 group',
                     isSkipped ? 'opacity-40' : '',
                     isExpanded
-                      ? 'border-orange/30 ring-1 ring-orange/10 shadow-sm bg-white'
-                      : 'border-border hover:border-orange/20 hover:shadow-md hover:-translate-y-[1px] bg-white'
+                      ? 'bg-orange/[0.02]'
+                      : 'hover:bg-gray-50'
                   )}>
                     {/* Compact Row */}
                     <button
