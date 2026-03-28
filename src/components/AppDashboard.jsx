@@ -2478,6 +2478,8 @@ function InboxTab({ addDeal }) {
 function PipelineTab({ deals, addDeal, moveDealStage }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchAdd, setSearchAdd] = useState('');
+  const [dragIdx, setDragIdx] = useState(null);
+  const [dragOverStage, setDragOverStage] = useState(null);
 
   const stages = ['Positive Reply', 'Following Up', 'Meeting Scheduled', 'Nurturing', 'Closed'];
   const stageColors = ['bg-success', 'bg-orange', 'bg-blue-500', 'bg-charcoal', 'bg-success'];
@@ -2551,7 +2553,21 @@ function PipelineTab({ deals, addDeal, moveDealStage }) {
             const stageDeals = deals.filter(d => d.stage === stage);
             const nextStage = stages[stageIdx + 1];
             return (
-              <div key={stage} className="min-w-[200px] flex-1 rounded-xl border border-border bg-white overflow-hidden">
+              <div
+                key={stage}
+                className={cn(
+                  'min-w-[200px] flex-1 rounded-xl border bg-white overflow-hidden transition-colors',
+                  dragOverStage === stage ? 'border-orange border-dashed bg-orange/[0.02]' : 'border-border'
+                )}
+                onDragOver={(e) => { e.preventDefault(); setDragOverStage(stage); }}
+                onDragLeave={() => setDragOverStage(null)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (dragIdx !== null) moveDealStage(dragIdx, stage);
+                  setDragIdx(null);
+                  setDragOverStage(null);
+                }}
+              >
                 <div className={cn('px-3 py-2.5 border-b border-border flex items-center justify-between', stageAccent[stageIdx])}>
                   <div className="flex items-center gap-2">
                     <div className={cn('w-1.5 h-4 rounded-full', stageColors[stageIdx])} />
@@ -2562,11 +2578,17 @@ function PipelineTab({ deals, addDeal, moveDealStage }) {
                   </span>
                 </div>
 
-                <div className="p-1.5 space-y-1.5">
+                <div className="p-1.5 space-y-1.5 min-h-[60px]">
                   {stageDeals.map((deal, di) => {
                     const dealIdx = deals.indexOf(deal);
                     return (
-                      <div key={dealIdx} className="rounded-lg border border-border bg-white p-2.5 hover:shadow-sm hover:border-orange/20 transition-all group">
+                      <div
+                        key={dealIdx}
+                        draggable
+                        onDragStart={() => setDragIdx(dealIdx)}
+                        onDragEnd={() => { setDragIdx(null); setDragOverStage(null); }}
+                        className={cn('rounded-lg border border-border bg-white p-2.5 hover:shadow-sm hover:border-orange/20 transition-all group cursor-grab active:cursor-grabbing', dragIdx === dealIdx && 'opacity-50')}
+                      >
                         <p className="text-xs font-semibold text-charcoal leading-tight">{deal.name}</p>
                         <p className="text-[11px] text-gray-500 mt-0.5 truncate">{deal.address}</p>
                         <div className="flex items-center justify-between mt-1.5">
