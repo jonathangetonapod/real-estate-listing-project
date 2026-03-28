@@ -1502,157 +1502,153 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
                           className="overflow-hidden"
                         >
                           <div className="px-5 pb-5 pt-0">
-                            <div className="border-t border-gray-100 pt-5">
-                              {/* AI Insight */}
-                              {extendedLeadData[idx] && (
-                                <div className="rounded-xl bg-light-bg border border-gray-100 p-4 mb-5">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <Info className="h-4 w-4 text-orange" />
-                                    <h4 className="font-heading text-sm font-semibold text-charcoal">Why This Seller</h4>
-                                  </div>
-                                  <p className="text-sm leading-relaxed text-gray-600">{extendedLeadData[idx].insight}</p>
-                                </div>
-                              )}
+                            <div className="border-t border-gray-100 pt-4">
 
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {/* Column 1: Property Details */}
-                                <div className="space-y-3">
-                                  <h4 className="font-heading text-sm font-semibold text-charcoal flex items-center gap-2">
-                                    <Building2 className="h-4 w-4 text-gray-400" />
-                                    Property Details
+                              {/* Hero CTA + AI Insight row */}
+                              <div className="flex flex-col md:flex-row gap-4 mb-5">
+                                {/* Primary action — the thing the agent came here to do */}
+                                <div className="md:w-[200px] shrink-0 space-y-2">
+                                  <Button
+                                    size="sm"
+                                    className={cn(
+                                      'w-full rounded-lg text-sm font-medium h-10',
+                                      pitchDrafts[idx]?.status === 'sent'
+                                        ? 'bg-charcoal text-white hover:bg-charcoal/90'
+                                        : 'bg-orange text-white hover:bg-orange-hover'
+                                    )}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleOpenPitchSlideOver(idx);
+                                    }}
+                                  >
+                                    {pitchDrafts[idx]?.status === 'sent' ? (
+                                      <><Eye className="h-4 w-4 mr-2" />View Sent Pitch</>
+                                    ) : pitchDrafts[idx]?.status === 'draft' ? (
+                                      <><Pencil className="h-4 w-4 mr-2" />Edit Draft</>
+                                    ) : (
+                                      <><FileEdit className="h-4 w-4 mr-2" />Generate Pitch</>
+                                    )}
+                                  </Button>
+                                  {!isContacted && pitchDrafts[idx]?.status !== 'sent' && (
+                                    <div className="flex gap-2">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1 rounded-lg text-xs"
+                                        onClick={(e) => handleMarkContacted(idx, e)}
+                                      >
+                                        <Check className="h-3 w-3 mr-1" /> Contacted
+                                      </Button>
+                                      <button
+                                        onClick={(e) => handleSkipLead(idx, e)}
+                                        className="px-2 py-1 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+                                      >
+                                        {isSkipped ? 'Undo' : 'Skip'}
+                                      </button>
+                                    </div>
+                                  )}
+                                  {isContacted && (
+                                    <div className="flex items-center gap-1.5 text-xs text-success">
+                                      <CheckCircle2 className="h-3.5 w-3.5" />
+                                      <span className="font-medium">Contacted</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* AI Insight */}
+                                {extendedLeadData[idx] && (
+                                  <div className="flex-1 rounded-lg border-l-[3px] border-l-orange bg-orange/[0.03] px-4 py-3">
+                                    <div className="flex items-center gap-1.5 mb-1.5">
+                                      <Info className="h-3.5 w-3.5 text-orange" />
+                                      <span className="text-[10px] uppercase tracking-wider text-orange font-semibold">Why This Seller</span>
+                                    </div>
+                                    <p className="text-sm leading-relaxed text-gray-600">{extendedLeadData[idx].insight}</p>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Data columns */}
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* Property Details */}
+                                <div className="rounded-lg border border-border p-3.5">
+                                  <h4 className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
+                                    <Building2 className="h-3.5 w-3.5" />
+                                    Property
                                   </h4>
-                                  <div className="space-y-2">
+                                  <div className="space-y-1.5">
                                     {[
-                                      { label: 'Property Type', value: lead.propertyType },
-                                      { label: 'Building Sq Ft', value: lead.sqft },
-                                      { label: 'Units', value: lead.numberOfUnits },
-                                      { label: 'Year Built', value: lead.yearBuilt },
-                                      { label: 'Lot Size', value: lead.lotSizeAcres ? `${lead.lotSizeAcres} acres` : null },
+                                      { label: 'Type', value: lead.propertyType },
+                                      { label: 'Sq Ft', value: lead.sqft },
+                                      { label: 'Built', value: lead.yearBuilt },
+                                      { label: 'Lot', value: lead.lotSizeAcres ? `${lead.lotSizeAcres} ac` : null },
                                       { label: 'Zoning', value: lead.zoningCode },
                                       { label: 'County', value: lead.county },
                                     ].filter(item => item.value != null).map((item) => (
                                       <div key={item.label} className="flex justify-between items-center">
-                                        <span className="text-xs text-muted-foreground">{item.label}</span>
-                                        <span className="text-sm font-medium text-charcoal">{item.value}</span>
+                                        <span className="text-[11px] text-gray-400">{item.label}</span>
+                                        <span className="text-xs font-medium text-charcoal font-mono">{item.value}</span>
                                       </div>
                                     ))}
                                   </div>
                                 </div>
 
-                                {/* Column 2: Financial Details */}
-                                <div className="space-y-3">
-                                  <h4 className="font-heading text-sm font-semibold text-charcoal flex items-center gap-2">
-                                    <DollarSign className="h-4 w-4 text-gray-400" />
-                                    Financial Details
+                                {/* Financial */}
+                                <div className="rounded-lg border border-border p-3.5">
+                                  <h4 className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
+                                    <DollarSign className="h-3.5 w-3.5" />
+                                    Financial
                                   </h4>
-                                  <div className="space-y-2">
+                                  <div className="space-y-1.5">
                                     {[
-                                      { label: 'Estimated Value', value: lead.price },
-                                      { label: 'Last Sold Price', value: lead.soldPrice },
+                                      { label: 'Value', value: lead.price, bold: true },
+                                      { label: 'Sold Price', value: lead.soldPrice },
                                       { label: 'Lender', value: lead.lender },
-                                      { label: 'Loan Amount', value: lead.loanAmount },
-                                      { label: 'Loan Type', value: lead.loanType },
-                                      { label: 'Interest Rate', value: lead.interestRate },
-                                      { label: 'Parcel Value', value: lead.totalParcelValue },
-                                      { label: 'Improvement', value: lead.improvementValue },
-                                      { label: 'Land', value: lead.landValue },
-                                      { label: `Tax Bill (${lead.taxYear})`, value: lead.taxBill ? `${lead.taxBill}/yr` : null },
+                                      { label: 'Loan', value: lead.loanAmount },
+                                      { label: 'Rate', value: lead.interestRate },
+                                      { label: 'Tax', value: lead.taxBill ? `${lead.taxBill}/yr` : null },
                                     ].filter(item => item.value != null && item.value !== 'N/A').map((item) => (
                                       <div key={item.label} className="flex justify-between items-center">
-                                        <span className="text-xs text-muted-foreground">{item.label}</span>
-                                        <span className={cn('text-sm font-medium text-charcoal', item.className)}>{item.value}</span>
+                                        <span className="text-[11px] text-gray-400">{item.label}</span>
+                                        <span className={cn('text-xs font-mono', item.bold ? 'font-bold text-charcoal' : 'font-medium text-charcoal')}>{item.value}</span>
                                       </div>
                                     ))}
                                   </div>
                                 </div>
 
-                                {/* Column 3: Owner & Contact + Quick Actions */}
-                                <div className="space-y-3">
-                                  <h4 className="font-heading text-sm font-semibold text-charcoal flex items-center gap-2">
-                                    <Phone className="h-4 w-4 text-gray-400" />
-                                    Owner & Contact
+                                {/* Owner & Contact */}
+                                <div className="rounded-lg border border-border p-3.5">
+                                  <h4 className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
+                                    <Phone className="h-3.5 w-3.5" />
+                                    Contact
                                   </h4>
                                   <div className="space-y-2">
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-xs text-muted-foreground">Owner</span>
-                                      <span className="text-sm font-medium text-charcoal">{lead.ownerName}</span>
+                                    <div>
+                                      <span className="text-[11px] text-gray-400">Owner</span>
+                                      <p className="text-xs font-medium text-charcoal">{lead.ownerName}</p>
                                     </div>
-                                    {lead.contactName && lead.contactName !== lead.ownerName && (
-                                      <div className="flex justify-between items-center">
-                                        <span className="text-xs text-muted-foreground">Contact</span>
-                                        <span className="text-sm font-medium text-charcoal">{lead.contactName}</span>
-                                      </div>
-                                    )}
                                     {lead.mailingAddress && (
                                       <div>
-                                        <span className="text-xs text-muted-foreground block mb-0.5">Mailing Address</span>
-                                        <span className="text-xs text-charcoal">{lead.mailingAddress}</span>
+                                        <span className="text-[11px] text-gray-400">Address</span>
+                                        <p className="text-[11px] text-charcoal leading-tight">{lead.mailingAddress}</p>
                                       </div>
                                     )}
                                     {lead.phones?.length > 0 && (
                                       <div>
-                                        <span className="text-xs text-muted-foreground block mb-0.5">Phone{lead.phones.length > 1 ? 's' : ''}</span>
+                                        <span className="text-[11px] text-gray-400">Phone</span>
                                         {lead.phones.map((p, pi) => (
-                                          <span key={pi} className="text-xs font-mono text-charcoal block">{p}</span>
+                                          <p key={pi} className="text-xs font-mono text-charcoal">{p}</p>
                                         ))}
                                       </div>
                                     )}
                                     {lead.emails?.length > 0 && (
                                       <div>
-                                        <span className="text-xs text-muted-foreground block mb-0.5">Email{lead.emails.length > 1 ? 's' : ''}</span>
+                                        <span className="text-[11px] text-gray-400">Email</span>
                                         {lead.emails.map((em, ei) => (
-                                          <span key={ei} className="text-xs font-mono text-charcoal block truncate">{em}</span>
+                                          <p key={ei} className="text-xs font-mono text-charcoal truncate">{em}</p>
                                         ))}
                                       </div>
                                     )}
                                   </div>
-
-                                  {/* Quick Actions */}
-                                  <div className="pt-3 border-t border-gray-100 space-y-2">
-                                    <h4 className="font-heading text-sm font-semibold text-charcoal">Quick Actions</h4>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="w-full justify-start rounded-lg text-sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenPitchSlideOver(idx);
-                                      }}
-                                    >
-                                      {pitchDrafts[idx]?.status === 'sent' ? (
-                                        <><Eye className="h-3.5 w-3.5 mr-2" />View Sent Pitch</>
-                                      ) : pitchDrafts[idx]?.status === 'draft' ? (
-                                        <><Pencil className="h-3.5 w-3.5 mr-2" />Edit Draft</>
-                                      ) : (
-                                        <><FileEdit className="h-3.5 w-3.5 mr-2" />Generate Email Pitch</>
-                                      )}
-                                    </Button>
-                                    <Button
-                                      variant={isContacted ? 'default' : 'outline'}
-                                      size="sm"
-                                      className={cn(
-                                        'w-full justify-start rounded-lg text-sm',
-                                        isContacted && 'bg-success text-white hover:bg-success'
-                                      )}
-                                      onClick={(e) => handleMarkContacted(idx, e)}
-                                    >
-                                      {isContacted ? (
-                                        <><CheckCircle2 className="h-3.5 w-3.5 mr-2" /> Contacted</>
-                                      ) : (
-                                        <><Check className="h-3.5 w-3.5 mr-2" /> Mark as Contacted</>
-                                      )}
-                                    </Button>
-                                    {pitchDrafts[idx]?.status !== 'sent' && (
-                                      <button
-                                        onClick={(e) => handleSkipLead(idx, e)}
-                                        className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
-                                      >
-                                        <XCircle className="h-3.5 w-3.5 mr-2 inline" />
-                                        {isSkipped ? 'Undo Skip' : 'Skip This Lead'}
-                                      </button>
-                                    )}
-                                  </div>
-
                                 </div>
                               </div>
                             </div>
