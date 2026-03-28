@@ -42,7 +42,7 @@ export function VideoPlaceholder() {
               {/* Poster frame overlay */}
               <div className="absolute inset-0 bg-charcoal flex flex-col items-center justify-center">
                 <div className="font-heading text-2xl md:text-3xl font-bold text-white/80 text-center mb-2 px-8">
-                  See ListSignal in Action
+                  See OffMarket in Action
                 </div>
                 <div className="font-sans text-sm text-white/30 mb-8">
                   53 seconds
@@ -79,7 +79,7 @@ export function VideoPlaceholder() {
       </div>
 
       <p className="font-sans text-[15px] font-medium text-charcoal/60 mt-6">
-        How ListSignal finds motivated sellers and drafts your outreach
+        How OffMarket finds motivated sellers and drafts your outreach
       </p>
     </motion.div>
   );

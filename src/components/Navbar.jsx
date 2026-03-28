@@ -40,8 +40,8 @@ export function Navbar() {
       >
         {/* Logo */}
         <div className="font-heading text-[22px] font-bold leading-none cursor-pointer select-none">
-          <span className="text-charcoal">List</span>
-          <span className="text-orange">Signal</span>
+          <span className="text-charcoal">Off</span>
+          <span className="text-orange">Market</span>
         </div>
 
         {/* Desktop links */}

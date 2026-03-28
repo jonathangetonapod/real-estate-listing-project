@@ -1,9 +1,9 @@
 {
-  "name": "listsignal-video",
+  "name": "offmarket-video",
   "version": "1.0.0",
   "scripts": {
     "dev": "remotion studio src/index.ts",
-    "build": "remotion render src/index.ts ListSignalExplainer out/listsignal-explainer.mp4",
+    "build": "remotion render src/index.ts OffMarketExplainer out/offmarket-explainer.mp4",
     "preview": "remotion preview src/index.ts"
   },
   "dependencies": {

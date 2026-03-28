@@ -39,7 +39,7 @@ const faqItems = [
   },
   {
     q: 'How is this different from Zillow leads?',
-    a: 'Zillow shares each lead with dozens of agents and charges $1,200+/mo. ListSignal delivers exclusive, verified seller data with AI-drafted pitches for $99/mo. Your leads are yours. No bidding, no sharing.',
+    a: 'Zillow shares each lead with dozens of agents and charges $1,200+/mo. OffMarket delivers exclusive, verified seller data with AI-drafted pitches for $99/mo. Your leads are yours. No bidding, no sharing.',
   },
   {
     q: 'What does "founding member" mean?',
@@ -47,7 +47,7 @@ const faqItems = [
   },
   {
     q: 'Will this hurt my email reputation?',
-    a: 'We never touch your personal email. Every email goes out from our managed infrastructure with your name and brand in the from field. We handle warm-up, rotation, and deliverability. Replies come into your ListSignal dashboard.',
+    a: 'We never touch your personal email. Every email goes out from our managed infrastructure with your name and brand in the from field. We handle warm-up, rotation, and deliverability. Replies come into your OffMarket dashboard.',
   },
   {
     q: 'Do I need any other tools?',
@@ -177,8 +177,8 @@ export function WaitlistPage() {
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 mx-auto max-w-5xl">
         <Link to="/" className="font-heading text-xl font-bold">
-          <span className="text-charcoal">List</span>
-          <span className="text-orange">Signal</span>
+          <span className="text-charcoal">Off</span>
+          <span className="text-orange">Market</span>
         </Link>
         <Link to="/" className="font-sans text-sm text-gray-400 hover:text-charcoal transition-colors">
           &larr; Back to home
@@ -210,7 +210,7 @@ export function WaitlistPage() {
             className="font-sans text-lg md:text-xl text-gray-500 leading-relaxed mb-10 max-w-xl mx-auto"
             variants={fadeUp} initial="hidden" animate="visible" custom={0.2}
           >
-            ListSignal finds homeowners ready to sell, drafts personalized outreach with AI, and sends it with your name. You wake up to replies.
+            OffMarket finds homeowners ready to sell, drafts personalized outreach with AI, and sends it with your name. You wake up to replies.
           </motion.p>
 
           {/* Email form */}
@@ -292,11 +292,11 @@ export function WaitlistPage() {
                     </p>
                     <div className="flex items-center gap-2 rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">
                       <span className="flex-1 font-mono text-xs text-gray-500 truncate">
-                        listsignal.com/ref/{email.split('@')[0]}
+                        offmarket.com/ref/{email.split('@')[0]}
                       </span>
                       <button
                         className="shrink-0 font-sans text-xs font-semibold text-orange hover:text-orange/80 transition-colors"
-                        onClick={() => navigator.clipboard?.writeText(`listsignal.com/ref/${email.split('@')[0]}`)}
+                        onClick={() => navigator.clipboard?.writeText(`offmarket.com/ref/${email.split('@')[0]}`)}
                       >
                         Copy
                       </button>
@@ -398,7 +398,7 @@ export function WaitlistPage() {
             </div>
             <div className="p-6 text-center">
               <span className="block font-sans text-xs font-medium uppercase tracking-wide text-orange mb-2">
-                ListSignal
+                OffMarket
               </span>
               <span className="block font-mono text-2xl font-bold text-orange">
                 $99/mo
@@ -488,10 +488,10 @@ export function WaitlistPage() {
       <footer className="border-t border-gray-200 px-6 py-8">
         <div className="mx-auto max-w-5xl flex flex-col items-center gap-3">
           <div className="font-heading text-base font-bold">
-            List<span className="text-orange">Signal</span>
+            Off<span className="text-orange">Market</span>
           </div>
           <p className="font-sans text-xs text-gray-300">
-            &copy; 2026 ListSignal. Not affiliated with any MLS or brokerage.
+            &copy; 2026 OffMarket. Not affiliated with any MLS or brokerage.
           </p>
         </div>
       </footer>

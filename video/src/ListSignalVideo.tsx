@@ -163,7 +163,7 @@ function ProblemScene() {
   // VS
   const vsScale = spring({ frame, fps, config: { damping: 15 }, delay: 100 });
 
-  // ListSignal card
+  // OffMarket card
   const lsEnter = spring({ frame, fps, config: { damping: 12 }, delay: 120 });
   const lsGlow = interpolate(frame, [150, 180], [0, 20], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
@@ -212,7 +212,7 @@ function ProblemScene() {
           vs
         </div>
 
-        {/* ListSignal */}
+        {/* OffMarket */}
         <div style={{
           transform: `scale(${lsEnter})`,
           background: "#F0FFF4", borderRadius: 20, padding: "48px 56px", textAlign: "center",
@@ -220,7 +220,7 @@ function ProblemScene() {
           boxShadow: `0 0 ${lsGlow}px ${lsGlow / 2}px ${SUCCESS}20`,
         }}>
           <div style={{ fontFamily: bodyFont, fontSize: 14, fontWeight: 600, textTransform: "uppercase", letterSpacing: 3, color: ORANGE, marginBottom: 16 }}>
-            ListSignal
+            OffMarket
           </div>
           <div style={{ fontFamily: monoFont, fontSize: 72, fontWeight: 700, color: SUCCESS }}>
             $99
@@ -289,11 +289,11 @@ function SolutionScene() {
               display: "flex", alignItems: "center", justifyContent: "center",
               fontFamily: bodyFont, fontSize: 13, fontWeight: 700, color: WHITE,
             }}>
-              LS
+              OM
             </div>
             <div>
               <div style={{ fontFamily: bodyFont, fontSize: 14, fontWeight: 600, color: CHARCOAL }}>
-                Sarah Johnson via ListSignal
+                Sarah Johnson via OffMarket
               </div>
               <div style={{ fontFamily: bodyFont, fontSize: 12, color: "#999" }}>
                 to: homeowner@email.com
@@ -545,7 +545,7 @@ function CTAScene() {
           fontFamily: monoFont, fontSize: 20, color: "rgba(255,255,255,0.25)",
           marginTop: 32, letterSpacing: 1, opacity: urlOpacity,
         }}>
-          listsignal.com/waitlist
+          offmarket.com/waitlist
         </div>
 
         {/* Limited spots badge */}
@@ -563,7 +563,7 @@ function CTAScene() {
 
 // ======= MAIN COMPOSITION =======
 
-export const ListSignalVideo: React.FC = () => {
+export const OffMarketVideo: React.FC = () => {
   const { fps, durationInFrames } = useVideoConfig();
 
   return (

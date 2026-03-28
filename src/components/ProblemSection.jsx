@@ -9,7 +9,7 @@ const cards = [
   {
     indicator: 'bg-charcoal',
     title: 'Cold calling works. It just eats your whole morning.',
-    body: "You can dial 100 numbers for 3 conversations, or email 500 verified sellers this week. Same hustle, 25x the reach. ListSignal warms up your pipeline so every call is to someone who already knows your name.",
+    body: "You can dial 100 numbers for 3 conversations, or email 500 verified sellers this week. Same hustle, 25x the reach. OffMarket warms up your pipeline so every call is to someone who already knows your name.",
   },
   {
     indicator: 'bg-danger',

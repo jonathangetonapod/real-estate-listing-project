@@ -140,7 +140,7 @@ export function DashboardMockup() {
           </div>
           <div className="mx-auto flex max-w-[400px] flex-1 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1">
             <span className="text-[11px] text-gray-400">https://</span>
-            <span className="font-sans text-xs text-gray-500">app.listsignal.com/dashboard</span>
+            <span className="font-sans text-xs text-gray-500">app.offmarket.com/dashboard</span>
           </div>
           <div className="w-[50px] shrink-0" />
         </div>
@@ -151,10 +151,10 @@ export function DashboardMockup() {
             <div className="hidden w-[200px] shrink-0 flex-col bg-charcoal py-4 md:flex">
               <div className="mb-4 flex items-center gap-2 border-b border-white/[0.08] px-4 pb-4">
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange text-[11px] font-bold text-white">
-                  LP
+                  OM
                 </span>
                 <span className="font-heading text-sm font-bold text-white">
-                  ListSignal
+                  OffMarket
                 </span>
               </div>
 
