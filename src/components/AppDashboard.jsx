@@ -2029,64 +2029,41 @@ function DraftsTab({ pitchDrafts }) {
 
 const sampleReplies = [
   {
-    id: 1,
-    name: 'Michael Torres',
-    address: '4821 Oakwood Dr, Riverside Heights',
-    email: 'mtorres@email.com',
-    type: 'Expired',
-    price: '$485K',
-    equity: '$185K',
-    replyDate: '2026-03-28T14:22:00Z',
-    replyPreview: 'Hi Sarah, thanks for reaching out. I have been thinking about relisting and would be open to hearing what you have in mind. What does your schedule look like next week?',
-    replyFull: `Hi Sarah,\n\nThanks for reaching out. I have been thinking about relisting and would be open to hearing what you have in mind. We had some issues with our previous agent regarding pricing strategy, and I want to make sure we get it right this time.\n\nWhat does your schedule look like next week? I'm generally free Tuesday and Thursday afternoons.\n\nBest,\nMichael`,
-    threadStep: 1,
-    status: 'new',
-    sentiment: 'interested',
+    id: 1, name: 'Michael Torres', address: '4821 Oakwood Dr, Riverside Heights', email: 'mtorres@email.com',
+    type: 'Expired', price: '$485K', equity: '$185K', status: 'new', sentiment: 'interested',
+    replyPreview: 'Hi Sarah, thanks for reaching out. I have been thinking about relisting...',
+    thread: [
+      { from: 'agent', name: 'Sarah Johnson', date: '2026-03-26T09:00:00Z', subject: 'Your 4821 Oakwood Dr Home — a Confidential Buyer May Be Interested', body: `Hi Michael,\n\nI noticed your home at 4821 Oakwood Dr came off the market after 47 days. That can be frustrating, and I wanted to reach out because I may be able to help.\n\nI specialize in the Riverside Heights area and have been tracking comparable sales nearby. Homes similar to yours — 2,840 sq ft, built in 2004 — have recently sold between $485K and above.\n\nWould you be open to a quick 10-minute call this week? No pressure at all.\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate` },
+      { from: 'seller', name: 'Michael Torres', date: '2026-03-28T14:22:00Z', body: `Hi Sarah,\n\nThanks for reaching out. I have been thinking about relisting and would be open to hearing what you have in mind. We had some issues with our previous agent regarding pricing strategy, and I want to make sure we get it right this time.\n\nWhat does your schedule look like next week? I'm generally free Tuesday and Thursday afternoons.\n\nBest,\nMichael` },
+    ],
   },
   {
-    id: 2,
-    name: 'Maria Gonzalez',
-    address: '1847 Vista Del Mar, Oceanside',
-    email: 'mgonzalez@email.com',
-    type: 'High Equity',
-    price: '$680K',
-    equity: '$420K',
-    replyDate: '2026-03-27T09:15:00Z',
-    replyPreview: 'Thank you for the information. My husband and I have been discussing downsizing. Could you send over those comparable sales you mentioned?',
-    replyFull: `Hi Sarah,\n\nThank you for the information. My husband and I have been discussing downsizing for a while now, and your timing is pretty good.\n\nCould you send over those comparable sales you mentioned? We want to understand what the market looks like before making any decisions. We've been in this house for 15 years and it's a big step.\n\nAlso, would you be able to do a walkthrough to give us an idea of what we might need to do to get the best price?\n\nThank you,\nMaria`,
-    threadStep: 1,
-    status: 'new',
-    sentiment: 'interested',
+    id: 2, name: 'Maria Gonzalez', address: '1847 Vista Del Mar, Oceanside', email: 'mgonzalez@email.com',
+    type: 'High Equity', price: '$680K', equity: '$420K', status: 'new', sentiment: 'interested',
+    replyPreview: 'Thank you for the information. My husband and I have been discussing downsizing...',
+    thread: [
+      { from: 'agent', name: 'Sarah Johnson', date: '2026-03-24T10:30:00Z', subject: '1847 Vista Del Mar — Is Now the Right Time to Maximize Your Equity?', body: `Hi Maria,\n\nI've been tracking the Oceanside market closely, and homeowners like you — with $420K in equity built over 15 years — are in an exceptional position right now.\n\nYour 3,680 sq ft property at 1847 Vista Del Mar sits in one of the most in-demand areas. I specialize in helping long-time owners maximize their position.\n\nWould you be open to a no-obligation market analysis?\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate` },
+      { from: 'seller', name: 'Maria Gonzalez', date: '2026-03-27T09:15:00Z', body: `Hi Sarah,\n\nThank you for the information. My husband and I have been discussing downsizing for a while now, and your timing is pretty good.\n\nCould you send over those comparable sales you mentioned? We want to understand what the market looks like before making any decisions. We've been in this house for 15 years and it's a big step.\n\nAlso, would you be able to do a walkthrough to give us an idea of what we might need to do to get the best price?\n\nThank you,\nMaria` },
+    ],
   },
   {
-    id: 3,
-    name: 'David Hernandez',
-    address: '892 Sunset Blvd, Palm Canyon',
-    email: 'dhernandez@email.com',
-    type: 'Pre-Foreclosure',
-    price: '$520K',
-    equity: '$310K',
-    replyDate: '2026-03-26T16:45:00Z',
-    replyPreview: 'I appreciate you reaching out. Things are complicated right now. Can we talk on the phone instead of email?',
-    replyFull: `Sarah,\n\nI appreciate you reaching out. Things are complicated right now and I'd rather not go into all the details over email.\n\nCan we talk on the phone instead? I have some questions about the timeline and what a quick sale would actually look like. My number is (760) 555-0312, best time to reach me is after 5pm on weekdays.\n\nThanks,\nDavid`,
-    threadStep: 1,
-    status: 'read',
-    sentiment: 'warm',
+    id: 3, name: 'David Hernandez', address: '892 Sunset Blvd, Palm Canyon', email: 'dhernandez@email.com',
+    type: 'Pre-Foreclosure', price: '$520K', equity: '$310K', status: 'read', sentiment: 'warm',
+    replyPreview: 'I appreciate you reaching out. Can we talk on the phone instead?',
+    thread: [
+      { from: 'agent', name: 'Sarah Johnson', date: '2026-03-22T08:45:00Z', subject: '892 Sunset Blvd — Protecting Your $310K in Equity', body: `Hi David,\n\nI understand you may be navigating a difficult situation with your property at 892 Sunset Blvd, and I wanted to reach out with care.\n\nYour home is valued at approximately $520K with $310K in equity — that's significant, and worth protecting.\n\nWould a confidential 10-minute call work for you this week?\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate` },
+      { from: 'agent', name: 'Sarah Johnson', date: '2026-03-25T09:00:00Z', body: `Hi David,\n\nI wanted to follow up on my note about your property at 892 Sunset Blvd. I know you're busy, so I'll keep this brief.\n\nI pulled together a few comparable sales in Palm Canyon that I think you'd find interesting. I'd love to share them with you.\n\nWould a 10-minute call work sometime this week?\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate` },
+      { from: 'seller', name: 'David Hernandez', date: '2026-03-26T16:45:00Z', body: `Sarah,\n\nI appreciate you reaching out. Things are complicated right now and I'd rather not go into all the details over email.\n\nCan we talk on the phone instead? I have some questions about the timeline and what a quick sale would actually look like. My number is (760) 555-0312, best time to reach me is after 5pm on weekdays.\n\nThanks,\nDavid` },
+    ],
   },
   {
-    id: 4,
-    name: 'Robert Williams',
-    address: '558 Palm Ave, Northpark',
-    email: 'rwilliams@email.com',
-    type: 'FSBO',
-    price: '$349K',
-    equity: '$120K',
-    replyDate: '2026-03-25T11:30:00Z',
+    id: 4, name: 'Robert Williams', address: '558 Palm Ave, Northpark', email: 'rwilliams@email.com',
+    type: 'FSBO', price: '$349K', equity: '$120K', status: 'read', sentiment: 'not-interested',
     replyPreview: 'Not interested at this time. Please remove me from your list.',
-    replyFull: 'Not interested at this time. Please remove me from your list.\n\nRobert',
-    threadStep: 1,
-    status: 'read',
-    sentiment: 'not-interested',
+    thread: [
+      { from: 'agent', name: 'Sarah Johnson', date: '2026-03-20T11:00:00Z', subject: '558 Palm Ave — What Agent-Listed Homes Nearby Are Selling For', body: `Hi Robert,\n\nI saw your listing at 558 Palm Ave and wanted to share some data that might be useful.\n\nIn the Northpark area, agent-represented homes similar to yours have sold for 8-12% more than FSBO listings over the past quarter.\n\nWould a quick call work this week?\n\nBest regards,\nSarah Johnson\nOffMarket Real Estate` },
+      { from: 'seller', name: 'Robert Williams', date: '2026-03-25T11:30:00Z', body: 'Not interested at this time. Please remove me from your list.\n\nRobert' },
+    ],
   },
 ];
 
@@ -2207,7 +2184,7 @@ function InboxTab() {
                       <div className="flex items-center gap-2 mb-0.5">
                         <p className={cn('text-sm truncate', reply.status === 'new' ? 'font-bold text-charcoal' : 'font-semibold text-charcoal')}>{reply.name}</p>
                         <span className="text-[10px] text-gray-400 shrink-0">
-                          {new Date(reply.replyDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          {new Date(reply.thread[reply.thread.length - 1].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500 truncate">{reply.replyPreview}</p>
@@ -2235,7 +2212,7 @@ function InboxTab() {
                   </div>
                 </button>
 
-                {/* Expanded detail */}
+                {/* Expanded conversation thread */}
                 <AnimatePresence initial={false}>
                   {isExpanded && (
                     <motion.div
@@ -2247,40 +2224,68 @@ function InboxTab() {
                     >
                       <div className="px-4 pb-4 pt-0">
                         <div className="border-t border-gray-100 pt-4">
-                          {/* Reply metadata */}
-                          <div className="rounded-lg bg-gray-50 border border-gray-100 p-3 mb-4">
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                              <div>
-                                <span className="text-gray-400 font-medium">From</span>
-                                <p className="text-charcoal">{reply.name}</p>
+
+                          {/* Thread subject */}
+                          <div className="flex items-center gap-2 mb-4">
+                            <Mail className="h-4 w-4 text-gray-400 shrink-0" />
+                            <p className="text-sm font-medium text-charcoal truncate">
+                              {reply.thread[0]?.subject || 'No subject'}
+                            </p>
+                            <span className="text-[10px] text-gray-400 shrink-0">{reply.thread.length} messages</span>
+                          </div>
+
+                          {/* Conversation thread */}
+                          <div className="space-y-3 mb-4">
+                            {reply.thread.map((msg, mi) => (
+                              <div key={mi} className={cn('flex gap-3', msg.from === 'agent' ? '' : '')}>
+                                {/* Avatar */}
+                                <div className={cn(
+                                  'w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5',
+                                  msg.from === 'agent' ? 'bg-orange text-white' : 'bg-charcoal text-white'
+                                )}>
+                                  {msg.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                </div>
+
+                                {/* Message */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-xs font-semibold text-charcoal">{msg.name}</span>
+                                    <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', msg.from === 'agent' ? 'bg-orange/10 text-orange' : 'bg-charcoal/10 text-charcoal')}>
+                                      {msg.from === 'agent' ? 'You' : 'Seller'}
+                                    </span>
+                                    <span className="text-[10px] text-gray-400">
+                                      {new Date(msg.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                    </span>
+                                  </div>
+                                  <div className={cn(
+                                    'rounded-lg p-3 text-sm leading-relaxed whitespace-pre-line',
+                                    msg.from === 'agent'
+                                      ? 'bg-gray-50 border border-gray-100 text-gray-600'
+                                      : 'bg-orange/[0.04] border border-orange/10 text-charcoal'
+                                  )}>
+                                    {msg.body}
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <span className="text-gray-400 font-medium">Email</span>
-                                <p className="text-charcoal font-mono">{reply.email}</p>
+                            ))}
+                          </div>
+
+                          {/* Reply composer placeholder */}
+                          <div className="rounded-lg border border-dashed border-gray-200 p-3 mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-orange text-white flex items-center justify-center text-[10px] font-bold shrink-0">SJ</div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-gray-400">Write a reply to {reply.name.split(' ')[0]}...</p>
                               </div>
-                              <div>
-                                <span className="text-gray-400 font-medium">Replied to</span>
-                                <p className="text-charcoal">Step {reply.threadStep} · Initial Outreach</p>
-                              </div>
-                              <div>
-                                <span className="text-gray-400 font-medium">Received</span>
-                                <p className="text-charcoal font-mono">
-                                  {new Date(reply.replyDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                                </p>
-                              </div>
+                              <Button size="sm" className="rounded-lg bg-orange text-white hover:bg-orange-hover shrink-0">
+                                <Send className="h-3.5 w-3.5 mr-1.5" />
+                                Reply
+                              </Button>
                             </div>
                           </div>
 
-                          {/* Full reply */}
-                          <div className="mb-4">
-                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Seller&apos;s Reply</p>
-                            <div className="rounded-lg bg-light-bg border border-gray-100 p-4">
-                              <p className="text-sm leading-relaxed text-charcoal whitespace-pre-line">{reply.replyFull}</p>
-                            </div>
-                          </div>
-
-                          {/* Property context + quick actions */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Bottom row: Property + Actions */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div className="rounded-lg border border-border p-3">
                               <div className="flex items-center gap-2 mb-2">
                                 <Building2 className="h-3.5 w-3.5 text-gray-400" />
@@ -2300,13 +2305,8 @@ function InboxTab() {
                                 ))}
                               </div>
                             </div>
-
                             <div className="rounded-lg border border-border p-3 space-y-2">
                               <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Quick Actions</p>
-                              <Button variant="outline" size="sm" className="w-full justify-start rounded-lg text-sm">
-                                <Mail className="h-3.5 w-3.5 mr-2" />
-                                Reply to {reply.name.split(' ')[0]}
-                              </Button>
                               <Button variant="outline" size="sm" className="w-full justify-start rounded-lg text-sm">
                                 <Phone className="h-3.5 w-3.5 mr-2" />
                                 Schedule Call
