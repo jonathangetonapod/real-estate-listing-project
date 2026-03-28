@@ -624,157 +624,177 @@ function FarmAreaTab() {
 // Tab: Overview
 // ---------------------------------------------------------------------------
 
-function OverviewTab({ onNavigate }) {
-  const [welcomeDismissed, setWelcomeDismissed] = useState(false);
-
-  const farmSetUp = true;
-  const emailsReviewed = leads.some(l => l.draft === 'Sent');
-  const hasResponses = (pipelineLeads['Responded'] || []).length > 0;
+function OverviewTab({ onNavigate, pitchDrafts, deals }) {
+  const sentCount = Object.values(pitchDrafts).filter(d => d?.status === 'sent').length;
+  const draftCount = Object.values(pitchDrafts).filter(d => d?.status === 'draft').length;
+  const newReplies = sampleReplies.filter(r => r.status === 'new').length;
+  const totalReplies = sampleReplies.length;
+  const dealsCount = deals?.length || 0;
 
   return (
-    <div className="space-y-8">
-      {/* Welcome banner for new users */}
-      {!welcomeDismissed && (
-        <div className="relative rounded-xl border border-orange/20 bg-orange/[0.03] p-6">
+    <div className="space-y-6">
+      {/* Metrics row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <button onClick={() => onNavigate('leads')} className="rounded-xl border border-border bg-white p-4 text-left hover:border-orange/20 hover:shadow-sm transition-all group">
+          <div className="flex items-center justify-between mb-2">
+            <Users className="h-4 w-4 text-gray-400" />
+            <ArrowRight className="h-3 w-3 text-gray-300 group-hover:text-orange transition-colors" />
+          </div>
+          <p className="font-mono text-2xl font-bold text-charcoal">{leads.length}</p>
+          <p className="text-[11px] text-gray-500 mt-0.5">Seller Leads</p>
+        </button>
+        <button onClick={() => onNavigate('drafts')} className="rounded-xl border border-border bg-white p-4 text-left hover:border-orange/20 hover:shadow-sm transition-all group">
+          <div className="flex items-center justify-between mb-2">
+            <Send className="h-4 w-4 text-gray-400" />
+            <ArrowRight className="h-3 w-3 text-gray-300 group-hover:text-orange transition-colors" />
+          </div>
+          <p className="font-mono text-2xl font-bold text-charcoal">{sentCount}</p>
+          <p className="text-[11px] text-gray-500 mt-0.5">Pitches Sent</p>
+        </button>
+        <button onClick={() => onNavigate('replies')} className="rounded-xl border border-border bg-white p-4 text-left hover:border-orange/20 hover:shadow-sm transition-all group">
+          <div className="flex items-center justify-between mb-2">
+            <Inbox className="h-4 w-4 text-gray-400" />
+            {newReplies > 0 && <span className="inline-flex items-center rounded-full bg-orange px-1.5 py-0.5 text-[9px] font-bold text-white">{newReplies}</span>}
+          </div>
+          <p className="font-mono text-2xl font-bold text-charcoal">{totalReplies}</p>
+          <p className="text-[11px] text-gray-500 mt-0.5">Inbox Replies</p>
+        </button>
+        <button onClick={() => onNavigate('pipeline')} className="rounded-xl border border-border bg-white p-4 text-left hover:border-orange/20 hover:shadow-sm transition-all group">
+          <div className="flex items-center justify-between mb-2">
+            <GitBranch className="h-4 w-4 text-gray-400" />
+            <ArrowRight className="h-3 w-3 text-gray-300 group-hover:text-orange transition-colors" />
+          </div>
+          <p className="font-mono text-2xl font-bold text-charcoal">{dealsCount}</p>
+          <p className="text-[11px] text-gray-500 mt-0.5">Active Deals</p>
+        </button>
+      </div>
+
+      {/* Action cards — what needs attention */}
+      <div className="space-y-3">
+        <h2 className="font-heading text-base font-semibold text-charcoal">Needs Your Attention</h2>
+
+        {/* New replies */}
+        {newReplies > 0 && (
           <button
-            onClick={() => setWelcomeDismissed(true)}
-            className="absolute top-4 right-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Dismiss
-          </button>
-          <h3 className="font-heading text-lg font-semibold text-charcoal mb-4">
-            Welcome to OffMarket, Sarah! Here&apos;s how to get started:
-          </h3>
-          <div className="space-y-3">
-            <button
-              onClick={() => onNavigate?.('farm')}
-              className="flex items-center gap-3 w-full text-left group"
-            >
-              <div className={cn(
-                'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-                farmSetUp ? 'bg-success/10 text-success' : 'bg-orange/10 text-orange'
-              )}>
-                {farmSetUp ? <Check className="h-3.5 w-3.5" /> : '1'}
-              </div>
-              <span className={cn(
-                'text-sm group-hover:text-orange transition-colors',
-                farmSetUp ? 'text-muted-foreground line-through' : 'text-charcoal font-medium'
-              )}>
-                Set up your market area
-              </span>
-              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-            <button
-              onClick={() => onNavigate?.('drafts')}
-              className="flex items-center gap-3 w-full text-left group"
-            >
-              <div className={cn(
-                'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-                emailsReviewed ? 'bg-success/10 text-success' : 'bg-orange/10 text-orange'
-              )}>
-                {emailsReviewed ? <Check className="h-3.5 w-3.5" /> : '2'}
-              </div>
-              <span className={cn(
-                'text-sm group-hover:text-orange transition-colors',
-                emailsReviewed ? 'text-muted-foreground line-through' : 'text-charcoal font-medium'
-              )}>
-                Review your email pitches
-              </span>
-              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-            <button
-              onClick={() => onNavigate?.('replies')}
-              className="flex items-center gap-3 w-full text-left group"
-            >
-              <div className={cn(
-                'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-                hasResponses ? 'bg-success/10 text-success' : 'bg-orange/10 text-orange'
-              )}>
-                {hasResponses ? <Check className="h-3.5 w-3.5" /> : '3'}
-              </div>
-              <span className={cn(
-                'text-sm group-hover:text-orange transition-colors',
-                hasResponses ? 'text-muted-foreground line-through' : 'text-charcoal font-medium'
-              )}>
-                Check your inbox
-              </span>
-              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Status story card */}
-      <Card className="rounded-xl border-orange/20 bg-orange/[0.03]">
-        <CardContent className="p-6 sm:p-8">
-          <p className="font-sans text-lg sm:text-xl text-charcoal leading-relaxed mb-1">
-            You have <span className="font-bold text-orange">62 email pitches</span> ready to review.
-          </p>
-          <p className="font-sans text-lg sm:text-xl text-charcoal leading-relaxed mb-6">
-            <span className="font-bold text-success">14 sellers</span> have responded so far.
-          </p>
-          <Button
-            onClick={() => onNavigate('drafts')}
-            className="w-full sm:w-auto h-14 rounded-xl bg-orange text-white font-sans text-base font-semibold px-8 hover:bg-orange/90 transition-colors"
-          >
-            Review Email Pitches <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Responses nudge */}
-      <Card className="rounded-xl">
-        <CardContent className="p-5 flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-success/10">
-              <MessageSquare className="h-5 w-5 text-success" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-charcoal">3 sellers responded today</p>
-              <p className="text-xs text-muted-foreground">See what they said and follow up</p>
-            </div>
-          </div>
-          <Button
-            variant="outline"
             onClick={() => onNavigate('replies')}
-            className="rounded-lg text-sm shrink-0"
+            className="w-full text-left rounded-xl border border-success/20 bg-success/[0.03] p-4 flex items-center justify-between hover:shadow-sm transition-all group"
           >
-            View Inbox <ArrowRight className="w-4 h-4 ml-1" />
-          </Button>
-        </CardContent>
-      </Card>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
+                <MessageSquare className="h-5 w-5 text-success" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-charcoal">{newReplies} new {newReplies === 1 ? 'reply' : 'replies'} from sellers</p>
+                <p className="text-xs text-gray-500">Respond to keep the conversation going</p>
+              </div>
+            </div>
+            <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-success transition-colors shrink-0" />
+          </button>
+        )}
 
-      {/* Activity feed */}
+        {/* Drafts to review */}
+        {draftCount > 0 && (
+          <button
+            onClick={() => onNavigate('leads')}
+            className="w-full text-left rounded-xl border border-orange/20 bg-orange/[0.03] p-4 flex items-center justify-between hover:shadow-sm transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-orange/10 flex items-center justify-center shrink-0">
+                <Pencil className="h-5 w-5 text-orange" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-charcoal">{draftCount} draft {draftCount === 1 ? 'pitch' : 'pitches'} waiting for approval</p>
+                <p className="text-xs text-gray-500">Review and send your email sequences</p>
+              </div>
+            </div>
+            <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-orange transition-colors shrink-0" />
+          </button>
+        )}
+
+        {/* Leads not contacted */}
+        {leads.length - sentCount - draftCount > 0 && (
+          <button
+            onClick={() => onNavigate('leads')}
+            className="w-full text-left rounded-xl border border-border bg-white p-4 flex items-center justify-between hover:shadow-sm hover:border-orange/20 transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                <Users className="h-5 w-5 text-gray-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-charcoal">{leads.length - sentCount - draftCount} leads not yet contacted</p>
+                <p className="text-xs text-gray-500">Generate pitches to reach these sellers</p>
+              </div>
+            </div>
+            <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-orange transition-colors shrink-0" />
+          </button>
+        )}
+
+        {/* All caught up */}
+        {newReplies === 0 && draftCount === 0 && (
+          <div className="rounded-xl border border-border bg-white p-6 text-center">
+            <CheckCircle2 className="h-8 w-8 text-success mx-auto mb-2" />
+            <p className="text-sm font-semibold text-charcoal">You&apos;re all caught up</p>
+            <p className="text-xs text-gray-500 mt-1">No pending actions right now</p>
+          </div>
+        )}
+      </div>
+
+      {/* Recent activity */}
       <div>
-        <h2 className="font-heading text-lg font-semibold mb-4">What Happened Recently</h2>
-        <div className="space-y-1">
+        <h2 className="font-heading text-base font-semibold text-charcoal mb-3">Recent Activity</h2>
+        <div className="rounded-xl border border-border bg-white overflow-hidden divide-y divide-gray-100">
           {activityFeed.map((item, i) => {
             const Icon = item.icon;
             return (
               <div
                 key={i}
                 className={cn(
-                  'flex items-start gap-4 rounded-xl px-4 py-3 transition-colors',
-                  item.highlight ? 'bg-orange/5 ring-1 ring-orange/15' : 'hover:bg-muted/50'
+                  'flex items-center gap-3 px-4 py-3 transition-colors',
+                  item.highlight ? 'bg-orange/[0.02]' : 'hover:bg-gray-50'
                 )}
               >
                 <div className={cn(
-                  'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
-                  item.highlight ? 'bg-orange/10 text-orange' : 'bg-muted text-muted-foreground'
+                  'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
+                  item.highlight ? 'bg-orange/10 text-orange' : 'bg-gray-100 text-gray-400'
                 )}>
                   <Icon className="h-4 w-4" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className={cn('text-sm', item.highlight && 'font-medium text-foreground')}>
-                    {item.text}
-                  </p>
-                </div>
-                <span className="shrink-0 text-xs text-muted-foreground pt-0.5">{item.time}</span>
+                <p className={cn('text-sm flex-1 min-w-0', item.highlight ? 'font-medium text-charcoal' : 'text-gray-600')}>
+                  {item.text}
+                </p>
+                <span className="text-[10px] text-gray-400 shrink-0 font-mono">{item.time}</span>
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* Quick nav */}
+      <div>
+        <h2 className="font-heading text-base font-semibold text-charcoal mb-3">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {[
+            { label: 'Order New Leads', icon: MapPin, nav: 'farm' },
+            { label: 'View Seller Leads', icon: Users, nav: 'leads' },
+            { label: 'Check Inbox', icon: Inbox, nav: 'replies' },
+          ].map((action) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={action.nav}
+                onClick={() => onNavigate(action.nav)}
+                className="rounded-lg border border-border bg-white px-4 py-3 flex items-center gap-2.5 text-left hover:border-orange/20 hover:shadow-sm transition-all group"
+              >
+                <Icon className="h-4 w-4 text-gray-400 group-hover:text-orange transition-colors" />
+                <span className="text-xs font-medium text-charcoal">{action.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="h-12" />
     </div>
   );
 }
@@ -2970,7 +2990,7 @@ export default function AppDashboard() {
         {/* Content */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 md:pb-16">
           <FadePanel tabKey={activeTab}>
-            {activeTab === 'overview' && <OverviewTab onNavigate={handleNavClick} />}
+            {activeTab === 'overview' && <OverviewTab onNavigate={handleNavClick} pitchDrafts={pitchDrafts} deals={deals} />}
             {activeTab === 'farm' && <FarmAreaTab />}
             {activeTab === 'leads' && <LeadsTab pitchDrafts={pitchDrafts} setPitchDrafts={setPitchDrafts} contactedLeads={contactedLeads} setContactedLeads={setContactedLeads} />}
             {activeTab === 'drafts' && <DraftsTab pitchDrafts={pitchDrafts} onNavigate={handleNavClick} />}
