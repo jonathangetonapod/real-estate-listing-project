@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,13 @@ import {
   Clock,
   FileSpreadsheet,
   X,
+  Search,
+  UserCheck,
+  AlertCircle,
+  TrendingUp,
+  DollarSign,
+  Activity,
+  Power,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -69,6 +76,46 @@ const agents = [
     leadsPerMonth: 100,
     status: 'Expired',
   },
+  {
+    id: 5,
+    name: 'Amanda Foster',
+    initials: 'AF',
+    email: 'amanda.foster@email.com',
+    market: 'Denver',
+    plan: 'Pro',
+    leadsPerMonth: 250,
+    status: 'Active',
+  },
+  {
+    id: 6,
+    name: 'Carlos Rivera',
+    initials: 'CR',
+    email: 'carlos.r@email.com',
+    market: 'Tampa',
+    plan: 'Starter',
+    leadsPerMonth: 100,
+    status: 'Active',
+  },
+  {
+    id: 7,
+    name: 'Emily Watson',
+    initials: 'EW',
+    email: 'emily.watson@email.com',
+    market: 'Atlanta',
+    plan: 'Pro',
+    leadsPerMonth: 250,
+    status: 'Active',
+  },
+  {
+    id: 8,
+    name: 'Ryan Patel',
+    initials: 'RP',
+    email: 'ryan.patel@email.com',
+    market: 'Charlotte',
+    plan: 'Starter',
+    leadsPerMonth: 100,
+    status: 'Active',
+  },
 ];
 
 const pendingRequests = [
@@ -76,6 +123,7 @@ const pendingRequests = [
     id: 1,
     agentId: 1,
     agent: 'Sarah Johnson',
+    initials: 'SJ',
     market: 'Riverside Heights',
     zipCodes: ['92506', '92507'],
     leadTypes: ['Expired', 'FSBO', 'Pre-Foreclosure'],
@@ -87,6 +135,7 @@ const pendingRequests = [
     id: 2,
     agentId: 2,
     agent: 'Mike Chen',
+    initials: 'MC',
     market: 'Phoenix',
     zipCodes: ['85001', '85003', '85004'],
     leadTypes: ['All types'],
@@ -98,6 +147,7 @@ const pendingRequests = [
     id: 3,
     agentId: 3,
     agent: 'Jessica Williams',
+    initials: 'JW',
     market: 'Austin',
     zipCodes: ['78701', '78702'],
     leadTypes: ['Expired', 'High Equity'],
@@ -113,6 +163,14 @@ const previewLeads = [
   { address: '892 Sunset Blvd', owner: 'David Hernandez', type: 'Pre-Foreclosure', price: '$520,000', equity: '$310,000', email: 'dhernandez@email.com' },
   { address: '2710 Harbor View Dr', owner: 'Linda Chen', type: 'Absentee', price: '$415,000', equity: '$195,000', email: 'lchen@email.com' },
   { address: '558 Palm Ave', owner: 'Robert Williams', type: 'High Equity', price: '$349,000', equity: '$120,000', email: 'rwilliams@email.com' },
+];
+
+const recentActivity = [
+  { text: '248 leads uploaded for Sarah Johnson', time: '2h ago', highlight: true },
+  { text: 'Mike Chen requested 3 zip codes in Phoenix', time: '1d ago' },
+  { text: 'Jessica Williams activated trial account', time: '3d ago' },
+  { text: 'David Park subscription expired', time: '5d ago', warn: true },
+  { text: 'Amanda Foster upgraded to Pro plan', time: '6d ago' },
 ];
 
 const navItems = [
@@ -162,6 +220,17 @@ function typeBadgeClass(type) {
   }
 }
 
+function planBadgeClass(plan) {
+  switch (plan) {
+    case 'Pro':
+      return 'bg-orange/10 text-orange border-orange/20';
+    case 'Starter':
+      return 'bg-gray-100 text-gray-500 border-gray-200';
+    default:
+      return 'bg-muted text-muted-foreground';
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Fade wrapper
 // ---------------------------------------------------------------------------
@@ -184,102 +253,108 @@ function FadePanel({ children, tabKey }) {
 }
 
 // ---------------------------------------------------------------------------
-// View: Admin Overview
+// View: Admin Overview (Command Center)
 // ---------------------------------------------------------------------------
 
 function OverviewView({ onProcessRequest }) {
+  const [expandedRequest, setExpandedRequest] = useState(null);
+
   const metrics = [
-    { label: 'Active Agents', value: '8', accent: 'text-charcoal' },
-    { label: 'Pending Requests', value: '3', accent: 'text-orange', badge: 'needs action', badgeColor: 'bg-orange/10 text-orange' },
-    { label: 'Leads Delivered This Month', value: '1,847', accent: 'text-charcoal' },
-    { label: 'Monthly Revenue', value: '$632', accent: 'text-charcoal', mono: true },
+    { label: 'Active Agents', value: '8', icon: UserCheck, accent: 'text-charcoal', iconBg: 'bg-charcoal/5', iconColor: 'text-charcoal' },
+    { label: 'Pending Requests', value: '3', icon: AlertCircle, accent: 'text-orange', badge: 'needs action', badgeColor: 'bg-orange/10 text-orange', iconBg: 'bg-orange/5', iconColor: 'text-orange' },
+    { label: 'Leads Delivered', value: '1,847', icon: TrendingUp, accent: 'text-charcoal', iconBg: 'bg-success/5', iconColor: 'text-success' },
+    { label: 'Monthly Revenue', value: '$632', icon: DollarSign, accent: 'text-charcoal', mono: true, iconBg: 'bg-charcoal/5', iconColor: 'text-charcoal' },
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-12">
       {/* Metric cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {metrics.map((m) => (
-          <Card key={m.label} className="relative overflow-visible">
-            <CardContent className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                {m.label}
-              </p>
-              <div className="flex items-end gap-2">
-                <span
-                  className={cn(
-                    'text-3xl font-heading font-semibold leading-none',
-                    m.accent,
-                    m.mono && 'font-mono'
-                  )}
-                >
-                  {m.value}
-                </span>
-                {m.badge && (
+        {metrics.map((m) => {
+          const Icon = m.icon;
+          return (
+            <Card
+              key={m.label}
+              className="relative overflow-visible group cursor-pointer hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+            >
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    {m.label}
+                  </p>
+                  <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', m.iconBg)}>
+                    <Icon className={cn('w-4 h-4', m.iconColor)} />
+                  </div>
+                </div>
+                <div className="flex items-end gap-2">
                   <span
                     className={cn(
-                      'ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium',
-                      m.badgeColor
+                      'text-3xl font-heading font-semibold leading-none',
+                      m.accent,
+                      m.mono && 'font-mono'
                     )}
                   >
-                    {m.badge}
+                    {m.value}
                   </span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  {m.badge && (
+                    <span
+                      className={cn(
+                        'ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium',
+                        m.badgeColor
+                      )}
+                    >
+                      {m.badge}
+                    </span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      {/* Pending Lead Requests table */}
+      {/* Pending Lead Requests — expandable cards */}
       <div>
         <h2 className="font-heading text-lg font-semibold mb-4">Pending Lead Requests</h2>
-        <Card className="rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Agent</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Market</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Zip Codes</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden xl:table-cell">Lead Types</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Price Range</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Requested</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
-                  <th className="text-right px-4 py-3 font-medium text-muted-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendingRequests.map((req) => (
-                  <tr key={req.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-charcoal text-[10px] font-semibold text-white">
-                          {req.agent.split(' ').map((n) => n[0]).join('')}
-                        </div>
-                        <span className="font-medium text-foreground whitespace-nowrap">{req.agent}</span>
+        <div className="space-y-3">
+          {pendingRequests.map((req) => {
+            const isExpanded = expandedRequest === req.id;
+            return (
+              <Card
+                key={req.id}
+                className={cn(
+                  'rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group',
+                  'hover:shadow-md hover:-translate-y-0.5',
+                  isExpanded && 'ring-1 ring-orange/20 shadow-md'
+                )}
+                onClick={() => setExpandedRequest(isExpanded ? null : req.id)}
+              >
+                <CardContent className="p-0">
+                  {/* Collapsed row */}
+                  <div className="flex items-center gap-3 px-4 py-3.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-charcoal text-[11px] font-semibold text-white">
+                      {req.initials}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-sm text-foreground">{req.agent}</span>
+                        <span className="text-xs text-muted-foreground">{req.market}</span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{req.market}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground hidden lg:table-cell">
-                      {req.zipCodes.join(', ')}
-                    </td>
-                    <td className="px-4 py-3 hidden xl:table-cell">
-                      <div className="flex flex-wrap gap-1">
-                        {req.leadTypes.map((t) => (
-                          <span key={t} className="inline-block rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
-                            {t}
-                          </span>
-                        ))}
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        <span className="font-mono text-[11px] text-muted-foreground">
+                          {req.zipCodes.join(', ')}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground/50">|</span>
+                        <span className="text-[11px] text-muted-foreground">
+                          {req.leadTypes.join(', ')}
+                        </span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground hidden md:table-cell">
-                      {req.priceRange}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground hidden sm:table-cell whitespace-nowrap">
-                      {req.requested}
-                    </td>
-                    <td className="px-4 py-3">
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="text-[11px] text-muted-foreground hidden sm:inline-flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {req.requested}
+                      </span>
                       <span
                         className={cn(
                           'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium',
@@ -288,32 +363,117 @@ function OverviewView({ onProcessRequest }) {
                       >
                         {req.status}
                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {req.status === 'Pending' ? (
-                        <Button
-                          size="sm"
-                          className="rounded-lg bg-orange text-white hover:bg-orange/90 text-xs"
-                          onClick={() => onProcessRequest(req)}
-                        >
-                          Process
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="rounded-lg text-xs"
-                          onClick={() => onProcessRequest(req)}
-                        >
-                          <Upload className="w-3 h-3 mr-1" />
-                          Upload
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <ChevronDown
+                        className={cn(
+                          'w-4 h-4 text-muted-foreground transition-transform duration-200',
+                          isExpanded && 'rotate-180'
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Expanded details */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="border-t border-border px-4 py-4 bg-muted/10">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                            <div>
+                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Market</p>
+                              <p className="text-sm font-medium text-foreground">{req.market}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Zip Codes</p>
+                              <p className="text-sm font-mono text-foreground">{req.zipCodes.join(', ')}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Price Range</p>
+                              <p className="text-sm font-mono text-foreground">{req.priceRange}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Lead Types</p>
+                              <div className="flex flex-wrap gap-1">
+                                {req.leadTypes.map((t) => (
+                                  <span key={t} className="inline-block rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                                    {t}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-end gap-2">
+                            {req.status === 'Pending' ? (
+                              <Button
+                                size="sm"
+                                className="rounded-lg bg-orange text-white hover:bg-orange/90 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onProcessRequest(req);
+                                }}
+                              >
+                                Process Request
+                                <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="rounded-lg text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onProcessRequest(req);
+                                }}
+                              >
+                                <Upload className="w-3 h-3 mr-1" />
+                                Upload Leads
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Recent Activity Feed */}
+      <div>
+        <h2 className="font-heading text-lg font-semibold mb-4">Recent Activity</h2>
+        <Card className="rounded-xl overflow-hidden">
+          <div className="divide-y divide-border">
+            {recentActivity.map((item, i) => (
+              <div
+                key={i}
+                className={cn(
+                  'flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/30',
+                  item.highlight && 'bg-orange/[0.02]',
+                  item.warn && 'bg-danger/[0.02]'
+                )}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className={cn(
+                      'w-2 h-2 rounded-full shrink-0',
+                      item.highlight ? 'bg-orange' : item.warn ? 'bg-danger' : 'bg-gray-300'
+                    )}
+                  />
+                  <p className={cn('text-[13px]', item.highlight ? 'font-medium text-charcoal' : 'text-gray-600')}>
+                    {item.text}
+                  </p>
+                </div>
+                <span className="text-[11px] text-gray-400 shrink-0 ml-3 font-mono">{item.time}</span>
+              </div>
+            ))}
           </div>
         </Card>
       </div>
@@ -330,6 +490,7 @@ function UploadLeadsView({ preselectedAgent }) {
     preselectedAgent ? preselectedAgent.agentId : null
   );
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [agentSearch, setAgentSearch] = useState('');
   const [file, setFile] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [uploaded, setUploaded] = useState(false);
@@ -337,6 +498,20 @@ function UploadLeadsView({ preselectedAgent }) {
   const fileInputRef = useRef(null);
 
   const selectedAgent = agents.find((a) => a.id === selectedAgentId);
+
+  const filteredAgents = useMemo(() => {
+    if (!agentSearch.trim()) return agents;
+    const q = agentSearch.toLowerCase();
+    return agents.filter(
+      (a) =>
+        a.name.toLowerCase().includes(q) ||
+        a.email.toLowerCase().includes(q) ||
+        a.market.toLowerCase().includes(q)
+    );
+  }, [agentSearch]);
+
+  // Compute current step
+  const currentStep = uploaded ? 3 : showPreview ? 3 : selectedAgentId && !file ? 2 : selectedAgentId && file ? 3 : 1;
 
   function handleDragOver(e) {
     e.preventDefault();
@@ -371,41 +546,121 @@ function UploadLeadsView({ preselectedAgent }) {
     setShowPreview(true);
   }
 
+  // Step indicator component
+  const steps = [
+    { num: 1, label: 'Select Agent' },
+    { num: 2, label: 'Upload CSV' },
+    { num: 3, label: 'Preview & Assign' },
+  ];
+
+  function StepIndicator() {
+    return (
+      <div className="flex items-center justify-center gap-0 mb-8">
+        {steps.map((step, i) => {
+          const isActive = currentStep === step.num;
+          const isComplete = currentStep > step.num;
+          return (
+            <div key={step.num} className="flex items-center">
+              <div className="flex items-center gap-2">
+                <div
+                  className={cn(
+                    'w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all',
+                    isComplete
+                      ? 'bg-success text-white'
+                      : isActive
+                      ? 'bg-orange text-white'
+                      : 'bg-gray-100 text-gray-400'
+                  )}
+                >
+                  {isComplete ? (
+                    <CheckCircle2 className="w-4 h-4" />
+                  ) : (
+                    step.num
+                  )}
+                </div>
+                <span
+                  className={cn(
+                    'text-xs font-medium hidden sm:block',
+                    isActive ? 'text-charcoal' : isComplete ? 'text-success' : 'text-gray-400'
+                  )}
+                >
+                  {step.label}
+                </span>
+              </div>
+              {i < steps.length - 1 && (
+                <div
+                  className={cn(
+                    'w-8 sm:w-12 h-px mx-2',
+                    isComplete ? 'bg-success' : 'bg-gray-200'
+                  )}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Lead type breakdown data for bar chart
+  const leadBreakdown = [
+    { type: 'Expired', count: 94, total: 248 },
+    { type: 'FSBO', count: 62, total: 248 },
+    { type: 'Pre-Foreclosure', count: 38, total: 248 },
+    { type: 'Absentee', count: 28, total: 248 },
+    { type: 'High Equity', count: 26, total: 248 },
+  ];
+
+  function barColor(type) {
+    switch (type) {
+      case 'Expired': return 'bg-danger';
+      case 'FSBO': return 'bg-orange';
+      case 'Pre-Foreclosure': return 'bg-yellow-500';
+      case 'Absentee': return 'bg-blue-500';
+      case 'High Equity': return 'bg-success';
+      default: return 'bg-gray-400';
+    }
+  }
+
   // Success state
   if (uploaded && selectedAgent) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="max-w-2xl mx-auto text-center py-20"
-      >
-        <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6">
-          <CheckCircle2 className="w-8 h-8 text-success" />
-        </div>
-        <h2 className="font-heading text-3xl font-bold text-charcoal mb-3">
-          248 leads assigned to {selectedAgent.name}
-        </h2>
-        <p className="font-sans text-lg text-gray-500 mb-2">
-          AI drafts will be generated automatically
-        </p>
-        <p className="font-sans text-base text-gray-400 mb-8">
-          {selectedAgent.name} will see these leads in her dashboard on next login.
-        </p>
-        <div className="inline-flex items-center gap-3 rounded-xl bg-light-bg border border-gray-200 px-6 py-4">
-          <CheckCircle2 className="w-5 h-5 text-success" />
-          <div className="text-left">
-            <div className="font-sans text-sm font-semibold text-charcoal">Upload complete</div>
-            <div className="font-mono text-xs text-gray-500">248 leads, {selectedAgent.market}</div>
+      <div className="pb-12">
+        <StepIndicator />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-2xl mx-auto text-center py-20"
+        >
+          <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-8 h-8 text-success" />
           </div>
-        </div>
-      </motion.div>
+          <h2 className="font-heading text-3xl font-bold text-charcoal mb-3">
+            248 leads assigned to {selectedAgent.name}
+          </h2>
+          <p className="font-sans text-lg text-gray-500 mb-2">
+            AI drafts will be generated automatically
+          </p>
+          <p className="font-sans text-base text-gray-400 mb-8">
+            {selectedAgent.name} will see these leads in their dashboard on next login.
+          </p>
+          <div className="inline-flex items-center gap-3 rounded-xl bg-light-bg border border-gray-200 px-6 py-4">
+            <CheckCircle2 className="w-5 h-5 text-success" />
+            <div className="text-left">
+              <div className="font-sans text-sm font-semibold text-charcoal">Upload complete</div>
+              <div className="font-mono text-xs text-gray-500">248 leads, {selectedAgent.market}</div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
     );
   }
 
   // Preview state
   if (showPreview && selectedAgent) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6 pb-12">
+        <StepIndicator />
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-heading text-2xl font-bold text-charcoal mb-1">Upload Preview</h2>
@@ -429,26 +684,46 @@ function UploadLeadsView({ preselectedAgent }) {
           </Button>
         </div>
 
-        {/* Lead type breakdown */}
-        <div className="flex flex-wrap gap-3">
-          {[
-            { type: 'Expired', count: 94 },
-            { type: 'FSBO', count: 62 },
-            { type: 'Pre-Foreclosure', count: 38 },
-            { type: 'Absentee', count: 28 },
-            { type: 'High Equity', count: 26 },
-          ].map((item) => (
-            <div
-              key={item.type}
-              className={cn(
-                'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium',
-                typeBadgeClass(item.type)
-              )}
-            >
-              {item.type}: <span className="font-mono">{item.count}</span>
+        {/* Data quality indicator */}
+        <Card className="rounded-xl">
+          <CardContent className="py-3 px-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-success" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-charcoal">98% complete</span>
+                  <span className="text-xs text-muted-foreground">5 leads missing email</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-1.5 mt-1.5">
+                  <div className="bg-success h-1.5 rounded-full" style={{ width: '98%' }} />
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
+          </CardContent>
+        </Card>
+
+        {/* Lead type breakdown — horizontal bar chart */}
+        <Card className="rounded-xl">
+          <CardContent className="py-4 px-4">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Lead Type Breakdown</p>
+            <div className="space-y-2.5">
+              {leadBreakdown.map((item) => (
+                <div key={item.type} className="flex items-center gap-3">
+                  <span className="text-xs font-medium text-foreground w-28 shrink-0">{item.type}</span>
+                  <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className={cn('h-full rounded-full transition-all', barColor(item.type))}
+                      style={{ width: `${(item.count / item.total) * 100}%` }}
+                    />
+                  </div>
+                  <span className="font-mono text-xs text-muted-foreground w-8 text-right">{item.count}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Preview table */}
         <Card className="rounded-xl overflow-hidden">
@@ -466,7 +741,7 @@ function UploadLeadsView({ preselectedAgent }) {
               </thead>
               <tbody>
                 {previewLeads.map((lead) => (
-                  <tr key={lead.address} className="border-b border-border last:border-0">
+                  <tr key={lead.address} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
                     <td className="px-4 py-3 font-medium text-foreground whitespace-nowrap">{lead.address}</td>
                     <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{lead.owner}</td>
                     <td className="px-4 py-3">
@@ -527,11 +802,12 @@ function UploadLeadsView({ preselectedAgent }) {
 
   // Default: agent selector + file upload
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="max-w-3xl mx-auto space-y-8 pb-12">
+      <StepIndicator />
       <div>
         <h2 className="font-heading text-2xl font-bold text-charcoal mb-2">Upload Leads</h2>
         <p className="font-sans text-base text-gray-500">
-          Upload a PropStream CSV and assign leads to an agent.
+          Upload a CSV and assign leads to an agent.
         </p>
       </div>
 
@@ -574,35 +850,56 @@ function UploadLeadsView({ preselectedAgent }) {
                   transition={{ duration: 0.15 }}
                   className="absolute top-full left-0 right-0 z-20 mt-1 rounded-lg border border-border bg-white shadow-lg"
                 >
-                  {agents.map((agent) => (
-                    <button
-                      key={agent.id}
-                      onClick={() => {
-                        setSelectedAgentId(agent.id);
-                        setDropdownOpen(false);
-                      }}
-                      className={cn(
-                        'flex w-full items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-muted/50 first:rounded-t-lg last:rounded-b-lg',
-                        selectedAgentId === agent.id && 'bg-muted/30'
-                      )}
-                    >
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-charcoal text-[10px] font-semibold text-white">
-                        {agent.initials}
-                      </div>
-                      <div className="text-left">
-                        <p className="font-medium text-foreground">{agent.name}</p>
-                        <p className="text-xs text-muted-foreground">{agent.market}</p>
-                      </div>
-                      <span
-                        className={cn(
-                          'ml-auto inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium',
-                          statusBadgeClass(agent.status)
-                        )}
-                      >
-                        {agent.status}
-                      </span>
-                    </button>
-                  ))}
+                  {/* Search input inside dropdown */}
+                  <div className="p-2 border-b border-border">
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                      <input
+                        type="text"
+                        placeholder="Search agents..."
+                        value={agentSearch}
+                        onChange={(e) => setAgentSearch(e.target.value)}
+                        className="w-full pl-8 pr-3 py-2 text-sm rounded-md border border-border bg-muted/20 placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-orange/30"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                  </div>
+                  <div className="max-h-60 overflow-y-auto">
+                    {filteredAgents.length === 0 ? (
+                      <div className="px-4 py-3 text-sm text-muted-foreground text-center">No agents found</div>
+                    ) : (
+                      filteredAgents.map((agent) => (
+                        <button
+                          key={agent.id}
+                          onClick={() => {
+                            setSelectedAgentId(agent.id);
+                            setDropdownOpen(false);
+                            setAgentSearch('');
+                          }}
+                          className={cn(
+                            'flex w-full items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-muted/50',
+                            selectedAgentId === agent.id && 'bg-muted/30'
+                          )}
+                        >
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-charcoal text-[10px] font-semibold text-white">
+                            {agent.initials}
+                          </div>
+                          <div className="text-left">
+                            <p className="font-medium text-foreground">{agent.name}</p>
+                            <p className="text-xs text-muted-foreground">{agent.market}</p>
+                          </div>
+                          <span
+                            className={cn(
+                              'ml-auto inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium',
+                              statusBadgeClass(agent.status)
+                            )}
+                          >
+                            {agent.status}
+                          </span>
+                        </button>
+                      ))
+                    )}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -626,12 +923,12 @@ function UploadLeadsView({ preselectedAgent }) {
               }
             }}
             className={cn(
-              'relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-12 text-center transition-colors',
+              'relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-12 text-center transition-all duration-200',
               !selectedAgent && 'opacity-50 cursor-not-allowed',
               selectedAgent && 'cursor-pointer',
               isDragging
                 ? 'border-orange bg-orange/5'
-                : 'border-gray-300 hover:border-gray-400'
+                : 'border-gray-300 hover:border-gray-400 hover:bg-muted/20'
             )}
           >
             <input
@@ -646,13 +943,15 @@ function UploadLeadsView({ preselectedAgent }) {
               <FileSpreadsheet className="w-6 h-6 text-muted-foreground" />
             </div>
             <p className="font-sans text-base font-medium text-charcoal mb-1">
-              Drop your PropStream CSV here
+              Drop your CSV here
             </p>
             <p className="font-sans text-sm text-gray-400">
               or{' '}
               <span className="text-orange font-medium">click to browse</span>
             </p>
-            <p className="font-sans text-xs text-gray-300 mt-3">Accepted format: .csv</p>
+            <p className="font-sans text-xs text-gray-400 mt-3">
+              Supports CREXI, PropStream, and custom CSV formats
+            </p>
           </div>
 
           {!selectedAgent && (
@@ -684,9 +983,28 @@ function UploadLeadsView({ preselectedAgent }) {
 // ---------------------------------------------------------------------------
 
 function AgentsView() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedAgent, setExpandedAgent] = useState(null);
+
+  const filteredAgents = useMemo(() => {
+    if (!searchQuery.trim()) return agents;
+    const q = searchQuery.toLowerCase();
+    return agents.filter(
+      (a) =>
+        a.name.toLowerCase().includes(q) ||
+        a.email.toLowerCase().includes(q) ||
+        a.market.toLowerCase().includes(q)
+    );
+  }, [searchQuery]);
+
+  const totalAgents = agents.length;
+  const activeCount = agents.filter((a) => a.status === 'Active').length;
+  const trialCount = agents.filter((a) => a.status === 'Trial').length;
+  const expiredCount = agents.filter((a) => a.status === 'Expired').length;
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 pb-12">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="font-heading text-2xl font-bold text-charcoal mb-1">Agents</h2>
           <p className="font-sans text-base text-gray-500">Manage all registered agents.</p>
@@ -696,78 +1014,196 @@ function AgentsView() {
         </Button>
       </div>
 
-      <Card className="rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/30">
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Agent</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Email</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Market</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Plan</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden xl:table-cell">Leads/Month</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {agents.map((agent) => (
-                <tr
-                  key={agent.id}
-                  className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors"
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-charcoal text-[10px] font-semibold text-white">
-                        {agent.initials}
+      {/* Summary stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: 'Total', value: totalAgents, color: 'text-charcoal', bg: 'bg-charcoal/5' },
+          { label: 'Active', value: activeCount, color: 'text-success', bg: 'bg-success/5' },
+          { label: 'Trial', value: trialCount, color: 'text-orange', bg: 'bg-orange/5' },
+          { label: 'Expired', value: expiredCount, color: 'text-danger', bg: 'bg-danger/5' },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            className={cn('rounded-xl border border-gray-100 bg-white p-3', stat.bg)}
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+              {stat.label}
+            </p>
+            <p className={cn('text-2xl font-heading font-bold leading-none', stat.color)}>
+              {stat.value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Search bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <input
+          type="text"
+          placeholder="Search by name, email, or market..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-border bg-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange/40 transition-all"
+        />
+      </div>
+
+      {/* Agent cards */}
+      <div className="space-y-2">
+        {filteredAgents.length === 0 ? (
+          <Card className="rounded-xl">
+            <CardContent className="py-12 text-center">
+              <p className="text-sm text-muted-foreground">No agents match your search.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredAgents.map((agent) => {
+            const isExpanded = expandedAgent === agent.id;
+            return (
+              <Card
+                key={agent.id}
+                className={cn(
+                  'rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group',
+                  'hover:shadow-md hover:-translate-y-0.5',
+                  isExpanded && 'ring-1 ring-orange/20 shadow-md'
+                )}
+                onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}
+              >
+                <CardContent className="p-0">
+                  {/* Collapsed row */}
+                  <div className="flex items-center gap-3 px-4 py-3.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-charcoal text-[11px] font-semibold text-white">
+                      {agent.initials}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-sm text-foreground">{agent.name}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:inline">{agent.email}</span>
                       </div>
-                      <span className="font-medium text-foreground whitespace-nowrap">
-                        {agent.name}
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs text-muted-foreground">{agent.market}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span
+                        className={cn(
+                          'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium hidden md:inline-flex',
+                          planBadgeClass(agent.plan)
+                        )}
+                      >
+                        {agent.plan}
                       </span>
+                      <span className="font-mono text-xs text-muted-foreground hidden lg:block">
+                        {agent.leadsPerMonth}/mo
+                      </span>
+                      <span
+                        className={cn(
+                          'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium',
+                          statusBadgeClass(agent.status)
+                        )}
+                      >
+                        {agent.status}
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          'w-4 h-4 text-muted-foreground transition-transform duration-200',
+                          isExpanded && 'rotate-180'
+                        )}
+                      />
                     </div>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
-                    {agent.email}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell whitespace-nowrap">
-                    {agent.market}
-                  </td>
-                  <td className="px-4 py-3 hidden lg:table-cell">
-                    <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                      {agent.plan}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground hidden xl:table-cell">
-                    {agent.leadsPerMonth}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={cn(
-                        'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium',
-                        statusBadgeClass(agent.status)
-                      )}
-                    >
-                      {agent.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button variant="outline" size="sm" className="rounded-lg text-xs">
-                        <Eye className="w-3 h-3 mr-1" />
-                        View
-                      </Button>
-                      <Button variant="outline" size="sm" className="rounded-lg text-xs">
-                        <Wrench className="w-3 h-3 mr-1" />
-                        Manage
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+                  </div>
+
+                  {/* Expanded details */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="border-t border-border px-4 py-4 bg-muted/10">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                            <div>
+                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Email</p>
+                              <p className="text-sm text-foreground truncate">{agent.email}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Market</p>
+                              <p className="text-sm font-medium text-foreground">{agent.market}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Plan</p>
+                              <span
+                                className={cn(
+                                  'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium',
+                                  planBadgeClass(agent.plan)
+                                )}
+                              >
+                                {agent.plan}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Leads/Month</p>
+                              <p className="text-sm font-mono text-foreground">{agent.leadsPerMonth}</p>
+                            </div>
+                          </div>
+
+                          {/* Recent activity for this agent */}
+                          <div className="mb-4">
+                            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2">Recent Activity</p>
+                            <div className="rounded-lg border border-border bg-white divide-y divide-border">
+                              <div className="px-3 py-2 flex items-center justify-between">
+                                <span className="text-xs text-gray-600">Last lead upload</span>
+                                <span className="text-[11px] font-mono text-muted-foreground">3d ago</span>
+                              </div>
+                              <div className="px-3 py-2 flex items-center justify-between">
+                                <span className="text-xs text-gray-600">Last login</span>
+                                <span className="text-[11px] font-mono text-muted-foreground">1d ago</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Quick actions */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Button
+                              size="sm"
+                              className="rounded-lg bg-orange text-white hover:bg-orange/90 text-xs"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Upload className="w-3 h-3 mr-1" />
+                              Upload Leads
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="rounded-lg text-xs"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Wrench className="w-3 h-3 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="rounded-lg text-xs text-danger border-danger/20 hover:bg-danger/5"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Power className="w-3 h-3 mr-1" />
+                              Deactivate
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </CardContent>
+              </Card>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }
@@ -900,7 +1336,7 @@ export function AdminDashboard() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-16">
           <FadePanel tabKey={activeNav}>
             {activeNav === 'dashboard' && (
               <OverviewView onProcessRequest={handleProcessRequest} />
@@ -916,7 +1352,7 @@ export function AdminDashboard() {
               />
             )}
             {activeNav === 'payments' && (
-              <div className="max-w-2xl mx-auto text-center py-20">
+              <div className="max-w-2xl mx-auto text-center py-20 pb-12">
                 <CreditCard className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <h2 className="font-heading text-2xl font-bold text-charcoal mb-2">Payments</h2>
                 <p className="font-sans text-base text-gray-400">
@@ -925,7 +1361,7 @@ export function AdminDashboard() {
               </div>
             )}
             {activeNav === 'settings' && (
-              <div className="max-w-2xl mx-auto text-center py-20">
+              <div className="max-w-2xl mx-auto text-center py-20 pb-12">
                 <Settings className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <h2 className="font-heading text-2xl font-bold text-charcoal mb-2">Settings</h2>
                 <p className="font-sans text-base text-gray-400">
