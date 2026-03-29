@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { createLeadOrder, getAgentOrders, getLeadsByOrder } from '@/lib/leads';
-import { suggestDomains, setupDomain, getJob, bulkCreateEmailUsers } from '@/lib/winnr';
+import { suggestDomains, setupDomain, getJob, bulkCreateEmailUsers, setupRedirect } from '@/lib/winnr';
 import { supabase } from '@/lib/supabase';
 import {
   LayoutDashboard,
@@ -3982,34 +3982,99 @@ function DomainSlideOver({
           )}
 
           {/* Step 4: Done */}
-          {domainStep === 'done' && (
-            <div className="space-y-6 text-center">
-              <div className="mx-auto w-14 h-14 rounded-full bg-success/10 flex items-center justify-center">
-                <Check className="h-7 w-7 text-success" />
-              </div>
-              <div>
-                <p className="font-heading text-lg font-semibold text-charcoal">Domain ready!</p>
-                <p className="text-sm text-muted-foreground mt-1">Create your first mailbox to start sending.</p>
-              </div>
-              <div className="space-y-3">
-                {provisioningSteps.map((step) => (
-                  <div key={step} className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center">
-                      <Check className="h-3.5 w-3.5 text-success" />
-                    </div>
-                    <span className="text-sm text-charcoal font-medium">{step}</span>
+          {domainStep === 'done' && (() => {
+            const [redirectUrl, setRedirectUrl] = useState('');
+            const [redirectSaving, setRedirectSaving] = useState(false);
+            const [redirectSaved, setRedirectSaved] = useState(false);
+
+            const handleSaveRedirect = async () => {
+              if (!redirectUrl.trim()) {
+                // Skip redirect — go straight to mailbox creation
+                onComplete();
+                return;
+              }
+              setRedirectSaving(true);
+              try {
+                // Get the Winnr domain ID
+                const winnrId = selectedDomain?.winnrDomainId || null;
+                if (winnrId) {
+                  let url = redirectUrl.trim();
+                  if (!url.startsWith('http')) url = `https://${url}`;
+                  await setupRedirect(winnrId, url);
+                }
+                setRedirectSaved(true);
+                setTimeout(() => onComplete(), 1000);
+              } catch (err) {
+                console.error('Redirect setup failed:', err);
+                // Still proceed even if redirect fails
+                onComplete();
+              }
+              setRedirectSaving(false);
+            };
+
+            return (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <div className="mx-auto w-14 h-14 rounded-full bg-success/10 flex items-center justify-center mb-4">
+                    <Check className="h-7 w-7 text-success" />
                   </div>
-                ))}
+                  <p className="font-heading text-lg font-semibold text-charcoal">Domain ready!</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    <span className="font-mono text-charcoal">{selectedDomain?.domain}</span> is configured and ready to go.
+                  </p>
+                </div>
+
+                {/* Redirect setup */}
+                <div className="rounded-xl border border-border bg-white p-5 space-y-3">
+                  <div>
+                    <p className="text-sm font-semibold text-charcoal">Set up domain redirect</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      When someone types <span className="font-mono">{selectedDomain?.domain}</span> in a browser, where should it go?
+                    </p>
+                  </div>
+                  <Input
+                    placeholder="https://yourwebsite.com"
+                    className="h-10 text-sm font-mono"
+                    value={redirectUrl}
+                    onChange={(e) => setRedirectUrl(e.target.value)}
+                    disabled={redirectSaved}
+                  />
+                  <p className="text-[10px] text-gray-400">
+                    Your website, brokerage page, or any URL. This doesn&apos;t affect email sending.
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-2">
+                  {redirectSaved ? (
+                    <div className="flex items-center justify-center gap-2 text-sm text-success font-medium py-2">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Redirect saved! Setting up mailboxes...
+                    </div>
+                  ) : (
+                    <>
+                      <Button
+                        className="w-full bg-orange text-white hover:bg-orange-hover rounded-lg h-10 text-sm font-medium"
+                        onClick={handleSaveRedirect}
+                        disabled={redirectSaving}
+                      >
+                        {redirectSaving ? (
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving...</>
+                        ) : redirectUrl.trim() ? (
+                          <><Globe className="h-4 w-4 mr-2" />Save Redirect & Create Mailboxes</>
+                        ) : (
+                          <><Mail className="h-4 w-4 mr-2" />Skip & Create Mailboxes</>
+                        )}
+                      </Button>
+                      <p className="text-[10px] text-gray-400 text-center">
+                        You can always change the redirect later in settings.
+                      </p>
+                    </>
+                  )}
+                </div>
               </div>
-              <Button
-                className="bg-orange text-white hover:bg-orange-hover rounded-lg h-10 px-6 text-sm font-medium"
-                onClick={onComplete}
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Create Mailbox
-              </Button>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </motion.div>
     </>
