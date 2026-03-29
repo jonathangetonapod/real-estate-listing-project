@@ -124,23 +124,6 @@ export default function LoginPage() {
             More listing appointments. Less cold calling. One platform to close.
           </p>
 
-          {/* Social proof */}
-          <div className="flex items-center gap-6 mt-8 pt-8 border-t border-white/[0.06]">
-            <div>
-              <p className="font-mono text-2xl font-bold text-orange">2,400+</p>
-              <p className="font-sans text-xs text-white/30">agents onboarded</p>
-            </div>
-            <div className="w-px h-10 bg-white/[0.06]" />
-            <div>
-              <p className="font-mono text-2xl font-bold text-white">7.5%</p>
-              <p className="font-sans text-xs text-white/30">avg reply rate</p>
-            </div>
-            <div className="w-px h-10 bg-white/[0.06]" />
-            <div>
-              <p className="font-mono text-2xl font-bold text-white">$12K</p>
-              <p className="font-sans text-xs text-white/30">avg first deal GCI</p>
-            </div>
-          </div>
         </motion.div>
       </div>
 
