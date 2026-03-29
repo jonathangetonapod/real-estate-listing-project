@@ -141,7 +141,7 @@ function HookScene() {
           fontFamily: bodyFont, fontSize: 28, color: "rgba(255,255,255,0.4)",
           marginTop: 32, opacity: subtitleOpacity, transform: `translateY(${subtitleY}px)`,
         }}>
-          There&apos;s a smarter way to fill your pipeline.
+          3-step sequences. Verified leads. One platform.
         </div>
       </AbsoluteFill>
     </GradientBG>
@@ -240,7 +240,7 @@ function ProblemScene() {
   );
 }
 
-// Scene 3: Solution — animated email preview
+// Scene 3: Solution — 3-step sequence preview with A/B/C variations
 function SolutionScene() {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -260,6 +260,17 @@ function SolutionScene() {
   // Highlight words in the email
   const highlightDelay = 230;
 
+  // Step tabs
+  const stepTabs = [
+    { label: "Step 1 \u00B7 Initial Outreach", active: true },
+    { label: "Step 2 \u00B7 Follow-Up", active: false },
+    { label: "Step 3 \u00B7 Final Touch", active: false },
+  ];
+  const tabsEnter = spring({ frame, fps, config: { damping: 15 }, delay: 50 });
+
+  // A/B/C variation picker
+  const variationEnter = spring({ frame, fps, config: { damping: 15 }, delay: 60 });
+
   return (
     <GradientBG color1={CHARCOAL} color2="#1a2420">
       <Particles count={10} color="rgba(255,89,36,0.06)" />
@@ -269,8 +280,8 @@ function SolutionScene() {
           textAlign: "center", opacity: headlineOpacity, transform: `translateY(${headlineY}px)`,
           marginBottom: 48, lineHeight: 1.15,
         }}>
-          AI writes the pitch.{" "}
-          <span style={{ color: ORANGE, fontStyle: "italic" }}>You close the deal.</span>
+          AI writes 3-step sequences.{" "}
+          <span style={{ color: ORANGE, fontStyle: "italic" }}>You pick the variation.</span>
         </div>
 
         {/* Email mockup */}
@@ -279,6 +290,51 @@ function SolutionScene() {
           transform: `scale(${emailEnter})`,
           boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
         }}>
+          {/* Step tabs */}
+          <div style={{
+            display: "flex", borderBottom: "1px solid #eee",
+            transform: `scale(${tabsEnter})`, transformOrigin: "top center",
+          }}>
+            {stepTabs.map((tab, i) => (
+              <div key={i} style={{
+                flex: 1, padding: "12px 16px", textAlign: "center",
+                fontFamily: monoFont, fontSize: 12, fontWeight: tab.active ? 700 : 400,
+                color: tab.active ? ORANGE : "#999",
+                borderBottom: tab.active ? `3px solid ${ORANGE}` : "3px solid transparent",
+                background: tab.active ? `${ORANGE}05` : "transparent",
+              }}>
+                {tab.label}
+              </div>
+            ))}
+          </div>
+
+          {/* Timing indicator + A/B/C picker row */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "8px 24px", borderBottom: "1px solid #f0f0f0",
+            transform: `scale(${variationEnter})`, transformOrigin: "top center",
+          }}>
+            <div style={{ fontFamily: monoFont, fontSize: 11, color: SUCCESS }}>
+              Sends immediately
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontFamily: bodyFont, fontSize: 11, color: "#999", marginRight: 4 }}>Variation:</span>
+              {["A", "B", "C"].map((v, i) => (
+                <div key={v} style={{
+                  width: 26, height: 26, borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontFamily: monoFont, fontSize: 11, fontWeight: 700,
+                  background: i === 0 ? ORANGE : "#f0f0f0",
+                  color: i === 0 ? WHITE : "#999",
+                  border: i === 0 ? "none" : "1px solid #ddd",
+                  cursor: "pointer",
+                }}>
+                  {v}
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Email header */}
           <div style={{
             padding: "16px 24px", borderBottom: "1px solid #eee",
@@ -374,10 +430,11 @@ function HowItWorksScene() {
   const { fps } = useVideoConfig();
 
   const steps = [
-    { num: 1, title: "Tell us your zip codes", desc: "We find sellers in 12 hours", startFrame: 40 },
-    { num: 2, title: "Get verified leads", desc: "250 leads with skip-traced emails", startFrame: 100 },
-    { num: 3, title: "AI drafts your pitch", desc: "Property-specific, sounds like you", startFrame: 160 },
-    { num: 4, title: "Replies hit your dashboard", desc: "Track and close from one place", startFrame: 220 },
+    { num: 1, title: "Pick your zip codes", desc: "We find 250+ verified sellers", startFrame: 30 },
+    { num: 2, title: "Review 3-step sequences", desc: "A/B/C variations per step", startFrame: 80 },
+    { num: 3, title: "Approve and send", desc: "Sequences auto-deploy on business days", startFrame: 130 },
+    { num: 4, title: "Manage your Inbox", desc: "Reply to sellers, tag conversations", startFrame: 180 },
+    { num: 5, title: "Close in your pipeline", desc: "Positive Reply \u2192 Closed", startFrame: 230 },
   ];
 
   const labelOpacity = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" });
@@ -395,24 +452,24 @@ function HowItWorksScene() {
         fontFamily: headingFont, fontSize: 52, fontWeight: 700, color: CHARCOAL,
         marginBottom: 80, transform: `scale(${titleScale})`,
       }}>
-        Four steps. That&apos;s it.
+        Five steps to your next listing.
       </div>
 
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 24, position: "relative" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, position: "relative" }}>
         {steps.map((step, i) => {
           const enter = spring({ frame, fps, config: { damping: 12 }, delay: step.startFrame });
           const lineProgress = i < steps.length - 1
-            ? interpolate(frame, [step.startFrame + 30, steps[i + 1].startFrame], [0, 1], {
+            ? interpolate(frame, [step.startFrame + 20, steps[i + 1].startFrame], [0, 1], {
                 extrapolateLeft: "clamp", extrapolateRight: "clamp",
               })
             : 0;
 
           return (
-            <div key={step.num} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 260, position: "relative" }}>
+            <div key={step.num} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 200, position: "relative" }}>
               {/* Connecting line */}
               {i < steps.length - 1 && (
                 <div style={{
-                  position: "absolute", top: 28, left: "calc(50% + 40px)", width: 180,
+                  position: "absolute", top: 24, left: "calc(50% + 30px)", width: 130,
                   height: 3, background: `${ORANGE}15`, borderRadius: 2, overflow: "hidden",
                 }}>
                   <div style={{
@@ -426,17 +483,17 @@ function HowItWorksScene() {
                 transform: `scale(${enter})`, display: "flex", flexDirection: "column", alignItems: "center",
               }}>
                 <div style={{
-                  width: 56, height: 56, borderRadius: 14, background: CHARCOAL,
+                  width: 48, height: 48, borderRadius: 12, background: CHARCOAL,
                   color: WHITE, display: "flex", alignItems: "center", justifyContent: "center",
-                  fontFamily: monoFont, fontSize: 22, fontWeight: 700, marginBottom: 20,
+                  fontFamily: monoFont, fontSize: 20, fontWeight: 700, marginBottom: 16,
                   boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 }}>
                   {step.num}
                 </div>
-                <div style={{ fontFamily: headingFont, fontSize: 20, fontWeight: 700, color: CHARCOAL, marginBottom: 8, textAlign: "center" }}>
+                <div style={{ fontFamily: headingFont, fontSize: 17, fontWeight: 700, color: CHARCOAL, marginBottom: 6, textAlign: "center" }}>
                   {step.title}
                 </div>
-                <div style={{ fontFamily: bodyFont, fontSize: 15, color: "#888", textAlign: "center" }}>
+                <div style={{ fontFamily: bodyFont, fontSize: 13, color: "#888", textAlign: "center" }}>
                   {step.desc}
                 </div>
               </div>
@@ -455,8 +512,8 @@ function StatsScene() {
 
   const stats = [
     { value: 250, suffix: "", label: "verified leads/month", delay: 20 },
-    { value: 12, suffix: "hrs", label: "lead turnaround", delay: 35 },
-    { value: 94, suffix: "%", label: "inbox placement", delay: 50 },
+    { value: 3, suffix: "", label: "step sequences", delay: 35 },
+    { value: 5, suffix: "", label: "pipeline stages", delay: 50 },
     { value: 99, prefix: "$", suffix: "", label: "per month", delay: 65 },
   ];
 
@@ -607,8 +664,8 @@ export const OffMarketVideo: React.FC = () => {
         timing={linearTiming({ durationInFrames: 20 })}
       />
 
-      {/* Scene 4: How It Works (10s) */}
-      <TransitionSeries.Sequence durationInFrames={330}>
+      {/* Scene 4: How It Works (12s) */}
+      <TransitionSeries.Sequence durationInFrames={360}>
         <HowItWorksScene />
       </TransitionSeries.Sequence>
       <TransitionSeries.Transition
