@@ -3175,10 +3175,22 @@ function EmailAccountsTab() {
             <Globe className="h-7 w-7 text-orange" />
           </div>
           <h2 className="font-heading text-lg font-semibold text-charcoal">Set Up Your Sending Domain</h2>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            Your emails need to come from a professional domain — not gmail.com.
-            Buy a domain and we'll handle DNS, warm-up, and deliverability.
+          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
+            To reach seller inboxes (not spam), your outreach needs to come from a dedicated sending domain — separate from your personal email.
           </p>
+          <div className="text-left max-w-md mx-auto space-y-2.5 mb-6">
+            {[
+              'Protects your personal email reputation — your Gmail stays untouched',
+              'Automatic DNS setup (SPF, DKIM, DMARC) for maximum inbox placement',
+              'Dedicated warm-up builds sender trust over 14-21 days',
+              'Real-time health monitoring so you know your emails are landing',
+            ].map((item) => (
+              <div key={item} className="flex items-start gap-2.5">
+                <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
+                <span className="text-xs text-gray-600 leading-relaxed">{item}</span>
+              </div>
+            ))}
+          </div>
           <Button
             className="bg-orange text-white hover:bg-orange-hover rounded-lg px-6 h-10 text-sm font-medium"
             onClick={() => setShowDomainFlow(true)}
