@@ -79,7 +79,7 @@ export function VideoPlaceholder() {
       </div>
 
       <p className="font-sans text-[15px] font-medium text-charcoal/60 mt-6">
-        How OffMarket finds motivated sellers and drafts your outreach
+        How OffMarket delivers seller leads, deploys 3-step sequences, and manages your pipeline to close
       </p>
     </motion.div>
   );

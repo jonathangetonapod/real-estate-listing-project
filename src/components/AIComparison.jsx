@@ -271,13 +271,13 @@ export function AIComparison() {
               </div>
               <div className="flex flex-col gap-1 md:flex-wrap md:flex-row md:gap-2 px-4 py-3 md:px-6 md:py-3.5 bg-[#F0FDF4] border-t border-[#d1fae5] font-sans text-xs font-medium text-success">
                 <span className="flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" /> 3-step sequence with A/B/C variations
+                </span>
+                <span className="flex items-center gap-1">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" /> Uses real MLS comps & public records
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" /> Matches your writing voice
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" /> Reply lands in your dashboard instantly
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" /> Replies land in your Inbox as threads
                 </span>
               </div>
             </motion.div>
@@ -308,8 +308,8 @@ export function AIComparison() {
           transition={{ duration: 0.5, delay: 0.2 }}
           viewport={{ once: true }}
         >
-          Every pitch is built from real MLS data, public records, and recent comps. No fake details. No placeholders.
-          When they reply, it lands right in the platform. You respond directly, no switching apps.
+          Every 3-step sequence is built from real MLS data, public records, and recent comps. No fake details. No placeholders.
+          When they reply, the conversation thread lands in your Inbox. Tag it, respond, and move hot leads into your Deals pipeline.
         </motion.p>
       </div>
     </section>

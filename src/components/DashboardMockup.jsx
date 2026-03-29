@@ -4,10 +4,10 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 const metrics = [
-  { label: 'Leads This Month', value: '248', color: 'orange', change: '250 limit', changeType: 'neutral' },
-  { label: 'AI Drafts Ready', value: '248', color: 'default', change: '100% drafted', changeType: 'up' },
-  { label: 'Sent', value: '186', color: 'green', change: '75% sent', changeType: 'up' },
-  { label: 'Replies', value: '14', color: 'orange', change: '7.5% reply rate', changeType: 'up' },
+  { label: 'Seller Leads', value: '248', color: 'orange', change: '250 limit', changeType: 'neutral' },
+  { label: 'Sequences Sent', value: '186', color: 'green', change: '558 emails total', changeType: 'up' },
+  { label: 'Inbox Replies', value: '14', color: 'orange', change: '7.5% reply rate', changeType: 'up' },
+  { label: 'Deals in Pipeline', value: '6', color: 'default', change: '2 meetings set', changeType: 'up' },
 ];
 
 const allLeads = [
@@ -18,7 +18,7 @@ const allLeads = [
     badge: 'Replied',
     badgeVariant: 'Green',
     price: '$485K',
-    equity: '$185K equity',
+    equity: 'SFR \u00b7 2,140 sqft \u00b7 2003',
     daysInfo: 'Expired 47d ago',
     avatar: 'MT',
     type: 'Expired',
@@ -27,11 +27,11 @@ const allLeads = [
     name: 'Sarah Kim',
     address: '1203 Maple Ridge Ln, Canyon Crest',
     match: 87,
-    badge: 'Draft Ready',
+    badge: 'Sequence Active',
     badgeVariant: 'Orange',
     price: '$392K',
-    equity: '$240K equity',
-    daysInfo: 'Listed 12d ago',
+    equity: 'Condo \u00b7 1,480 sqft \u00b7 2011',
+    daysInfo: 'Step 2 of 3 sent',
     avatar: 'SK',
     type: 'FSBO',
   },
@@ -42,7 +42,7 @@ const allLeads = [
     badge: 'Sent',
     badgeVariant: 'Green',
     price: '$520K',
-    equity: '$310K equity',
+    equity: 'SFR \u00b7 2,890 sqft \u00b7 1998',
     daysInfo: 'NOD filed 34d ago',
     avatar: 'DH',
     type: 'Pre-Foreclosure',
@@ -51,11 +51,11 @@ const allLeads = [
     name: 'Linda Chen',
     address: '2710 Harbor View Dr, Eastlake',
     match: 82,
-    badge: 'Draft Ready',
+    badge: 'Sequence Active',
     badgeVariant: 'Orange',
     price: '$415K',
-    equity: '$195K equity',
-    daysInfo: 'Expired 21d ago',
+    equity: 'SFR \u00b7 1,920 sqft \u00b7 2006',
+    daysInfo: 'Step 1 of 3 sent',
     avatar: 'LC',
     type: 'Expired',
   },
@@ -66,21 +66,21 @@ const allLeads = [
     badge: 'Sent',
     badgeVariant: 'Green',
     price: '$349K',
-    equity: '$120K equity',
-    daysInfo: 'Listed 45d ago',
+    equity: 'Duplex \u00b7 1,650 sqft \u00b7 1985',
+    daysInfo: 'All 3 steps complete',
     avatar: 'RW',
     type: 'FSBO',
   },
 ];
 
-const tabFilters = ['All', 'Draft Ready', 'Sent', 'Replied'];
+const tabFilters = ['All', 'Sequence Active', 'Sent', 'Replied'];
 
 const sidebarItems = [
-  { label: 'Dashboard' },
-  { label: 'My Leads' },
-  { label: 'AI Drafts' },
-  { label: 'Sent' },
-  { label: 'Replies' },
+  { label: 'Home' },
+  { label: 'Seller Leads' },
+  { label: 'Pitches Sent' },
+  { label: 'Inbox' },
+  { label: 'My Deals' },
   { label: 'Settings' },
 ];
 
@@ -116,7 +116,7 @@ function MatchBar({ value }) {
 export function DashboardMockup() {
   const [activeTab, setActiveTab] = useState('All');
   const [selectedLead, setSelectedLead] = useState(null);
-  const [activeSidebarItem, setActiveSidebarItem] = useState('Dashboard');
+  const [activeSidebarItem, setActiveSidebarItem] = useState('Home');
 
   const filteredLeads = activeTab === 'All'
     ? allLeads
@@ -193,7 +193,7 @@ export function DashboardMockup() {
                     Good morning, Sarah
                   </div>
                   <div className="mt-0.5 font-sans text-[13px] text-gray-500">
-                    248 of 250 leads delivered this month. 14 replies waiting.
+                    186 sequences deployed. 14 replies in your Inbox. 6 deals in pipeline.
                   </div>
                 </div>
                 <div className="hidden gap-2 md:flex">

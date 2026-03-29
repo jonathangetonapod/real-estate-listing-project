@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button';
 const features = [
   '250 verified leads per month',
   '1 farm area (up to 3 zip codes)',
-  'AI-drafted email pitches for every lead',
+  '3-step email sequences with A/B/C variations per step',
+  'Full property + financial + contact data per lead',
   'All lead types: expireds, FSBOs, pre-foreclosure, absentee, high equity, probate',
   'We send on your behalf with your name and brand',
   'Automated warm-up and deliverability (94% inbox rate)',
-  'Reply management in-platform',
-  'Follow-up sequences',
+  'Inbox with conversation threads and sentiment labels',
+  'Deals pipeline with 5 drag-and-drop stages',
+  'Sequence timeline with delivery tracking',
 ];
 
 const fadeIn = {
@@ -151,8 +153,8 @@ export function Pricing() {
         viewport={{ once: true, margin: '-40px' }}
       >
         The average agent spends $1,200/month on shared Zillow leads.
-        OffMarket delivers exclusive, verified seller data with AI-drafted pitches
-        for less than one showing&apos;s worth of gas money.
+        OffMarket delivers exclusive, verified seller data with 3-step email sequences,
+        a built-in Inbox, and a Deals pipeline for less than one showing&apos;s worth of gas money.
       </motion.p>
     </section>
   );

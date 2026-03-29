@@ -17,11 +17,11 @@ const faqData = [
   },
   {
     q: 'Do I need any other tools?',
-    a: 'No. We handle all data sourcing, skip-tracing, and email verification. No exporting CSVs, no manual lookups, no separate subscriptions. You open your dashboard and the pitches are ready.',
+    a: 'No. We handle all data sourcing, skip-tracing, and email verification. No exporting CSVs, no manual lookups, no separate subscriptions. You open your dashboard and 3-step sequences with A/B/C variations are ready to review and approve.',
   },
   {
     q: "Can homeowners tell it's AI-written?",
-    a: 'Our AI references property-specific details: the address, asking price, days on market, nearby comps, and equity data. Every email reads like you spent 5 minutes writing it personally. No [First Name] merge tags, no generic scripts.',
+    a: 'Our AI generates 3-step sequences with A/B/C variations per step, each referencing property-specific details: the address, asking price, days on market, nearby comps, and equity data. You pick the variation that sounds most like you. Every email reads like you spent 5 minutes writing it personally. No [First Name] merge tags, no generic scripts.',
   },
   {
     q: 'Is cold emailing homeowners legal?',
@@ -33,7 +33,7 @@ const faqData = [
   },
   {
     q: 'How long until I see results?',
-    a: 'We set up a protected sending domain for you, which takes 14-21 days to warm up. This is non-negotiable \u2014 it\u2019s what keeps your emails out of spam. Most agents see their first replies within 3-4 weeks. Once warm-up is done, you have a reliable outreach channel that works month after month.',
+    a: 'We set up a protected sending domain for you, which takes 14-21 days to warm up. This is non-negotiable \u2014 it\u2019s what keeps your emails out of spam. Once warm-up is done, your 3-step sequences auto-deploy on business days. Most agents see their first replies within 3-4 weeks, and you can track every step on the sequence timeline.',
   },
   {
     q: 'Can I customize which lead types I target?',
@@ -45,11 +45,11 @@ const faqData = [
   },
   {
     q: 'What happens after a homeowner replies?',
-    a: 'Their reply shows up in your OffMarket dashboard instantly. You respond directly from the platform. Your $99/mo plan includes a visual pipeline to track every conversation from first reply to listing signed.',
+    a: 'Their reply shows up in your Inbox as a conversation thread. Tag it with a sentiment label \u2014 Interested, Warm, Not Interested, Meeting Set, Follow Up, or Closed \u2014 and respond directly from the platform. Move hot leads into your Deals pipeline with five drag-and-drop stages: Positive Reply \u2192 Following Up \u2192 Meeting Scheduled \u2192 Nurturing \u2192 Closed.',
   },
   {
     q: "I\u2019ve tried lead gen services before and they didn\u2019t work.",
-    a: 'Most lead gen gives you a name and a phone number and says \u201Cgo call them.\u201D OffMarket is different \u2014 we give you verified emails, property-specific data, and AI-drafted pitches that reference real comps. You\u2019re not cold-prospecting. You\u2019re reaching out with market intel they don\u2019t have.',
+    a: 'Most lead gen gives you a name and a phone number and says \u201Cgo call them.\u201D OffMarket is different \u2014 we give you verified emails, full property and financial data, and 3-step email sequences with A/B/C variations that reference real comps. Replies land in your Inbox as threaded conversations, and your Deals pipeline tracks every lead from Positive Reply through Closed. You\u2019re not cold-prospecting. You\u2019re running a system.',
   },
   {
     q: 'What if I want to cancel?',

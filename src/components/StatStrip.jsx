@@ -43,9 +43,9 @@ function useCountUp(target, duration = 2000, shouldStart = false) {
 
 const stats = [
   { target: 12847, display: (v) => v.toLocaleString(), label: 'Leads delivered' },
-  { target: 6, display: (v) => `${v}+hrs`, label: 'Saved per agent/week' },
+  { target: 38541, display: (v) => v.toLocaleString(), label: 'Sequences deployed' },
   { target: 94, display: (v) => `${v}%`, label: 'Avg deliverability' },
-  { target: 12, display: (v) => `${v}hrs`, label: 'List turnaround' },
+  { target: 5, display: (v) => `${v}`, label: 'Pipeline stages to close' },
 ];
 
 function StatItem({ target, display, label, shouldAnimate }) {

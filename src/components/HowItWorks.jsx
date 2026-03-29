@@ -4,38 +4,38 @@ import { cn } from '@/lib/utils';
 const steps = [
   {
     number: 1,
-    title: 'Tell Us Your Farm Area',
+    title: 'Pick Your Market',
     description:
-      'Pick your zip codes. Within 12 hours, we deliver a curated list of motivated sellers \u2014 expireds, FSBOs, pre-foreclosures, absentee owners \u2014 sourced from 160M+ property records.',
-    detail: '12hr turnaround',
+      'Choose your zip codes and lead types \u2014 expireds, FSBOs, pre-foreclosures, absentee owners, high equity, probate. We source from 160M+ property records and deliver within 12 hours.',
+    detail: 'Zip + lead types',
   },
   {
     number: 2,
-    title: 'Skip-Traced and Verified',
+    title: 'Get Verified Seller Leads with Full Data',
     description:
-      'Every lead comes with skip-traced email addresses, property details, equity estimates, days on market, and original listing price. Data that would take hours to compile yourself \u2014 delivered ready to go.',
-    detail: 'Verified emails',
+      'Every lead comes with property type, sqft, year built, lot size, zoning, lender, loan amount, interest rate, tax bill, owner name, mailing address, phone numbers, and verified emails. Grouped by order batch and ready to work.',
+    detail: 'Rich CREXI data',
   },
   {
     number: 3,
-    title: 'We Send on Your Behalf',
+    title: 'Review 3-Step Sequences with A/B/C Variations',
     description:
-      'Every email goes out with your name and brand in the "from" field. We handle warm-up, rotation, and deliverability behind the scenes. Homeowners see you, not us. You set up nothing.',
-    detail: '94% inbox rate',
+      'For each lead, we generate a 3-step email sequence with A/B/C variations per step. Open the pitch slide-over to preview, pick your preferred variation, and adjust business-day timing between steps.',
+    detail: '3 steps \u00d7 3 variations',
   },
   {
     number: 4,
-    title: 'Pitch Them in Your Voice',
+    title: 'Approve and Auto-Deploy',
     description:
-      'Our AI references the property address, asking price, nearby comps, and days on market to draft a pitch that sounds like you. Review it, tweak it, and hit send.',
-    detail: 'AI-assisted',
+      'Hit approve and your sequences auto-deploy on business days. Every email goes out with your name and brand. We handle warm-up, rotation, and deliverability behind the scenes. Track delivery status on the sequence timeline.',
+    detail: 'Business-day send',
   },
   {
     number: 5,
-    title: 'Replies Land in Your Dashboard',
+    title: 'Manage Replies and Close Deals',
     description:
-      'When a seller responds, it shows up in your pipeline instantly. Track conversations, set follow-ups, and move leads from reply to listing appointment \u2014 all in one place.',
-    detail: 'Full pipeline',
+      'Replies land in your Inbox as conversation threads. Tag each with a sentiment label \u2014 Interested, Warm, Not Interested, Meeting Set, Follow Up, or Closed. Move hot leads to your Deals pipeline and drag them through five stages: Positive Reply \u2192 Following Up \u2192 Meeting Scheduled \u2192 Nurturing \u2192 Closed.',
+    detail: '5-stage pipeline',
   },
 ];
 

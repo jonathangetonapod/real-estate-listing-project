@@ -46,9 +46,9 @@ export function Hero() {
         animate="visible"
         custom={0.2}
       >
-        We deliver motivated seller leads in your farm area within 12 hours,
-        with verified emails, property data, and AI-written pitches ready to send.
-        More listing appointments without cold calling, door knocking, or paying for shared leads.
+        We deliver verified seller leads with full property and financial data,
+        then deploy 3-step email sequences with A/B/C variations on your behalf.
+        Replies flow into your Inbox. Hot leads move to your Deals pipeline. No cold calling, no shared leads.
       </motion.p>
 
       {/* CTA */}
