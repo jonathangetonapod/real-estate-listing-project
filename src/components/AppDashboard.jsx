@@ -3755,12 +3755,22 @@ function EmailAccountsTab() {
                         for (let i = 0; i < createdMbs.length; i++) {
                           const mb = createdMbs[i];
                           const winnrUser = result?.data?.[i] || null;
-                          const { data: mbData } = await supabase
+                          // Get domain_id from Supabase
+                          const { data: domainRow } = await supabase
+                            .from('agent_domains')
+                            .select('id')
+                            .eq('agent_id', user.id)
+                            .limit(1);
+                          const domainId = domainRow?.[0]?.id;
+
+                          const { data: mbData, error: mbError } = await supabase
                             .from('agent_mailboxes')
                             .insert({
                               agent_id: user.id,
+                              domain_id: domainId,
                               email: mb.email,
                               display_name: mb.displayName,
+                              username: mb.email.split('@')[0],
                               status: 'active',
                               health_score: 0,
                               inbox_rate: 0,
@@ -3771,6 +3781,7 @@ function EmailAccountsTab() {
                             })
                             .select()
                             .single();
+                          if (mbError) console.error('Supabase mailbox insert error:', mbError);
 
                           if (mbData && winnrUser?.id) {
                             await supabase.from('winnr_mappings').insert({
