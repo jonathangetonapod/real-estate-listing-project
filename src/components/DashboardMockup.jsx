@@ -5,78 +5,64 @@ import { cn } from '@/lib/utils';
 
 const metrics = [
   { label: 'Seller Leads', value: '248', color: 'orange', change: '250 limit', changeType: 'neutral' },
-  { label: 'Sequences Sent', value: '186', color: 'green', change: '558 emails total', changeType: 'up' },
+  { label: 'Pitches Sent', value: '186', color: 'green', change: '558 emails total', changeType: 'up' },
   { label: 'Inbox Replies', value: '14', color: 'orange', change: '7.5% reply rate', changeType: 'up' },
-  { label: 'Deals in Pipeline', value: '6', color: 'default', change: '2 meetings set', changeType: 'up' },
+  { label: 'Active Deals', value: '6', color: 'default', change: '2 meetings set', changeType: 'up' },
 ];
 
 const allLeads = [
   {
     name: 'Michael Torres',
     address: '4821 Oakwood Dr, Riverside Heights',
-    match: 94,
-    badge: 'Replied',
-    badgeVariant: 'Green',
-    price: '$485K',
-    equity: 'SFR \u00b7 2,140 sqft \u00b7 2003',
-    daysInfo: 'Expired 47d ago',
+    value: '$485K',
+    sqft: '2,840 ft²',
+    year: '2004',
+    typeBadge: 'Expired',
+    statusBadge: 'Sent',
+    statusVariant: 'Green',
     avatar: 'MT',
-    type: 'Expired',
   },
   {
     name: 'Sarah Kim',
     address: '1203 Maple Ridge Ln, Canyon Crest',
-    match: 87,
-    badge: 'Sequence Active',
-    badgeVariant: 'Orange',
-    price: '$392K',
-    equity: 'Condo \u00b7 1,480 sqft \u00b7 2011',
-    daysInfo: 'Step 2 of 3 sent',
+    value: '$392K',
+    sqft: '1,480 ft²',
+    year: '2011',
+    typeBadge: 'FSBO',
+    statusBadge: 'Sent',
+    statusVariant: 'Green',
     avatar: 'SK',
-    type: 'FSBO',
   },
   {
     name: 'David Hernandez',
     address: '892 Sunset Blvd, Palm Canyon',
-    match: 91,
-    badge: 'Sent',
-    badgeVariant: 'Green',
-    price: '$520K',
-    equity: 'SFR \u00b7 2,890 sqft \u00b7 1998',
-    daysInfo: 'NOD filed 34d ago',
+    value: '$520K',
+    sqft: '2,890 ft²',
+    year: '1998',
+    typeBadge: 'Expired',
+    statusBadge: 'Draft',
+    statusVariant: 'Orange',
     avatar: 'DH',
-    type: 'Pre-Foreclosure',
   },
   {
     name: 'Linda Chen',
     address: '2710 Harbor View Dr, Eastlake',
-    match: 82,
-    badge: 'Sequence Active',
-    badgeVariant: 'Orange',
-    price: '$415K',
-    equity: 'SFR \u00b7 1,920 sqft \u00b7 2006',
-    daysInfo: 'Step 1 of 3 sent',
+    value: '$415K',
+    sqft: '1,920 ft²',
+    year: '2006',
+    typeBadge: 'FSBO',
+    statusBadge: 'Not Contacted',
+    statusVariant: 'neutral',
     avatar: 'LC',
-    type: 'Expired',
-  },
-  {
-    name: 'Robert Williams',
-    address: '558 Palm Ave, Northpark',
-    match: 78,
-    badge: 'Sent',
-    badgeVariant: 'Green',
-    price: '$349K',
-    equity: 'Duplex \u00b7 1,650 sqft \u00b7 1985',
-    daysInfo: 'All 3 steps complete',
-    avatar: 'RW',
-    type: 'FSBO',
   },
 ];
 
-const tabFilters = ['All', 'Sequence Active', 'Sent', 'Replied'];
+const typeFilters = ['All Types', 'Expired', 'FSBO'];
+const statusFilters = ['All Status', 'Sent', 'Draft', 'Not Contacted'];
 
 const sidebarItems = [
   { label: 'Home' },
+  { label: 'Order New Leads' },
   { label: 'Seller Leads' },
   { label: 'Pitches Sent' },
   { label: 'Inbox' },
@@ -93,34 +79,31 @@ const metricValueColorMap = {
 const badgeStyleMap = {
   Green: 'bg-success/10 text-success border-success/20',
   Orange: 'bg-orange/10 text-orange border-orange/20',
-  Red: 'bg-danger/10 text-danger border-danger/20',
+  neutral: 'bg-gray-100 text-gray-500 border-gray-200',
+};
+
+const typeBadgeStyleMap = {
+  Expired: 'bg-danger/10 text-danger border-danger/20',
+  FSBO: 'bg-blue-50 text-blue-600 border-blue-200',
 };
 
 const avatarColorMap = {
   Green: 'bg-success',
   Orange: 'bg-orange',
-  Red: 'bg-danger',
+  neutral: 'bg-gray-400',
 };
 
-function MatchBar({ value }) {
-  return (
-    <div className="h-1 w-full max-w-[80px] overflow-hidden rounded-sm bg-gray-100">
-      <div
-        className="h-full rounded-sm bg-orange transition-all duration-300 ease-out"
-        style={{ width: `${value}%` }}
-      />
-    </div>
-  );
-}
-
 export function DashboardMockup() {
-  const [activeTab, setActiveTab] = useState('All');
+  const [activeTypeFilter, setActiveTypeFilter] = useState('All Types');
+  const [activeStatusFilter, setActiveStatusFilter] = useState('All Status');
   const [selectedLead, setSelectedLead] = useState(null);
-  const [activeSidebarItem, setActiveSidebarItem] = useState('Home');
+  const [activeSidebarItem, setActiveSidebarItem] = useState('Seller Leads');
 
-  const filteredLeads = activeTab === 'All'
-    ? allLeads
-    : allLeads.filter(l => l.badge === activeTab);
+  const filteredLeads = allLeads.filter(l => {
+    const typeMatch = activeTypeFilter === 'All Types' || l.typeBadge === activeTypeFilter;
+    const statusMatch = activeStatusFilter === 'All Status' || l.statusBadge === activeStatusFilter;
+    return typeMatch && statusMatch;
+  });
 
   return (
     <div className="flex justify-center px-4 py-12 md:px-6 md:py-16">
@@ -140,7 +123,7 @@ export function DashboardMockup() {
           </div>
           <div className="mx-auto flex max-w-[400px] flex-1 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1">
             <span className="text-[11px] text-gray-400">https://</span>
-            <span className="font-sans text-xs text-gray-500">app.offmarket.com/dashboard</span>
+            <span className="font-sans text-xs text-gray-500">app.offmarket.com/seller-leads</span>
           </div>
           <div className="w-[50px] shrink-0" />
         </div>
@@ -186,33 +169,7 @@ export function DashboardMockup() {
 
             {/* Main content */}
             <div className="flex-1 overflow-hidden p-4 md:p-6">
-              {/* Header */}
-              <div className="mb-4 flex items-start justify-between">
-                <div>
-                  <div className="font-sans text-lg font-bold text-charcoal">
-                    Good morning, Sarah
-                  </div>
-                  <div className="mt-0.5 font-sans text-[13px] text-gray-500">
-                    186 sequences deployed. 14 replies in your Inbox. 6 deals in pipeline.
-                  </div>
-                </div>
-                <div className="hidden gap-2 md:flex">
-                  <button
-                    type="button"
-                    className="rounded-lg border border-gray-200 bg-white px-4 py-2 font-sans text-xs font-semibold text-charcoal transition-colors duration-150 hover:bg-gray-50"
-                  >
-                    Export
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-lg bg-orange px-4 py-2 font-sans text-xs font-semibold text-white transition-colors duration-150 hover:bg-orange/90"
-                  >
-                    + Request Leads
-                  </button>
-                </div>
-              </div>
-
-              {/* Metric cards */}
+              {/* Header metrics bar */}
               <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
                 {metrics.map((metric) => (
                   <div
@@ -246,24 +203,67 @@ export function DashboardMockup() {
                 ))}
               </div>
 
-              {/* Lead table */}
+              {/* Seller Leads view */}
               <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
-                <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4">
-                  <div className="font-sans text-sm font-bold text-charcoal">
-                    Recent Leads
+                {/* Order group header */}
+                <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <div className="font-sans text-sm font-bold text-charcoal">
+                      Order #1024
+                    </div>
+                    <span className="font-sans text-[12px] text-gray-400">·</span>
+                    <span className="font-sans text-[12px] text-gray-400">Mar 15, 2026</span>
+                    <span className="font-sans text-[12px] text-gray-400">—</span>
+                    <span className="font-mono text-[12px] font-medium text-orange">248 leads</span>
                   </div>
-                  <div className="flex gap-1 overflow-x-auto">
-                    {tabFilters.map(tab => (
+                  <div className="hidden gap-2 md:flex">
+                    <button
+                      type="button"
+                      className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 font-sans text-[11px] font-semibold text-charcoal transition-colors duration-150 hover:bg-gray-50"
+                    >
+                      Export
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-lg bg-orange px-3 py-1.5 font-sans text-[11px] font-semibold text-white transition-colors duration-150 hover:bg-orange/90"
+                    >
+                      + Pitch All
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filter bar */}
+                <div className="flex flex-wrap items-center gap-3 border-b border-gray-100 px-4 py-2.5">
+                  <div className="flex gap-1">
+                    {typeFilters.map(tab => (
                       <button
                         key={tab}
                         type="button"
                         className={cn(
                           'rounded-md px-2.5 py-1 font-sans text-[11px] font-medium transition-colors duration-150',
-                          activeTab === tab
+                          activeTypeFilter === tab
                             ? 'bg-charcoal text-white'
                             : 'text-gray-500 hover:text-gray-700'
                         )}
-                        onClick={() => setActiveTab(tab)}
+                        onClick={() => setActiveTypeFilter(tab)}
+                      >
+                        {tab}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="h-4 w-px bg-gray-200" />
+                  <div className="flex gap-1 overflow-x-auto">
+                    {statusFilters.map(tab => (
+                      <button
+                        key={tab}
+                        type="button"
+                        className={cn(
+                          'rounded-md px-2.5 py-1 font-sans text-[11px] font-medium transition-colors duration-150',
+                          activeStatusFilter === tab
+                            ? 'bg-charcoal text-white'
+                            : 'text-gray-500 hover:text-gray-700'
+                        )}
+                        onClick={() => setActiveStatusFilter(tab)}
                       >
                         {tab}
                       </button>
@@ -272,17 +272,23 @@ export function DashboardMockup() {
                 </div>
 
                 {/* Table head */}
-                <div className="hidden grid-cols-[2fr_1.2fr_1fr_0.8fr] gap-3 border-b border-gray-50 px-4 py-2 md:grid">
+                <div className="hidden grid-cols-[2fr_0.8fr_0.7fr_0.6fr_0.6fr_0.7fr] gap-3 border-b border-gray-50 px-4 py-2 md:grid">
                   <span className="font-sans text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-                    Contact
+                    Owner / Address
                   </span>
                   <span className="font-sans text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-                    Property
+                    Value
                   </span>
                   <span className="font-sans text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-                    Match
+                    Size
                   </span>
                   <span className="font-sans text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+                    Year
+                  </span>
+                  <span className="font-sans text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+                    Type
+                  </span>
+                  <span className="text-right font-sans text-[10px] font-semibold uppercase tracking-wide text-gray-400">
                     Status
                   </span>
                 </div>
@@ -292,17 +298,17 @@ export function DashboardMockup() {
                   <div
                     key={lead.name}
                     className={cn(
-                      'grid cursor-pointer grid-cols-1 gap-2 border-b border-gray-50 px-4 py-3 transition-colors duration-150 last:border-b-0 hover:bg-gray-50/50 md:grid-cols-[2fr_1.2fr_1fr_0.8fr] md:items-center md:gap-3',
+                      'grid cursor-pointer grid-cols-1 gap-2 border-b border-gray-50 px-4 py-3 transition-colors duration-150 last:border-b-0 hover:bg-gray-50/50 md:grid-cols-[2fr_0.8fr_0.7fr_0.6fr_0.6fr_0.7fr] md:items-center md:gap-3',
                       selectedLead === lead.name && 'border-l-[3px] border-l-orange bg-orange/[0.03]'
                     )}
                     onClick={() => setSelectedLead(selectedLead === lead.name ? null : lead.name)}
                   >
-                    {/* Contact */}
+                    {/* Owner / Address */}
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div
                         className={cn(
                           'flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg font-sans text-[11px] font-bold text-white',
-                          avatarColorMap[lead.badgeVariant]
+                          avatarColorMap[lead.statusVariant]
                         )}
                       >
                         {lead.avatar}
@@ -317,36 +323,48 @@ export function DashboardMockup() {
                       </div>
                     </div>
 
-                    {/* Property */}
-                    <div className="flex flex-col gap-px">
+                    {/* Value */}
+                    <div>
                       <span className="font-mono text-[13px] font-semibold text-charcoal">
-                        {lead.price}
-                      </span>
-                      <span className="font-sans text-[11px] text-gray-400">
-                        {lead.equity}
-                      </span>
-                      <span className="font-sans text-[11px] text-gray-400">
-                        {lead.daysInfo}
+                        {lead.value}
                       </span>
                     </div>
 
-                    {/* Match */}
-                    <div className="flex flex-row items-center gap-2 md:flex-col md:items-start md:gap-1">
-                      <span className="font-mono text-sm font-bold text-orange">
-                        {lead.match}%
+                    {/* Size */}
+                    <div>
+                      <span className="font-sans text-[12px] text-gray-600">
+                        {lead.sqft}
                       </span>
-                      <MatchBar value={lead.match} />
                     </div>
 
-                    {/* Status */}
+                    {/* Year */}
+                    <div>
+                      <span className="font-sans text-[12px] text-gray-600">
+                        {lead.year}
+                      </span>
+                    </div>
+
+                    {/* Type badge */}
+                    <div>
+                      <Badge
+                        className={cn(
+                          'rounded-md border px-2 py-0.5 text-[10px] font-semibold',
+                          typeBadgeStyleMap[lead.typeBadge]
+                        )}
+                      >
+                        {lead.typeBadge}
+                      </Badge>
+                    </div>
+
+                    {/* Status badge */}
                     <div className="flex justify-start md:justify-end">
                       <Badge
                         className={cn(
                           'rounded-md border px-2.5 py-0.5 text-[11px] font-semibold',
-                          badgeStyleMap[lead.badgeVariant]
+                          badgeStyleMap[lead.statusVariant]
                         )}
                       >
-                        {lead.badge}
+                        {lead.statusBadge}
                       </Badge>
                     </div>
                   </div>
