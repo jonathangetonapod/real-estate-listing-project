@@ -282,12 +282,11 @@ function FarmAreaTab() {
     { date: 'Jan 28, 2026', zips: '92506', count: 243, sent: 243, opened: 171, replied: 12, appointments: 2, replyRate: '4.9%', status: 'done' },
   ];
 
-  // Fetch agent orders from DB
+  // Fetch agent orders from DB (silently — mock data shows while loading)
   useEffect(() => {
-    if (!user?.id) { setOrdersLoading(false); return; }
+    if (!user?.id) return;
     let cancelled = false;
     (async () => {
-      setOrdersLoading(true);
       try {
         const { data, error } = await getAgentOrders(user.id);
         if (!cancelled) {
@@ -441,12 +440,7 @@ function FarmAreaTab() {
 
         {/* Past Orders — enriched report cards */}
         <h3 className="font-sans text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Past Orders</h3>
-        {ordersLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <RefreshCw className="w-5 h-5 text-gray-400 animate-spin" />
-            <span className="ml-2 text-sm text-gray-400">Loading orders...</span>
-          </div>
-        ) : (
+        {(
         <div className="space-y-4">
           {displayOrders.map((order, i) => (
             <Card key={i} className="rounded-xl">
@@ -1239,22 +1233,19 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
 
   // Fetch agent orders on mount
   useEffect(() => {
-    if (!user?.id) { setLeadsLoading(false); return; }
+    if (!user?.id) return;
     let cancelled = false;
     (async () => {
-      setLeadsLoading(true);
       try {
         const { data, error } = await getAgentOrders(user.id);
         if (!cancelled) {
           if (!error && data && data.length > 0) {
             setDbOrders(data);
           }
-          if (error) setLeadsError(error.message);
         }
       } catch (err) {
         console.error('Failed to fetch leads orders:', err);
       }
-      if (!cancelled) setLeadsLoading(false);
     })();
     return () => { cancelled = true; };
   }, [user?.id]);
