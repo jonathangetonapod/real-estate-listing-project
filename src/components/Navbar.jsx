@@ -22,7 +22,7 @@ export function Navbar() {
     { label: 'How It Works', href: '#how-it-works' },
     { label: 'Pricing', href: '#pricing' },
     { label: 'FAQ', href: '#faq' },
-    { label: 'Log In', href: '#login' },
+    { label: 'Log In', href: '/login' },
   ];
 
   return (
