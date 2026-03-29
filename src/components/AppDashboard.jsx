@@ -2874,30 +2874,83 @@ function LeadsArrivedBanner({ onDismiss, onReview }) {
 
 function SettingsTab() {
   return (
-    <div className="max-w-2xl mx-auto py-12 text-center">
-      <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-        <Settings className="h-7 w-7 text-gray-400" />
+    <div className="max-w-2xl mx-auto space-y-6">
+      <div>
+        <h1 className="font-heading text-2xl font-bold text-charcoal">Settings</h1>
+        <p className="text-sm text-muted-foreground mt-1">Manage your account and preferences.</p>
       </div>
-      <h2 className="font-heading text-2xl font-bold text-charcoal mb-2">Settings</h2>
-      <p className="text-sm text-muted-foreground mb-6">Account preferences, notifications, and integrations will live here.</p>
-      <Card className="rounded-xl text-left">
-        <CardContent className="p-6 space-y-4">
-          {[
-            { label: 'Account & Profile', desc: 'Name, email, and password' },
-            { label: 'Notification Preferences', desc: 'Email and in-app alerts' },
-            { label: 'Integrations', desc: 'CRM, calendar, and email sync' },
-            { label: 'Billing', desc: 'Plan, invoices, and payment method' },
-          ].map((item) => (
-            <div key={item.label} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-              <div>
+
+      {/* Profile card */}
+      <div className="rounded-xl border border-border bg-white p-5">
+        <div className="flex items-center gap-4 mb-5">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-orange text-xl font-bold text-white">
+            SJ
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-heading text-lg font-semibold text-charcoal">Sarah Johnson</p>
+            <p className="text-sm text-muted-foreground">sarah@offmarket.com</p>
+            <p className="text-xs text-gray-400 mt-0.5">Riverside Heights, CA · Member since Jan 2026</p>
+          </div>
+          <Button variant="outline" size="sm" className="rounded-lg text-xs shrink-0">
+            Edit Profile
+          </Button>
+        </div>
+        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+          <div>
+            <p className="font-mono text-lg font-bold text-charcoal">248</p>
+            <p className="text-[10px] uppercase tracking-wider text-gray-400">Leads This Month</p>
+          </div>
+          <div>
+            <p className="font-mono text-lg font-bold text-success">7.5%</p>
+            <p className="text-[10px] uppercase tracking-wider text-gray-400">Reply Rate</p>
+          </div>
+          <div>
+            <p className="font-mono text-lg font-bold text-orange">3</p>
+            <p className="text-[10px] uppercase tracking-wider text-gray-400">Listings Won</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Settings sections */}
+      <div className="rounded-xl border border-border bg-white overflow-hidden divide-y divide-gray-100">
+        {[
+          { label: 'Email Signature', desc: 'Name, title, and sign-off used in all pitches', icon: Mail },
+          { label: 'Farm Areas', desc: 'Zip codes and lead types you target', icon: MapPin },
+          { label: 'Notification Preferences', desc: 'Email alerts and in-app notifications', icon: Bell },
+          { label: 'Pipeline Stages', desc: 'Customize your deal pipeline stages', icon: GitBranch },
+          { label: 'Integrations', desc: 'CRM, calendar, and email provider sync', icon: Settings },
+          { label: 'Billing & Plan', desc: 'Your subscription, invoices, and payment method', icon: DollarSign },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <button key={item.label} className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-gray-50 transition-colors group">
+              <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 group-hover:bg-orange/10 transition-colors">
+                <Icon className="h-4 w-4 text-gray-400 group-hover:text-orange transition-colors" />
+              </div>
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-charcoal">{item.label}</p>
                 <p className="text-xs text-muted-foreground">{item.desc}</p>
               </div>
-              <ChevronRight className="h-4 w-4 text-gray-300" />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+              <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-orange transition-colors" />
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Danger zone */}
+      <div className="rounded-xl border border-danger/20 bg-danger/[0.02] p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-charcoal">Log Out</p>
+            <p className="text-xs text-muted-foreground">Sign out of your OffMarket account</p>
+          </div>
+          <Button variant="outline" size="sm" className="rounded-lg text-xs border-danger/20 text-danger hover:bg-danger/5 hover:text-danger">
+            Log Out
+          </Button>
+        </div>
+      </div>
+
+      <div className="h-12" />
     </div>
   );
 }
