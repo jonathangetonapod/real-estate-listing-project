@@ -3004,10 +3004,10 @@ export default function AppDashboard() {
         )}
       >
         {/* Logo */}
-        <div className="flex items-center gap-0.5 px-6 py-6">
+        <button onClick={() => handleNavClick('dashboard')} className="flex items-center gap-0.5 px-6 py-6 w-full text-left">
           <span className="font-heading text-xl font-semibold text-white">Off</span>
           <span className="font-heading text-xl font-semibold text-orange">Market</span>
-        </div>
+        </button>
 
         {/* Nav */}
         <nav className="flex-1 px-3 space-y-1">

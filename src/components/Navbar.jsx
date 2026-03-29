@@ -39,10 +39,10 @@ export function Navbar() {
         )}
       >
         {/* Logo */}
-        <div className="font-heading text-[22px] font-bold leading-none cursor-pointer select-none">
+        <a href="/" className="font-heading text-[22px] font-bold leading-none cursor-pointer select-none no-underline">
           <span className="text-charcoal">Off</span>
           <span className="text-orange">Market</span>
-        </div>
+        </a>
 
         {/* Desktop links */}
         <ul className="hidden md:flex items-center gap-8 list-none">
