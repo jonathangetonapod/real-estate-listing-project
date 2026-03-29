@@ -3742,12 +3742,13 @@ function EmailAccountsTab() {
 
                   // Wire to Winnr + Supabase in background
                   try {
-                    if (domain?.winnrDomainId) {
+                    if (domain?.name) {
                       const winnrUsers = newUsers.map(u => ({
                         username: u.username,
                         domain: domain.name,
                         name: u.fullName,
                       }));
+                      console.log('Creating Winnr mailboxes:', winnrUsers);
                       const result = await bulkCreateEmailUsers(winnrUsers);
 
                       // Save each mailbox to Supabase
