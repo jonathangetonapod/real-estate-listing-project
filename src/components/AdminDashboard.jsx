@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  getAllOrders,
+  updateOrderStatus,
+  logRequestEvent,
+  insertLeads,
+  logCsvUpload,
+} from '@/lib/leads';
 import {
   LayoutDashboard,
   Users,
@@ -375,7 +382,13 @@ function RequestDetailPanel({ request, onClose, onUploadLeads, onReject }) {
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
 
-  const agent = agents.find((a) => a.id === request.agentId);
+  // Look up agent from mock data, or fall back to DB user data from the request
+  const agent = agents.find((a) => a.id === request.agentId) || (request.dbRecord?.users ? {
+    email: request.dbRecord.users.email,
+    status: request.dbRecord.users.status || 'Active',
+    plan: request.dbRecord.users.plan || 'Starter',
+    leadsPerMonth: 250,
+  } : null);
 
   return (
     <motion.div
@@ -577,15 +590,82 @@ function RequestDetailPanel({ request, onClose, onUploadLeads, onReject }) {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers for DB data mapping
+// ---------------------------------------------------------------------------
+
+function formatTimeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function capitalizeStatus(s) {
+  if (!s) return 'Pending';
+  const map = {
+    pending: 'Pending',
+    'in_progress': 'In Progress',
+    'in progress': 'In Progress',
+    completed: 'Completed',
+    rejected: 'Rejected',
+  };
+  return map[s.toLowerCase()] || s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// ---------------------------------------------------------------------------
 // View: Admin Overview (Command Center)
 // ---------------------------------------------------------------------------
 
 function OverviewView({ onProcessRequest, showRequestsOnly = false, onNavigate }) {
+  const { user } = useAuth();
   const [expandedRequest, setExpandedRequest] = useState(null);
   const [detailRequest, setDetailRequest] = useState(null);
   const [requestFilter, setRequestFilter] = useState('All');
   const [requests, setRequests] = useState(pendingRequests);
   const [toast, setToast] = useState(null);
+  const [ordersLoading, setOrdersLoading] = useState(true);
+
+  // Fetch orders from DB, fall back to mock data
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setOrdersLoading(true);
+      const { data, error } = await getAllOrders();
+      if (!cancelled) {
+        if (!error && data && data.length > 0) {
+          // Map DB orders to the shape expected by the UI
+          const mapped = data.map((o) => {
+            const agentProfile = o.users;
+            return {
+              id: o.id,
+              agentId: o.agent_id,
+              agent: agentProfile?.full_name || 'Unknown Agent',
+              initials: agentProfile?.initials || (agentProfile?.full_name || 'UA').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
+              market: agentProfile?.market || 'Unknown',
+              zipCodes: o.zip_codes || [],
+              leadTypes: o.lead_types || [],
+              priceRange: `$${(o.price_min || 0).toLocaleString()}-$${(o.price_max || 0).toLocaleString()}`,
+              requested: formatTimeAgo(o.requested_at),
+              status: capitalizeStatus(o.status),
+              statusHistory: [
+                { status: 'Submitted', date: new Date(o.requested_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + new Date(o.requested_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), detail: `Request submitted by ${agentProfile?.full_name || 'agent'}` },
+              ],
+              notes: o.notes || '',
+              dbRecord: o,
+            };
+          });
+          setRequests(mapped);
+        }
+        // If DB is empty or errors, keep the mock data that was set as initial state
+        setOrdersLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const filterTabs = [
     { key: 'All', count: requests.length },
@@ -600,7 +680,8 @@ function OverviewView({ onProcessRequest, showRequestsOnly = false, onNavigate }
     return requests.filter((r) => r.status === requestFilter);
   }, [requests, requestFilter]);
 
-  function handleRejectRequest(requestId, reason) {
+  async function handleRejectRequest(requestId, reason) {
+    // Optimistic UI update
     setRequests((prev) =>
       prev.map((r) =>
         r.id === requestId
@@ -609,7 +690,7 @@ function OverviewView({ onProcessRequest, showRequestsOnly = false, onNavigate }
               status: 'Rejected',
               statusHistory: [
                 ...r.statusHistory,
-                { status: 'Rejected', date: 'Mar 28, ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), detail: `Rejected: ${reason}` },
+                { status: 'Rejected', date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), detail: `Rejected: ${reason}` },
               ],
             }
           : r
@@ -617,7 +698,17 @@ function OverviewView({ onProcessRequest, showRequestsOnly = false, onNavigate }
     );
     setDetailRequest(null);
     setExpandedRequest(null);
-    setToast({ message: 'Request rejected', type: 'danger' });
+
+    // Persist to DB (non-blocking — UI already updated)
+    const { error } = await updateOrderStatus(requestId, 'rejected', reason);
+    if (!error && user?.id) {
+      await logRequestEvent(requestId, user.id, 'Rejected', `Rejected: ${reason}`, reason);
+    }
+    if (error) {
+      setToast({ message: 'Failed to save rejection to database', type: 'danger' });
+    } else {
+      setToast({ message: 'Request rejected', type: 'danger' });
+    }
     setTimeout(() => setToast(null), 3000);
   }
 
@@ -741,7 +832,12 @@ function OverviewView({ onProcessRequest, showRequestsOnly = false, onNavigate }
 
         {/* Request cards */}
         <div className="space-y-3">
-          {filteredRequests.length === 0 ? (
+          {ordersLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Activity className="w-5 h-5 text-orange animate-spin" />
+              <span className="ml-2 text-sm text-gray-400">Loading requests...</span>
+            </div>
+          ) : filteredRequests.length === 0 ? (
             <Card className="rounded-xl">
               <CardContent className="py-12 text-center">
                 <p className="text-sm text-muted-foreground">No requests match this filter.</p>
@@ -968,6 +1064,7 @@ function OverviewView({ onProcessRequest, showRequestsOnly = false, onNavigate }
 // ---------------------------------------------------------------------------
 
 function UploadLeadsView({ preselectedAgent, sourceRequest, agentsList }) {
+  const { user } = useAuth();
   const [selectedAgentId, setSelectedAgentId] = useState(
     preselectedAgent ? preselectedAgent.agentId : null
   );
@@ -979,6 +1076,8 @@ function UploadLeadsView({ preselectedAgent, sourceRequest, agentsList }) {
   const [isDragging, setIsDragging] = useState(false);
   const [notified, setNotified] = useState(false);
   const [showNotifyConfirm, setShowNotifyConfirm] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
   const fileInputRef = useRef(null);
 
   const selectedAgent = agentsList.find((a) => a.id === selectedAgentId);
@@ -1387,13 +1486,67 @@ function UploadLeadsView({ preselectedAgent, sourceRequest, agentsList }) {
             </div>
             <Button
               className="rounded-xl bg-orange text-white font-sans font-semibold hover:bg-orange/90 transition-colors"
-              onClick={() => setUploaded(true)}
+              disabled={uploading}
+              onClick={async () => {
+                setUploading(true);
+                setUploadError(null);
+
+                // Build mock lead objects from previewLeads (simulated CSV parsing)
+                const parsedLeads = previewLeads.map((pl) => ({
+                  order_id: sourceRequest?.id || null,
+                  agent_id: selectedAgentId,
+                  name: pl.owner,
+                  address: pl.address,
+                  type: pl.type,
+                  price: pl.price,
+                  equity: pl.equity,
+                  email: pl.email,
+                  stage: 'New',
+                }));
+
+                // Insert leads into DB
+                const { error: insertErr } = await insertLeads(parsedLeads);
+                if (insertErr) {
+                  setUploadError(insertErr.message || 'Failed to insert leads');
+                  setUploading(false);
+                  return;
+                }
+
+                // Mark order as completed if we have a source request
+                if (sourceRequest?.id) {
+                  await updateOrderStatus(sourceRequest.id, 'completed');
+                  if (user?.id) {
+                    await logCsvUpload(sourceRequest.id, user.id, file?.name || 'leads.csv', previewLeads.length);
+                    await logRequestEvent(sourceRequest.id, user.id, 'Leads Uploaded', `${previewLeads.length} leads uploaded and assigned`);
+                  }
+                }
+
+                setUploading(false);
+                setUploaded(true);
+              }}
             >
-              Upload &amp; Assign
-              <ChevronRight className="w-4 h-4 ml-1" />
+              {uploading ? (
+                <>
+                  <Activity className="w-4 h-4 mr-1 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  Upload &amp; Assign
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </>
+              )}
             </Button>
           </div>
         </div>
+
+        {/* Upload error message */}
+        {uploadError && (
+          <div className="rounded-xl border border-danger/20 bg-danger/[0.03] px-4 py-3 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-danger shrink-0" />
+            <p className="text-sm text-danger">{uploadError}</p>
+          </div>
+        )}
       </div>
     );
   }
