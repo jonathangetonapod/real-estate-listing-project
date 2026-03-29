@@ -55,6 +55,26 @@ const faqData = [
     q: 'What if I want to cancel?',
     a: 'Cancel anytime from your dashboard. No calls, no retention team, no hoops. Your data and conversation history stay available for 30 days after cancellation.',
   },
+  {
+    q: 'What data does OffMarket include?',
+    a: 'Our nationwide property data is multi-sourced from county recordings, MLS records, and private data sources, giving you access to over 160 million properties. This includes MLS listings (active, pending, expired, failed), pre-foreclosure filings, foreclosed and REO properties, vacant properties, tax liens, cash buyers, high equity and free-and-clear properties, non-owner occupied, bankruptcy and divorce filings, deceased owners, flippers, rental values, mortgage information, senior owners, and more. Data is updated daily for MLS, monthly for vacancy, and annually for tax assessor records.',
+  },
+  {
+    q: 'How often is the data updated?',
+    a: 'MLS data is updated daily. Vacancy data is updated monthly. Tax assessor data updates annually, though some counties update more frequently. You always get the freshest records available.',
+  },
+  {
+    q: 'Do all counties and states provide the same information?',
+    a: 'Most do, but a small number of counties restrict certain details like bedroom and bathroom counts. Non-disclosure states (Alaska, Idaho, Kansas, Louisiana, Mississippi, Missouri, Montana, New Mexico, North Dakota, Texas, Utah, and Wyoming) do not publicly share sales prices, so we generate estimated values using market intelligence and comparable data.',
+  },
+  {
+    q: 'Is the data scrubbed for Do Not Call (DNC) lists?',
+    a: 'Yes. All skip-traced contact data is scrubbed against Federal and State Do Not Call lists, government numbers, attorney numbers, anti-telemarketing groups, and known litigators. We engage an independent third party to perform skip tracing and ensure compliance with industry standards.',
+  },
+  {
+    q: 'Does the data include unit counts for multi-family properties?',
+    a: 'Yes. We pull data directly from county tax assessors, which classify properties as duplex (2 units), triplex (3 units), quad-plex (4 units), multi-family (5+), and multi-family (10+). Some counties may not populate this information in their public records.',
+  },
 ];
 
 export function FAQ() {

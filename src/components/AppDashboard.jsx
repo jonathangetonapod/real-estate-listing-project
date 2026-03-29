@@ -2895,28 +2895,12 @@ function SettingsTab() {
             Edit Profile
           </Button>
         </div>
-        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
-          <div>
-            <p className="font-mono text-lg font-bold text-charcoal">248</p>
-            <p className="text-[10px] uppercase tracking-wider text-gray-400">Leads This Month</p>
-          </div>
-          <div>
-            <p className="font-mono text-lg font-bold text-success">7.5%</p>
-            <p className="text-[10px] uppercase tracking-wider text-gray-400">Reply Rate</p>
-          </div>
-          <div>
-            <p className="font-mono text-lg font-bold text-orange">3</p>
-            <p className="text-[10px] uppercase tracking-wider text-gray-400">Listings Won</p>
-          </div>
-        </div>
       </div>
 
       {/* Settings sections */}
       <div className="rounded-xl border border-border bg-white overflow-hidden divide-y divide-gray-100">
         {[
           { label: 'Email Signature', desc: 'Name, title, and sign-off used in all pitches', icon: Mail },
-          { label: 'Farm Areas', desc: 'Zip codes and lead types you target', icon: MapPin },
-          { label: 'Notification Preferences', desc: 'Email alerts and in-app notifications', icon: Bell },
           { label: 'Pipeline Stages', desc: 'Customize your deal pipeline stages', icon: GitBranch },
           { label: 'Integrations', desc: 'CRM, calendar, and email provider sync', icon: Settings },
           { label: 'Billing & Plan', desc: 'Your subscription, invoices, and payment method', icon: DollarSign },
