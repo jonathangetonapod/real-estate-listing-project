@@ -3087,12 +3087,13 @@ function EmailAccountsTab() {
     (async () => {
       try {
         console.log('Loading domain for user:', user.id);
-        const { data, error } = await supabase
+        const { data: rows, error } = await supabase
           .from('agent_domains')
           .select('*')
           .eq('agent_id', user.id)
-          .single();
-        console.log('Domain query result:', { data, error });
+          .limit(1);
+        console.log('Domain query result:', { rows, error });
+        const data = rows?.[0];
         if (data) {
           setDomain({
             name: data.domain_name,
