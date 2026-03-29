@@ -578,7 +578,7 @@ function RequestDetailPanel({ request, onClose, onUploadLeads, onReject }) {
 // View: Admin Overview (Command Center)
 // ---------------------------------------------------------------------------
 
-function OverviewView({ onProcessRequest, showRequestsOnly = false }) {
+function OverviewView({ onProcessRequest, showRequestsOnly = false, onNavigate }) {
   const [expandedRequest, setExpandedRequest] = useState(null);
   const [detailRequest, setDetailRequest] = useState(null);
   const [requestFilter, setRequestFilter] = useState('All');
@@ -625,10 +625,10 @@ function OverviewView({ onProcessRequest, showRequestsOnly = false }) {
   }
 
   const metrics = [
-    { label: 'Active Agents', value: '8', icon: UserCheck, accent: 'text-charcoal', iconBg: 'bg-charcoal/5', iconColor: 'text-charcoal' },
-    { label: 'Pending Requests', value: String(requests.filter((r) => r.status === 'Pending').length), icon: AlertCircle, accent: 'text-orange', badge: 'needs action', badgeColor: 'bg-orange/10 text-orange', iconBg: 'bg-orange/5', iconColor: 'text-orange' },
-    { label: 'Leads Delivered', value: '1,847', icon: TrendingUp, accent: 'text-charcoal', iconBg: 'bg-success/5', iconColor: 'text-success' },
-    { label: 'Monthly Revenue', value: '$632', icon: DollarSign, accent: 'text-charcoal', mono: true, iconBg: 'bg-charcoal/5', iconColor: 'text-charcoal' },
+    { label: 'Active Agents', value: '8', icon: UserCheck, accent: 'text-charcoal', iconBg: 'bg-charcoal/5', iconColor: 'text-charcoal', nav: 'agents' },
+    { label: 'Pending Requests', value: String(requests.filter((r) => r.status === 'Pending').length), icon: AlertCircle, accent: 'text-orange', badge: 'needs action', badgeColor: 'bg-orange/10 text-orange', iconBg: 'bg-orange/5', iconColor: 'text-orange', nav: 'requests' },
+    { label: 'Leads Delivered', value: '1,847', icon: TrendingUp, accent: 'text-charcoal', iconBg: 'bg-success/5', iconColor: 'text-success', nav: 'upload' },
+    { label: 'Monthly Revenue', value: '$632', icon: DollarSign, accent: 'text-charcoal', mono: true, iconBg: 'bg-charcoal/5', iconColor: 'text-charcoal', nav: 'payments' },
   ];
 
   return (
@@ -662,6 +662,7 @@ function OverviewView({ onProcessRequest, showRequestsOnly = false }) {
               <Card
                 key={m.label}
                 className="relative overflow-visible group cursor-pointer hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+                onClick={() => onNavigate && onNavigate(m.nav)}
               >
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -894,20 +895,7 @@ function OverviewView({ onProcessRequest, showRequestsOnly = false }) {
                                     View Details
                                   </Button>
                                 )}
-                                {!['Completed', 'Rejected'].includes(req.status) && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="rounded-lg text-xs"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDetailRequest(req.id);
-                                    }}
-                                  >
-                                    <Eye className="w-3 h-3 mr-1" />
-                                    Full Details
-                                  </Button>
-                                )}
+                                {/* Full Details button removed — Process Request handles expansion */}
                               </div>
                             </div>
                           </div>
@@ -977,7 +965,7 @@ function OverviewView({ onProcessRequest, showRequestsOnly = false }) {
 // View: Upload Leads
 // ---------------------------------------------------------------------------
 
-function UploadLeadsView({ preselectedAgent, sourceRequest }) {
+function UploadLeadsView({ preselectedAgent, sourceRequest, agentsList }) {
   const [selectedAgentId, setSelectedAgentId] = useState(
     preselectedAgent ? preselectedAgent.agentId : null
   );
@@ -991,18 +979,18 @@ function UploadLeadsView({ preselectedAgent, sourceRequest }) {
   const [showNotifyConfirm, setShowNotifyConfirm] = useState(false);
   const fileInputRef = useRef(null);
 
-  const selectedAgent = agents.find((a) => a.id === selectedAgentId);
+  const selectedAgent = agentsList.find((a) => a.id === selectedAgentId);
 
   const filteredAgents = useMemo(() => {
-    if (!agentSearch.trim()) return agents;
+    if (!agentSearch.trim()) return agentsList;
     const q = agentSearch.toLowerCase();
-    return agents.filter(
+    return agentsList.filter(
       (a) =>
         a.name.toLowerCase().includes(q) ||
         a.email.toLowerCase().includes(q) ||
         a.market.toLowerCase().includes(q)
     );
-  }, [agentSearch]);
+  }, [agentSearch, agentsList]);
 
   // Compute current step
   const currentStep = uploaded ? 3 : showPreview ? 3 : selectedAgentId && !file ? 2 : selectedAgentId && file ? 3 : 1;
@@ -1443,8 +1431,8 @@ function UploadLeadsView({ preselectedAgent, sourceRequest }) {
       )}
 
       {/* Agent selector */}
-      <Card className="rounded-xl">
-        <CardContent className="p-6">
+      <Card className="rounded-xl overflow-visible">
+        <CardContent className="p-6 overflow-visible">
           <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">
             Select Agent
           </label>
@@ -1479,7 +1467,7 @@ function UploadLeadsView({ preselectedAgent, sourceRequest }) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute top-full left-0 right-0 z-20 mt-1 rounded-lg border border-border bg-white shadow-lg"
+                  className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-border bg-white shadow-lg"
                 >
                   {/* Search input inside dropdown */}
                   <div className="p-2 border-b border-border">
@@ -1613,25 +1601,75 @@ function UploadLeadsView({ preselectedAgent, sourceRequest }) {
 // View: Agents Management
 // ---------------------------------------------------------------------------
 
-function AgentsView() {
+function AgentsView({ onUploadForAgent, agentsList, setAgentsList }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedAgent, setExpandedAgent] = useState(null);
+  const [editingAgent, setEditingAgent] = useState(null);
+  const [editForm, setEditForm] = useState({ name: '', email: '', market: '' });
+  const [deactivatingAgent, setDeactivatingAgent] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState({ name: '', email: '', market: '', plan: 'Starter' });
 
   const filteredAgents = useMemo(() => {
-    if (!searchQuery.trim()) return agents;
+    if (!searchQuery.trim()) return agentsList;
     const q = searchQuery.toLowerCase();
-    return agents.filter(
+    return agentsList.filter(
       (a) =>
         a.name.toLowerCase().includes(q) ||
         a.email.toLowerCase().includes(q) ||
         a.market.toLowerCase().includes(q)
     );
-  }, [searchQuery]);
+  }, [searchQuery, agentsList]);
 
-  const totalAgents = agents.length;
-  const activeCount = agents.filter((a) => a.status === 'Active').length;
-  const trialCount = agents.filter((a) => a.status === 'Trial').length;
-  const expiredCount = agents.filter((a) => a.status === 'Expired').length;
+  const totalAgents = agentsList.length;
+  const activeCount = agentsList.filter((a) => a.status === 'Active').length;
+  const trialCount = agentsList.filter((a) => a.status === 'Trial').length;
+  const expiredCount = agentsList.filter((a) => a.status === 'Expired').length;
+
+  function handleStartEdit(agent, e) {
+    e.stopPropagation();
+    setEditingAgent(agent.id);
+    setEditForm({ name: agent.name, email: agent.email, market: agent.market });
+  }
+
+  function handleSaveEdit(agentId, e) {
+    e.stopPropagation();
+    setAgentsList((prev) =>
+      prev.map((a) =>
+        a.id === agentId
+          ? { ...a, name: editForm.name, email: editForm.email, market: editForm.market, initials: editForm.name.split(' ').map((n) => n[0]).join('').toUpperCase() }
+          : a
+      )
+    );
+    setEditingAgent(null);
+  }
+
+  function handleDeactivate(agentId, e) {
+    e.stopPropagation();
+    setAgentsList((prev) =>
+      prev.map((a) => (a.id === agentId ? { ...a, status: 'Expired' } : a))
+    );
+    setDeactivatingAgent(null);
+  }
+
+  function handleAddAgent(e) {
+    e.preventDefault();
+    if (!addForm.name.trim() || !addForm.email.trim()) return;
+    const initials = addForm.name.split(' ').map((n) => n[0]).join('').toUpperCase();
+    const newAgent = {
+      id: Math.max(...agentsList.map((a) => a.id)) + 1,
+      name: addForm.name,
+      initials,
+      email: addForm.email,
+      market: addForm.market || 'Unassigned',
+      plan: addForm.plan,
+      leadsPerMonth: addForm.plan === 'Pro' ? 250 : 100,
+      status: 'Active',
+    };
+    setAgentsList((prev) => [...prev, newAgent]);
+    setShowAddModal(false);
+    setAddForm({ name: '', email: '', market: '', plan: 'Starter' });
+  }
 
   return (
     <div className="space-y-6 pb-12">
@@ -1640,10 +1678,91 @@ function AgentsView() {
           <h2 className="font-heading text-2xl font-bold text-charcoal mb-1">Agents</h2>
           <p className="font-sans text-base text-gray-500">Manage all registered agents.</p>
         </div>
-        <Button className="rounded-lg bg-orange text-white hover:bg-orange/90">
+        <Button className="rounded-lg bg-orange text-white hover:bg-orange/90" onClick={() => setShowAddModal(true)}>
           Add Agent
         </Button>
       </div>
+
+      {/* Add Agent Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+            onClick={() => setShowAddModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-heading text-lg font-semibold text-charcoal">Add New Agent</h3>
+                <button onClick={() => setShowAddModal(false)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <form onSubmit={handleAddAgent} className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Name</label>
+                  <input
+                    type="text"
+                    value={addForm.name}
+                    onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+                    placeholder="Full name"
+                    className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange/40"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Email</label>
+                  <input
+                    type="email"
+                    value={addForm.email}
+                    onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
+                    placeholder="agent@email.com"
+                    className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange/40"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Market</label>
+                  <input
+                    type="text"
+                    value={addForm.market}
+                    onChange={(e) => setAddForm({ ...addForm, market: e.target.value })}
+                    placeholder="e.g., Miami"
+                    className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange/40"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Plan</label>
+                  <select
+                    value={addForm.plan}
+                    onChange={(e) => setAddForm({ ...addForm, plan: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange/40"
+                  >
+                    <option value="Starter">Starter</option>
+                    <option value="Pro">Pro</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2 pt-2">
+                  <Button type="submit" className="rounded-lg bg-orange text-white hover:bg-orange/90 flex-1">
+                    Add Agent
+                  </Button>
+                  <Button type="button" variant="outline" className="rounded-lg" onClick={() => setShowAddModal(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Summary stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1796,12 +1915,78 @@ function AgentsView() {
                             </div>
                           </div>
 
+                          {/* Inline edit form */}
+                          <AnimatePresence>
+                            {editingAgent === agent.id && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                                className="overflow-hidden mb-4"
+                              >
+                                <div className="rounded-lg border border-border bg-white p-3 space-y-3" onClick={(e) => e.stopPropagation()}>
+                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Edit Agent</p>
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div>
+                                      <label className="text-[10px] font-medium text-muted-foreground mb-1 block">Name</label>
+                                      <input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="w-full rounded-md border border-border bg-white px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-orange/30" />
+                                    </div>
+                                    <div>
+                                      <label className="text-[10px] font-medium text-muted-foreground mb-1 block">Email</label>
+                                      <input type="text" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} className="w-full rounded-md border border-border bg-white px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-orange/30" />
+                                    </div>
+                                    <div>
+                                      <label className="text-[10px] font-medium text-muted-foreground mb-1 block">Market</label>
+                                      <input type="text" value={editForm.market} onChange={(e) => setEditForm({ ...editForm, market: e.target.value })} className="w-full rounded-md border border-border bg-white px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-orange/30" />
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Button size="sm" className="rounded-lg bg-orange text-white hover:bg-orange/90 text-xs" onClick={(e) => handleSaveEdit(agent.id, e)}>
+                                      Save Changes
+                                    </Button>
+                                    <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={(e) => { e.stopPropagation(); setEditingAgent(null); }}>
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          {/* Deactivate confirmation */}
+                          <AnimatePresence>
+                            {deactivatingAgent === agent.id && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                                className="overflow-hidden mb-4"
+                              >
+                                <div className="rounded-lg border border-danger/20 bg-danger/[0.02] p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+                                  <p className="text-sm text-charcoal">
+                                    Are you sure you want to deactivate <span className="font-semibold">{agent.name}</span>?
+                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <Button size="sm" className="rounded-lg bg-danger text-white hover:bg-danger/90 text-xs" onClick={(e) => handleDeactivate(agent.id, e)}>
+                                      Confirm Deactivate
+                                    </Button>
+                                    <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={(e) => { e.stopPropagation(); setDeactivatingAgent(null); }}>
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
                           {/* Quick actions */}
                           <div className="flex items-center gap-2 flex-wrap">
                             <Button
                               size="sm"
                               className="rounded-lg bg-orange text-white hover:bg-orange/90 text-xs"
-                              onClick={(e) => e.stopPropagation()}
+                              onClick={(e) => { e.stopPropagation(); onUploadForAgent(agent); }}
                             >
                               <Upload className="w-3 h-3 mr-1" />
                               Upload Leads
@@ -1810,20 +1995,26 @@ function AgentsView() {
                               size="sm"
                               variant="outline"
                               className="rounded-lg text-xs"
-                              onClick={(e) => e.stopPropagation()}
+                              onClick={(e) => handleStartEdit(agent, e)}
                             >
                               <Wrench className="w-3 h-3 mr-1" />
                               Edit
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="rounded-lg text-xs text-danger border-danger/20 hover:bg-danger/5"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Power className="w-3 h-3 mr-1" />
-                              Deactivate
-                            </Button>
+                            {agent.status !== 'Expired' ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="rounded-lg text-xs text-danger border-danger/20 hover:bg-danger/5"
+                                onClick={(e) => { e.stopPropagation(); setDeactivatingAgent(agent.id); }}
+                              >
+                                <Power className="w-3 h-3 mr-1" />
+                                Deactivate
+                              </Button>
+                            ) : (
+                              <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium bg-danger/10 text-danger border-danger/20">
+                                Deactivated
+                              </span>
+                            )}
                           </div>
                         </div>
                       </motion.div>
@@ -1848,6 +2039,8 @@ export function AdminDashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [preselectedAgent, setPreselectedAgent] = useState(null);
   const [sourceRequest, setSourceRequest] = useState(null);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [agentsList, setAgentsList] = useState(agents);
 
   function handleNavClick(key) {
     setActiveNav(key);
@@ -1863,6 +2056,15 @@ export function AdminDashboard() {
     setSourceRequest(request);
     setActiveNav('upload');
   }
+
+  const headerTitles = {
+    dashboard: 'Admin Dashboard',
+    agents: 'Agents',
+    requests: 'Lead Requests',
+    upload: 'Upload Leads',
+    payments: 'Payments',
+    settings: 'Settings',
+  };
 
   return (
     <div className="flex h-screen bg-light-bg">
@@ -1953,16 +2155,66 @@ export function AdminDashboard() {
               <span className="block h-0.5 w-5 bg-foreground" />
             </button>
             <div>
-              <h1 className="font-heading text-lg font-semibold">Admin Dashboard</h1>
+              <h1 className="font-heading text-lg font-semibold">{headerTitles[activeNav] || 'Admin Dashboard'}</h1>
               <p className="text-xs text-muted-foreground">Friday, March 28, 2026</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange" />
-            </button>
+            <div className="relative">
+              <button
+                className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                onClick={() => setNotifOpen(!notifOpen)}
+              >
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange" />
+              </button>
+              <AnimatePresence>
+                {notifOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-border bg-white shadow-xl z-50"
+                  >
+                    <div className="px-4 py-3 border-b border-border">
+                      <p className="text-sm font-semibold text-charcoal">Notifications</p>
+                    </div>
+                    <div className="divide-y divide-border">
+                      {[
+                        { text: 'Sarah Johnson requested leads for Riverside Heights', time: '2h ago', unread: true },
+                        { text: "Mike Chen's trial expires in 3 days", time: '5h ago', unread: true },
+                        { text: 'Amanda Foster upgraded to Pro plan', time: '1d ago', unread: false },
+                      ].map((n, i) => (
+                        <button
+                          key={i}
+                          className={cn(
+                            'w-full text-left px-4 py-3 hover:bg-muted/30 transition-colors flex items-start gap-3',
+                            n.unread && 'bg-orange/[0.02]'
+                          )}
+                          onClick={() => setNotifOpen(false)}
+                        >
+                          {n.unread && <span className="mt-1.5 w-2 h-2 rounded-full bg-orange shrink-0" />}
+                          {!n.unread && <span className="mt-1.5 w-2 h-2 rounded-full bg-gray-200 shrink-0" />}
+                          <div className="flex-1 min-w-0">
+                            <p className={cn('text-xs leading-relaxed', n.unread ? 'text-charcoal font-medium' : 'text-gray-500')}>
+                              {n.text}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground font-mono mt-0.5">{n.time}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="px-4 py-2.5 border-t border-border">
+                      <button className="text-xs font-medium text-orange hover:text-orange/80 transition-colors" onClick={() => setNotifOpen(false)}>
+                        Mark all as read
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <div className="hidden sm:flex h-8 w-8 items-center justify-center rounded-full bg-orange text-xs font-semibold text-white">
               JG
             </div>
@@ -1973,17 +2225,28 @@ export function AdminDashboard() {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-16">
           <FadePanel tabKey={activeNav}>
             {activeNav === 'dashboard' && (
-              <OverviewView onProcessRequest={handleProcessRequest} />
+              <OverviewView onProcessRequest={handleProcessRequest} onNavigate={handleNavClick} />
             )}
-            {activeNav === 'agents' && <AgentsView />}
+            {activeNav === 'agents' && (
+              <AgentsView
+                agentsList={agentsList}
+                setAgentsList={setAgentsList}
+                onUploadForAgent={(agent) => {
+                  setPreselectedAgent({ agentId: agent.id, agent: agent.name });
+                  setSourceRequest(null);
+                  setActiveNav('upload');
+                }}
+              />
+            )}
             {activeNav === 'requests' && (
-              <OverviewView onProcessRequest={handleProcessRequest} showRequestsOnly />
+              <OverviewView onProcessRequest={handleProcessRequest} showRequestsOnly onNavigate={handleNavClick} />
             )}
             {activeNav === 'upload' && (
               <UploadLeadsView
                 key={preselectedAgent?.agentId || 'default'}
                 preselectedAgent={preselectedAgent}
                 sourceRequest={sourceRequest}
+                agentsList={agentsList}
               />
             )}
             {activeNav === 'payments' && (
