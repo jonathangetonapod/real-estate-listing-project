@@ -3056,7 +3056,8 @@ function LeadsArrivedBanner({ onDismiss, onReview }) {
 // ---------------------------------------------------------------------------
 
 function EmailAccountsTab() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  console.log('EmailAccountsTab mounted. user:', user?.id, 'profile:', profile?.id);
   const [domain, setDomain] = useState(null);
   const [mailboxes, setMailboxes] = useState([]);
   const [showDomainFlow, setShowDomainFlow] = useState(false);
@@ -3087,11 +3088,28 @@ function EmailAccountsTab() {
     (async () => {
       try {
         console.log('Loading domain for user:', user.id);
-        const { data: rows, error } = await supabase
+
+        // Timeout wrapper to prevent hanging
+        const queryPromise = supabase
           .from('agent_domains')
           .select('*')
           .eq('agent_id', user.id)
           .limit(1);
+
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Supabase query timed out after 5s')), 5000)
+        );
+
+        let rows = [];
+        let error = null;
+        try {
+          const result = await Promise.race([queryPromise, timeoutPromise]);
+          rows = result.data || [];
+          error = result.error;
+        } catch (e) {
+          console.error('Domain query failed/timed out:', e.message);
+        }
+
         console.log('Domain query result:', { rows, error });
         const data = rows?.[0];
         if (data) {
