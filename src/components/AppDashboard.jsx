@@ -3745,11 +3745,10 @@ function EmailAccountsTab() {
                     if (domain?.name) {
                       const winnrUsers = newUsers.map(u => ({
                         username: u.username,
-                        domain: domain.name,
                         name: u.fullName,
                       }));
-                      console.log('Creating Winnr mailboxes:', winnrUsers);
-                      const result = await bulkCreateEmailUsers(winnrUsers);
+                      console.log('Creating Winnr mailboxes on', domain.name, ':', winnrUsers);
+                      const result = await bulkCreateEmailUsers(domain.name, winnrUsers);
 
                       // Save each mailbox to Supabase
                       if (user?.id) {

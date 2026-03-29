@@ -186,10 +186,14 @@ export async function createEmailUser({ username, domain, name, password }) {
 }
 
 // Bulk create email users (up to 100)
-export async function bulkCreateEmailUsers(users) {
+// domain goes at top level, users array has username + name only
+export async function bulkCreateEmailUsers(domain, users) {
   return winnrFetch('/v1/email-users/bulk', {
     method: 'POST',
-    body: JSON.stringify({ users }),
+    body: JSON.stringify({
+      domain,
+      users: users.map(u => ({ username: u.username, name: u.name })),
+    }),
   })
 }
 
