@@ -3066,8 +3066,14 @@ function EmailAccountsTab() {
   const [selectedDomain, setSelectedDomain] = useState(null);
   const [expandedMailbox, setExpandedMailbox] = useState(null);
   const [provisioningChecks, setProvisioningChecks] = useState([]);
-  const [newMailboxUsername, setNewMailboxUsername] = useState('');
-  const [newMailboxDisplayName, setNewMailboxDisplayName] = useState('');
+  const firstNames = ['Sarah','Michael','Jessica','David','Emily','James','Amanda','Robert','Maria','Daniel','Laura','Christopher','Nicole','Andrew','Rachel','Kevin','Stephanie','Brian','Jennifer','Thomas'];
+  const lastNames = ['Johnson','Smith','Williams','Brown','Davis','Miller','Wilson','Anderson','Taylor','Martinez','Garcia','Lopez','Harris','Clark','Lewis','Robinson','Walker','Young','King','Wright'];
+  const generateUser = () => {
+    const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
+    return { fullName: `${fn} ${ln}`, username: `${fn.toLowerCase()}.${ln.toLowerCase()}` };
+  };
+  const [newUsers, setNewUsers] = useState(() => [generateUser(), generateUser()]);
 
   const handleDomainSearch = () => {
     if (!searchQuery.trim()) return;
@@ -3460,48 +3466,139 @@ function EmailAccountsTab() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="fixed inset-0 z-[101] flex items-center justify-center p-4"
             >
-              <div className="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
-                <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-                  <h3 className="font-heading text-base font-semibold text-charcoal">Create Mailbox</h3>
-                  <button onClick={() => setShowAddMailbox(false)} className="text-gray-400 hover:text-gray-600">
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-                <div className="px-5 py-5 space-y-4">
-                  <div>
-                    <label className="text-xs font-medium text-charcoal block mb-1.5">Email Address</label>
-                    <div className="flex items-center gap-0">
-                      <Input
-                        placeholder="sarah"
-                        className="rounded-r-none h-10 text-sm"
-                        value={newMailboxUsername}
-                        onChange={(e) => setNewMailboxUsername(e.target.value)}
-                        autoFocus
-                      />
-                      <div className="h-10 px-3 flex items-center bg-gray-100 border border-l-0 border-border rounded-r-lg text-sm text-muted-foreground whitespace-nowrap">
-                        @{domain?.name}
+              {(() => {
+                const randomizeAll = () => setNewUsers(newUsers.map(() => generateUser()));
+                const addRow = () => { if (newUsers.length < 5) setNewUsers([...newUsers, generateUser()]); };
+                const removeRow = (idx) => { if (newUsers.length > 1) setNewUsers(newUsers.filter((_, i) => i !== idx)); };
+                const updateUser = (idx, field, value) => {
+                  setNewUsers(newUsers.map((u, i) => {
+                    if (i !== idx) return u;
+                    if (field === 'fullName') {
+                      const parts = value.split(' ');
+                      const username = parts.length >= 2 ? `${parts[0].toLowerCase()}.${parts[parts.length - 1].toLowerCase()}` : value.toLowerCase().replace(/\s+/g, '.');
+                      return { ...u, fullName: value, username };
+                    }
+                    return { ...u, [field]: value };
+                  }));
+                };
+
+                const handleCreateAll = () => {
+                  newUsers.forEach(u => {
+                    const mb = {
+                      email: `${u.username}@${domain.name}`,
+                      displayName: u.fullName,
+                      status: 'warming',
+                      healthScore: 0,
+                      inboxRate: 0,
+                      spamRate: 0,
+                      emailsSent: 0,
+                      warmupDay: 1,
+                      warmupTotal: 14,
+                      dailySends: [0, 0, 0, 0, 0, 0, 0],
+                      createdAt: new Date().toISOString(),
+                    };
+                    setMailboxes(prev => {
+                      if (prev.length >= 5) return prev;
+                      return [...prev, mb];
+                    });
+                  });
+                  setShowAddMailbox(false);
+                };
+
+                const maxAllowed = 5 - mailboxes.length;
+                const existingEmails = mailboxes.map(m => m.email);
+                const newEmails = newUsers.map(u => `${u.username}@${domain?.name}`);
+                const hasDuplicateNew = new Set(newEmails).size !== newEmails.length;
+                const hasExistingConflict = newEmails.some(e => existingEmails.includes(e));
+                const canCreate = newUsers.length > 0 && newUsers.every(u => u.fullName.trim() && u.username.trim()) && newUsers.length <= maxAllowed && !hasDuplicateNew && !hasExistingConflict;
+
+                return (
+                  <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl overflow-hidden">
+                    <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+                      <div>
+                        <h3 className="font-heading text-base font-semibold text-charcoal">Add Email Users</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">Configure the email users to create on <span className="font-mono text-charcoal">{domain?.name}</span></p>
+                      </div>
+                      <button onClick={() => setShowAddMailbox(false)} className="text-gray-400 hover:text-gray-600">
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    <div className="px-5 py-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email Users</p>
+                        <div className="flex items-center gap-2">
+                          <button onClick={randomizeAll} className="text-xs text-orange hover:text-orange-hover font-medium transition-colors flex items-center gap-1">
+                            <RefreshCw className="h-3 w-3" />
+                            Randomize All
+                          </button>
+                          <button onClick={addRow} disabled={newUsers.length >= maxAllowed} className={cn('text-xs font-medium transition-colors flex items-center gap-1', newUsers.length >= maxAllowed ? 'text-gray-300' : 'text-charcoal hover:text-orange')}>
+                            <Plus className="h-3 w-3" />
+                            Add User
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Table header */}
+                      <div className="grid grid-cols-[30px_1fr_1fr_1.2fr_30px] gap-2 px-2 pb-2 border-b border-gray-100">
+                        <span className="text-[10px] font-medium text-gray-400 uppercase">#</span>
+                        <span className="text-[10px] font-medium text-gray-400 uppercase">Full Name</span>
+                        <span className="text-[10px] font-medium text-gray-400 uppercase">Username</span>
+                        <span className="text-[10px] font-medium text-gray-400 uppercase">Preview</span>
+                        <span></span>
+                      </div>
+
+                      {/* Table rows */}
+                      <div className="divide-y divide-gray-50 max-h-[300px] overflow-y-auto">
+                        {newUsers.map((user, idx) => (
+                          <div key={idx} className="grid grid-cols-[30px_1fr_1fr_1.2fr_30px] gap-2 px-2 py-2.5 items-center hover:bg-gray-50/50 transition-colors">
+                            <span className="text-xs text-gray-400 font-mono">{idx + 1}.</span>
+                            <Input
+                              value={user.fullName}
+                              onChange={(e) => updateUser(idx, 'fullName', e.target.value)}
+                              className="h-8 text-xs rounded-md"
+                              placeholder="Full Name"
+                            />
+                            <div className="flex items-center gap-0">
+                              <Input
+                                value={user.username}
+                                onChange={(e) => updateUser(idx, 'username', e.target.value)}
+                                className="h-8 text-xs rounded-r-none font-mono"
+                                placeholder="username"
+                              />
+                            </div>
+                            <span className="text-[11px] font-mono text-gray-500 truncate">{user.username}@{domain?.name}</span>
+                            <button onClick={() => removeRow(idx)} className={cn('text-gray-300 hover:text-danger transition-colors', newUsers.length <= 1 && 'opacity-0 pointer-events-none')}>
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      {maxAllowed <= 0 && (
+                        <p className="text-xs text-danger mt-3">Maximum mailboxes reached (5). Delete existing mailboxes to add more.</p>
+                      )}
+                      {hasDuplicateNew && (
+                        <p className="text-xs text-danger mt-3">Duplicate usernames detected. Each email must be unique.</p>
+                      )}
+                      {hasExistingConflict && (
+                        <p className="text-xs text-danger mt-3">One or more emails already exist. Choose different usernames.</p>
+                      )}
+                    </div>
+
+                    <div className="px-5 py-4 border-t border-border flex items-center justify-between">
+                      <p className="text-xs text-gray-400">{newUsers.length} {newUsers.length === 1 ? 'user' : 'users'} will be created</p>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="rounded-lg text-xs" onClick={() => setShowAddMailbox(false)}>Cancel</Button>
+                        <Button className="bg-orange text-white hover:bg-orange-hover rounded-lg text-xs h-9 px-4" disabled={!canCreate} onClick={handleCreateAll}>
+                          <Mail className="h-3.5 w-3.5 mr-1.5" />
+                          Create {newUsers.length} {newUsers.length === 1 ? 'Mailbox' : 'Mailboxes'}
+                        </Button>
                       </div>
                     </div>
                   </div>
-                  <div>
-                    <label className="text-xs font-medium text-charcoal block mb-1.5">Display Name</label>
-                    <Input
-                      placeholder="Sarah Johnson"
-                      className="h-10 text-sm"
-                      value={newMailboxDisplayName}
-                      onChange={(e) => setNewMailboxDisplayName(e.target.value)}
-                    />
-                  </div>
-                  <Button
-                    className="w-full bg-orange text-white hover:bg-orange-hover rounded-lg h-10 text-sm font-medium"
-                    disabled={!newMailboxUsername.trim() || !newMailboxDisplayName.trim()}
-                    onClick={handleCreateMailbox}
-                  >
-                    <Mail className="h-4 w-4 mr-2" />
-                    Create Mailbox
-                  </Button>
-                </div>
-              </div>
+                );
+              })()}
             </motion.div>
           </>
         )}
