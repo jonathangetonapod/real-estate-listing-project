@@ -3651,10 +3651,12 @@ function EmailAccountsTab() {
                         <p className="text-xs text-danger mt-3">Maximum mailboxes reached (5). Delete existing mailboxes to add more.</p>
                       )}
                       {hasDuplicateNew && (
-                        <p className="text-xs text-danger mt-3">Duplicate usernames detected. Each email must be unique.</p>
+                        <p className="text-xs text-danger mt-3">Duplicate usernames in your list. Each email must be unique.</p>
                       )}
                       {hasExistingConflict && (
-                        <p className="text-xs text-danger mt-3">One or more emails already exist. Choose different usernames.</p>
+                        <p className="text-xs text-danger mt-3">
+                          {newEmails.filter(e => existingEmails.includes(e)).join(', ')} {newEmails.filter(e => existingEmails.includes(e)).length === 1 ? 'is' : 'are'} already created. Mailboxes can&apos;t be changed after setup — use a different username.
+                        </p>
                       )}
                     </div>
 
