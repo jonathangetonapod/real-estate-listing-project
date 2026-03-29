@@ -1,3 +1,9 @@
+// ============================================================================
+// Winnr API Service Layer
+// Email infrastructure: domains, mailboxes, inbox, warming
+// Agent never sees this — OffMarket is the only brand
+// ============================================================================
+
 const WINNR_API_URL = 'https://api.winnr.app'
 const WINNR_TOKEN = 'wnr_tUE3La3uxRUpFDsdLF9s_wtOfT9yYnBGKXRE6PcToJFoA'
 
@@ -6,14 +12,58 @@ const headers = {
   'Content-Type': 'application/json',
 }
 
-// Search domain availability
-export async function searchDomain(query) {
-  const res = await fetch(`${WINNR_API_URL}/v1/domains/search?q=${encodeURIComponent(query)}`, { headers })
-  if (!res.ok) throw new Error('Domain search failed')
-  return res.json()
+async function winnrFetch(path, options = {}) {
+  const res = await fetch(`${WINNR_API_URL}${path}`, { headers, ...options })
+  const json = await res.json()
+  if (!res.ok) {
+    const msg = json?.error?.message || `Winnr API error: ${res.status}`
+    throw new Error(msg)
+  }
+  return json
 }
 
-// Generate domain variations and check availability in bulk
+// ============================================================================
+// ACCOUNT
+// ============================================================================
+
+export async function getAccount() {
+  return winnrFetch('/v1/account')
+}
+
+export async function getUsage() {
+  return winnrFetch('/v1/account/usage')
+}
+
+// ============================================================================
+// DOMAINS
+// ============================================================================
+
+// List all domains
+export async function listDomains(limit = 25, cursor) {
+  const params = new URLSearchParams({ limit })
+  if (cursor) params.set('cursor', cursor)
+  return winnrFetch(`/v1/domains?${params}`)
+}
+
+// Get domain details
+export async function getDomain(domainId) {
+  return winnrFetch(`/v1/domains/${domainId}`)
+}
+
+// Search single domain availability
+export async function searchDomain(domain) {
+  return winnrFetch(`/v1/domains/search?q=${encodeURIComponent(domain)}`)
+}
+
+// Bulk search domain availability (up to 100)
+export async function searchDomainsBulk(domains) {
+  return winnrFetch('/v1/domains/search-bulk', {
+    method: 'POST',
+    body: JSON.stringify({ domains }),
+  })
+}
+
+// Generate variations and check availability
 export async function suggestDomains(keywords) {
   const q = keywords.trim().toLowerCase().replace(/\s+/g, '')
   const variations = [
@@ -26,13 +76,10 @@ export async function suggestDomains(keywords) {
     `${q}re.com`,
     `${q}-sales.com`,
   ]
-  const res = await fetch(`${WINNR_API_URL}/v1/domains/search-bulk`, {
+  const json = await winnrFetch('/v1/domains/search-bulk', {
     method: 'POST',
-    headers,
     body: JSON.stringify({ domains: variations }),
   })
-  if (!res.ok) throw new Error('Domain search failed')
-  const json = await res.json()
   return {
     data: (json.data?.results || []).map(r => ({
       domain: r.domain,
@@ -42,81 +89,257 @@ export async function suggestDomains(keywords) {
   }
 }
 
-// Purchase/setup a domain
+// Purchase and setup a domain
 export async function setupDomain(domain) {
-  const res = await fetch(`${WINNR_API_URL}/v1/domains/setup`, {
+  return winnrFetch('/v1/domains/setup', {
     method: 'POST',
-    headers,
     body: JSON.stringify({ domain }),
   })
-  if (!res.ok) throw new Error('Domain setup failed')
-  return res.json()
 }
 
-// Connect existing domains
-export async function connectDomains(domains) {
-  const res = await fetch(`${WINNR_API_URL}/v1/domains/connect`, {
+// Connect external domains (with optional Cloudflare token)
+export async function connectDomains(domains, cloudflareApiToken) {
+  const body = { domains }
+  if (cloudflareApiToken) body.cloudflare_api_token = cloudflareApiToken
+  return winnrFetch('/v1/domains/connect', {
     method: 'POST',
-    headers,
+    body: JSON.stringify(body),
+  })
+}
+
+// Delete a domain
+export async function deleteDomain(domainId) {
+  return winnrFetch(`/v1/domains/${domainId}`, { method: 'DELETE' })
+}
+
+// Check DNS propagation
+export async function getDnsStatus(domainId) {
+  return winnrFetch(`/v1/domains/${domainId}/dns-status`)
+}
+
+// Get expected DNS records (for manual setup domains)
+export async function getDnsRecords(domainId) {
+  return winnrFetch(`/v1/domains/${domainId}/dns-records`)
+}
+
+// Verify DNS via live lookup
+export async function verifyDns(domainId) {
+  return winnrFetch(`/v1/domains/${domainId}/verify-dns`, { method: 'POST' })
+}
+
+// Check nameservers
+export async function checkNameservers(domains) {
+  return winnrFetch('/v1/domains/check-ns', {
+    method: 'POST',
     body: JSON.stringify({ domains }),
   })
-  if (!res.ok) throw new Error('Domain connect failed')
-  return res.json()
 }
 
-// Create email user (mailbox)
-export async function createEmailUser({ username, domain, name }) {
-  const res = await fetch(`${WINNR_API_URL}/v1/email-users`, {
+// Setup domain redirect
+export async function setupRedirect(domainId, url) {
+  return winnrFetch(`/v1/domains/${domainId}/redirect`, {
     method: 'POST',
-    headers,
-    body: JSON.stringify({ username, domain, name }),
+    body: JSON.stringify({ url }),
   })
-  if (!res.ok) throw new Error('Email user creation failed')
-  return res.json()
 }
 
-// Bulk create email users
-export async function bulkCreateEmailUsers(users) {
-  const res = await fetch(`${WINNR_API_URL}/v1/email-users/bulk`, {
+// Setup email forwarding
+export async function setupForward(domainId, address) {
+  return winnrFetch(`/v1/domains/${domainId}/forward`, {
     method: 'POST',
-    headers,
+    body: JSON.stringify({ address }),
+  })
+}
+
+// ============================================================================
+// EMAIL USERS (MAILBOXES)
+// ============================================================================
+
+// List all email users
+export async function listEmailUsers(domain, limit = 25, cursor) {
+  const params = new URLSearchParams({ limit })
+  if (domain) params.set('domain', domain)
+  if (cursor) params.set('cursor', cursor)
+  return winnrFetch(`/v1/email-users?${params}`)
+}
+
+// List email users for a specific domain
+export async function listDomainEmailUsers(domainId, limit = 25, cursor) {
+  const params = new URLSearchParams({ limit })
+  if (cursor) params.set('cursor', cursor)
+  return winnrFetch(`/v1/domains/${domainId}/email-users?${params}`)
+}
+
+// Get email user details
+export async function getEmailUser(userId) {
+  return winnrFetch(`/v1/email-users/${userId}`)
+}
+
+// Create single email user
+export async function createEmailUser({ username, domain, name, password }) {
+  const body = { username, domain, name }
+  if (password) body.password = password
+  return winnrFetch('/v1/email-users', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+// Bulk create email users (up to 100)
+export async function bulkCreateEmailUsers(users) {
+  return winnrFetch('/v1/email-users/bulk', {
+    method: 'POST',
     body: JSON.stringify({ users }),
   })
-  if (!res.ok) throw new Error('Bulk email user creation failed')
-  return res.json()
 }
 
-// Get domain details
-export async function getDomain(domainId) {
-  const res = await fetch(`${WINNR_API_URL}/v1/domains/${domainId}`, { headers })
-  if (!res.ok) throw new Error('Get domain failed')
-  return res.json()
+// Update email user
+export async function updateEmailUser(userId, updates) {
+  return winnrFetch(`/v1/email-users/${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  })
 }
 
-// Get DNS status
-export async function getDnsStatus(domainId) {
-  const res = await fetch(`${WINNR_API_URL}/v1/domains/${domainId}/dns-status`, { headers })
-  if (!res.ok) throw new Error('DNS status check failed')
-  return res.json()
+// Delete email user
+export async function deleteEmailUser(userId) {
+  return winnrFetch(`/v1/email-users/${userId}`, { method: 'DELETE' })
 }
 
-// List email users for a domain
-export async function listDomainEmailUsers(domainId) {
-  const res = await fetch(`${WINNR_API_URL}/v1/domains/${domainId}/email-users`, { headers })
-  if (!res.ok) throw new Error('List email users failed')
-  return res.json()
+// Bulk delete email users
+export async function bulkDeleteEmailUsers(userIds) {
+  return winnrFetch('/v1/email-users/bulk', {
+    method: 'DELETE',
+    body: JSON.stringify({ user_ids: userIds }),
+  })
 }
 
-// Enable warming for mailboxes
-export async function enableWarming(userIds, settings = {}) {
-  const res = await fetch(`${WINNR_API_URL}/v1/warming/enable`, {
+// ============================================================================
+// INBOX (SENDING & RECEIVING)
+// ============================================================================
+
+// List inbox messages
+export async function listInbox(userId, limit = 25, cursor) {
+  const params = new URLSearchParams({ limit })
+  if (cursor) params.set('cursor', cursor)
+  return winnrFetch(`/v1/email-users/${userId}/inbox?${params}`)
+}
+
+// Send email
+export async function sendEmail(userId, { to, subject, body, html, inReplyTo, references }) {
+  const payload = { to, subject, body }
+  if (html !== undefined) payload.html = html
+  if (inReplyTo) payload.in_reply_to = inReplyTo
+  if (references) payload.references = references
+  return winnrFetch(`/v1/email-users/${userId}/inbox/send`, {
     method: 'POST',
-    headers,
+    body: JSON.stringify(payload),
+  })
+}
+
+// Refresh inbox (trigger sync)
+export async function refreshInbox(userId) {
+  return winnrFetch(`/v1/email-users/${userId}/inbox/refresh`, { method: 'POST' })
+}
+
+// Get full message body
+export async function getMessageBody(uid, mailbox) {
+  return winnrFetch(`/v1/inbox/${uid}/body?mailbox=${encodeURIComponent(mailbox)}`)
+}
+
+// Mark message read/unread
+export async function markMessageRead(uid, mailbox, isRead) {
+  return winnrFetch(`/v1/inbox/${uid}?mailbox=${encodeURIComponent(mailbox)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ is_read: isRead }),
+  })
+}
+
+// Delete message
+export async function deleteMessage(userId, messageId) {
+  return winnrFetch(`/v1/email-users/${userId}/inbox/${messageId}`, { method: 'DELETE' })
+}
+
+// ============================================================================
+// WARMING (Admin-only — agent never sees this)
+// ============================================================================
+
+// List warming mailboxes
+export async function listWarming() {
+  return winnrFetch('/v1/warming')
+}
+
+// Get warming overview
+export async function getWarmingOverview() {
+  return winnrFetch('/v1/warming/overview')
+}
+
+// Enable warming
+export async function enableWarming(userIds, settings = {}) {
+  return winnrFetch('/v1/warming/enable', {
+    method: 'POST',
     body: JSON.stringify({
       user_ids: userIds,
       settings: { emails_per_day: 20, rampup_speed: 'normal', ...settings },
     }),
   })
-  if (!res.ok) throw new Error('Enable warming failed')
-  return res.json()
+}
+
+// Disable warming
+export async function disableWarming(userIds) {
+  return winnrFetch('/v1/warming/disable', {
+    method: 'POST',
+    body: JSON.stringify({ user_ids: userIds }),
+  })
+}
+
+// Pause warming
+export async function pauseWarming(userId) {
+  return winnrFetch(`/v1/warming/${userId}/pause`, { method: 'POST' })
+}
+
+// Resume warming
+export async function resumeWarming(userId) {
+  return winnrFetch(`/v1/warming/${userId}/resume`, { method: 'POST' })
+}
+
+// Update warming settings
+export async function updateWarmingSettings(userId, settings) {
+  return winnrFetch(`/v1/warming/${userId}/settings`, {
+    method: 'PATCH',
+    body: JSON.stringify(settings),
+  })
+}
+
+// Get warming metrics
+export async function getWarmingMetrics(userId, days = 30) {
+  return winnrFetch(`/v1/warming/${userId}/metrics?days=${days}`)
+}
+
+// ============================================================================
+// JOBS (Async operations)
+// ============================================================================
+
+export async function listJobs(limit = 25, cursor) {
+  const params = new URLSearchParams({ limit })
+  if (cursor) params.set('cursor', cursor)
+  return winnrFetch(`/v1/jobs?${params}`)
+}
+
+export async function getJob(jobId) {
+  return winnrFetch(`/v1/jobs/${jobId}`)
+}
+
+// ============================================================================
+// EXPORT
+// ============================================================================
+
+export async function exportEmailUsers(format, domains, getAll = false) {
+  const body = { format }
+  if (domains) body.domains = domains
+  if (getAll) body.get_all = true
+  return winnrFetch('/v1/export', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
 }
