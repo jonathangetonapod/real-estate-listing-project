@@ -288,22 +288,26 @@ function FarmAreaTab() {
     let cancelled = false;
     (async () => {
       setOrdersLoading(true);
-      const { data, error } = await getAgentOrders(user.id);
-      if (!cancelled) {
-        if (!error && data.length > 0) {
-          setDbOrders(data.map(o => ({
-            id: o.id,
-            date: new Date(o.requested_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            zips: (o.zip_codes || []).join(', '),
-            count: o.quantity_requested || 250,
-            sent: 0, opened: 0, replied: 0, appointments: 0,
-            replyRate: '0%',
-            status: o.status === 'completed' ? 'done' : 'active',
-            dbStatus: o.status,
-          })));
+      try {
+        const { data, error } = await getAgentOrders(user.id);
+        if (!cancelled) {
+          if (!error && data && data.length > 0) {
+            setDbOrders(data.map(o => ({
+              id: o.id,
+              date: new Date(o.requested_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+              zips: (o.zip_codes || []).join(', '),
+              count: o.quantity_requested || 250,
+              sent: 0, opened: 0, replied: 0, appointments: 0,
+              replyRate: '0%',
+              status: o.status === 'completed' ? 'done' : 'active',
+              dbStatus: o.status,
+            })));
+          }
         }
-        setOrdersLoading(false);
+      } catch (err) {
+        console.error('Failed to fetch orders:', err);
       }
+      if (!cancelled) setOrdersLoading(false);
     })();
     return () => { cancelled = true; };
   }, [user?.id]);
@@ -1239,14 +1243,18 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
     let cancelled = false;
     (async () => {
       setLeadsLoading(true);
-      const { data, error } = await getAgentOrders(user.id);
-      if (!cancelled) {
-        if (!error && data.length > 0) {
-          setDbOrders(data);
+      try {
+        const { data, error } = await getAgentOrders(user.id);
+        if (!cancelled) {
+          if (!error && data && data.length > 0) {
+            setDbOrders(data);
+          }
+          if (error) setLeadsError(error.message);
         }
-        if (error) setLeadsError(error.message);
-        setLeadsLoading(false);
+      } catch (err) {
+        console.error('Failed to fetch leads orders:', err);
       }
+      if (!cancelled) setLeadsLoading(false);
     })();
     return () => { cancelled = true; };
   }, [user?.id]);
