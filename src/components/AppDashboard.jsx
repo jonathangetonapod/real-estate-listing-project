@@ -3071,14 +3071,35 @@ function EmailAccountsTab() {
   const [lastWinnrDomainId, setLastWinnrDomainId] = useState(null);
   const firstNames = ['Sarah','Michael','Jessica','David','Emily','James','Amanda','Robert','Maria','Daniel','Laura','Christopher','Nicole','Andrew','Rachel','Kevin','Stephanie','Brian','Jennifer','Thomas'];
   const lastNames = ['Johnson','Smith','Williams','Brown','Davis','Miller','Wilson','Anderson','Taylor','Martinez','Garcia','Lopez','Harris','Clark','Lewis','Robinson','Walker','Young','King','Wright'];
-  const generateUser = () => {
+  const generateUser = (existingUsernames = []) => {
+    let attempts = 0;
+    while (attempts < 50) {
+      const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
+      const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
+      const styles = [`${fn.toLowerCase()}`, `${fn.toLowerCase()}.${ln[0].toLowerCase()}`, `${fn[0].toLowerCase()}.${ln.toLowerCase()}`];
+      const username = styles[Math.floor(Math.random() * styles.length)];
+      if (!existingUsernames.includes(username)) {
+        return { fullName: `${fn} ${ln}`, username, edited: false };
+      }
+      attempts++;
+    }
+    // Fallback with number suffix
     const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
     const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
-    const styles = [`${fn.toLowerCase()}`, `${fn.toLowerCase()}.${ln[0].toLowerCase()}`, `${fn[0].toLowerCase()}.${ln.toLowerCase()}`];
-    const username = styles[Math.floor(Math.random() * styles.length)];
+    const username = `${fn.toLowerCase()}.${ln[0].toLowerCase()}${Math.floor(Math.random() * 99)}`;
     return { fullName: `${fn} ${ln}`, username, edited: false };
   };
-  const [newUsers, setNewUsers] = useState(() => [generateUser(), generateUser()]);
+
+  const generateUniqueUsers = (count) => {
+    const users = [];
+    for (let i = 0; i < count; i++) {
+      const taken = [...users.map(u => u.username), ...mailboxes.map(m => m.email.split('@')[0])];
+      users.push(generateUser(taken));
+    }
+    return users;
+  };
+
+  const [newUsers, setNewUsers] = useState(() => generateUniqueUsers(2));
 
   const [searchLoading, setSearchLoading] = useState(false);
 
@@ -3635,8 +3656,45 @@ function EmailAccountsTab() {
               className="fixed inset-0 z-[101] flex items-center justify-center p-4"
             >
               {(() => {
-                const randomizeAll = () => setNewUsers(newUsers.map(() => generateUser()));
-                const addRow = () => { if (newUsers.length < 5) setNewUsers([...newUsers, generateUser()]); };
+                const generateVariation = (fullName, existingUsernames) => {
+                  const parts = fullName.trim().split(' ').filter(Boolean);
+                  if (parts.length < 2) {
+                    const base = parts[0]?.toLowerCase() || 'user';
+                    const variations = [base, `${base}1`, `${base}2`, `${base}3`];
+                    return variations.find(v => !existingUsernames.includes(v)) || `${base}${Math.floor(Math.random() * 99)}`;
+                  }
+                  const fn = parts[0].toLowerCase();
+                  const ln = parts[parts.length - 1].toLowerCase();
+                  const variations = [
+                    `${fn}.${ln[0]}`,
+                    `${fn[0]}.${ln}`,
+                    `${fn}.${ln}`,
+                    `${fn}${ln[0]}`,
+                    `${ln}.${fn[0]}`,
+                    `${fn}.${ln.slice(0,3)}`,
+                    `${fn}${Math.floor(Math.random() * 9) + 1}`,
+                  ];
+                  return variations.find(v => !existingUsernames.includes(v)) || `${fn}.${ln}${Math.floor(Math.random() * 99)}`;
+                };
+
+                const randomizeAll = () => {
+                  const refreshed = [];
+                  const taken = [...mailboxes.map(m => m.email.split('@')[0])];
+                  for (const u of newUsers) {
+                    const username = generateVariation(u.fullName || 'New User', [...taken, ...refreshed.map(r => r.username)]);
+                    refreshed.push({ ...u, username, edited: false });
+                  }
+                  setNewUsers(refreshed);
+                };
+
+                const addRow = () => {
+                  if (newUsers.length >= 5) return;
+                  // Copy the first user's name and generate a different username
+                  const baseName = newUsers[0]?.fullName || '';
+                  const taken = [...newUsers.map(u => u.username), ...mailboxes.map(m => m.email.split('@')[0])];
+                  const username = baseName.trim() ? generateVariation(baseName, taken) : generateUser(taken).username;
+                  setNewUsers([...newUsers, { fullName: baseName, username, edited: false }]);
+                };
                 const removeRow = (idx) => { if (newUsers.length > 1) setNewUsers(newUsers.filter((_, i) => i !== idx)); };
                 const updateUser = (idx, field, value) => {
                   setNewUsers(newUsers.map((u, i) => {
