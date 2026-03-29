@@ -41,6 +41,11 @@ import {
   DollarSign,
   Phone,
   Menu,
+  Globe,
+  Shield,
+  Loader2,
+  Pause,
+  Play,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -102,6 +107,7 @@ const navItems = [
   { key: 'drafts', label: 'Pitches Sent', subtitle: 'Emails you\'ve sent', icon: Send },
   { key: 'replies', label: 'Inbox', subtitle: 'Seller replies and conversations', icon: Inbox },
   { key: 'pipeline', label: 'My Deals', subtitle: 'Track your progress', icon: GitBranch },
+  { key: 'email', label: 'Email Accounts', subtitle: 'Domains and mailboxes', icon: Mail },
   { key: 'settings', label: 'Settings', subtitle: null, icon: Settings },
 ];
 
@@ -112,6 +118,7 @@ const tabMap = {
   drafts: 'drafts',
   replies: 'replies',
   pipeline: 'pipeline',
+  email: 'email',
   settings: 'settings',
 };
 
@@ -3044,6 +3051,658 @@ function LeadsArrivedBanner({ onDismiss, onReview }) {
 // Tab: Settings (placeholder)
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Tab: Email Accounts
+// ---------------------------------------------------------------------------
+
+function EmailAccountsTab() {
+  const [domain, setDomain] = useState(null);
+  const [mailboxes, setMailboxes] = useState([]);
+  const [showDomainFlow, setShowDomainFlow] = useState(false);
+  const [showAddMailbox, setShowAddMailbox] = useState(false);
+  const [domainStep, setDomainStep] = useState('search');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedDomain, setSelectedDomain] = useState(null);
+  const [expandedMailbox, setExpandedMailbox] = useState(null);
+  const [provisioningChecks, setProvisioningChecks] = useState([]);
+  const [newMailboxUsername, setNewMailboxUsername] = useState('');
+  const [newMailboxDisplayName, setNewMailboxDisplayName] = useState('');
+
+  const handleDomainSearch = () => {
+    if (!searchQuery.trim()) return;
+    const q = searchQuery.trim().toLowerCase().replace(/\s+/g, '');
+    setSearchResults([
+      { domain: `${q}-homes.com`, available: true, price: 12.99 },
+      { domain: `${q}-realty.com`, available: true, price: 14.99 },
+      { domain: `${q}-listings.com`, available: true, price: 11.99 },
+      { domain: `get${q}.com`, available: false, price: null },
+      { domain: `${q}-properties.com`, available: true, price: 13.99 },
+    ]);
+  };
+
+  const handleSelectDomain = (d) => {
+    setSelectedDomain(d);
+    setDomainStep('confirm');
+  };
+
+  const handleBuyDomain = () => {
+    setDomainStep('provisioning');
+    setProvisioningChecks([]);
+    const steps = [
+      'Domain registered',
+      'DNS records configured',
+      'MX records set',
+      'SPF + DKIM configured',
+      'DMARC policy applied',
+    ];
+    steps.forEach((step, i) => {
+      setTimeout(() => {
+        setProvisioningChecks(prev => [...prev, step]);
+      }, (i + 1) * 500);
+    });
+    setTimeout(() => {
+      setDomainStep('done');
+    }, steps.length * 500 + 400);
+  };
+
+  const handleProvisioningComplete = () => {
+    setDomain({
+      name: selectedDomain.domain,
+      status: 'active',
+      purchasedAt: new Date().toISOString(),
+      price: selectedDomain.price,
+    });
+    setShowDomainFlow(false);
+    setDomainStep('search');
+    setSearchQuery('');
+    setSearchResults([]);
+    setSelectedDomain(null);
+    setProvisioningChecks([]);
+  };
+
+  const handleCreateMailbox = () => {
+    if (!newMailboxUsername.trim() || !newMailboxDisplayName.trim()) return;
+    const newMb = {
+      email: `${newMailboxUsername.trim()}@${domain.name}`,
+      displayName: newMailboxDisplayName.trim(),
+      status: 'warming',
+      healthScore: 0,
+      inboxRate: 0,
+      spamRate: 0,
+      emailsSent: 0,
+      warmupDay: 1,
+      warmupTotal: 21,
+      dailySends: [0, 0, 0, 0, 0, 0, 0],
+      createdAt: new Date().toISOString(),
+    };
+    setMailboxes(prev => [...prev, newMb]);
+    setNewMailboxUsername('');
+    setNewMailboxDisplayName('');
+    setShowAddMailbox(false);
+  };
+
+  const togglePauseMailbox = (idx) => {
+    setMailboxes(prev => prev.map((mb, i) => {
+      if (i !== idx) return mb;
+      return { ...mb, status: mb.status === 'warming' ? 'paused' : mb.status === 'paused' ? 'warming' : mb.status };
+    }));
+  };
+
+  const statusBadge = (status) => {
+    if (status === 'active') return <span className="inline-flex items-center rounded-full border border-success/20 bg-success/10 px-2.5 py-0.5 text-[11px] font-medium text-success">Active</span>;
+    if (status === 'warming' || status === 'paused') return <span className="inline-flex items-center rounded-full border border-orange/20 bg-orange/10 px-2.5 py-0.5 text-[11px] font-medium text-orange">{status === 'paused' ? 'Paused' : 'Warming'}</span>;
+    return <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-100 px-2.5 py-0.5 text-[11px] font-medium text-gray-500">Provisioning</span>;
+  };
+
+  const healthColor = (score) => {
+    if (score > 80) return 'text-success';
+    if (score >= 50) return 'text-orange';
+    return 'text-danger';
+  };
+
+  // ---- Empty state ----
+  if (!domain && !showDomainFlow) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div>
+          <h1 className="font-heading text-2xl font-bold text-charcoal">Email Accounts</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage your sending domain and mailboxes.</p>
+        </div>
+
+        <div className="rounded-xl border border-border bg-white p-8 text-center space-y-4">
+          <div className="mx-auto w-14 h-14 rounded-full bg-orange/10 flex items-center justify-center">
+            <Globe className="h-7 w-7 text-orange" />
+          </div>
+          <h2 className="font-heading text-lg font-semibold text-charcoal">Set Up Your Sending Domain</h2>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            Your emails need to come from a professional domain — not gmail.com.
+            Buy a domain and we'll handle DNS, warm-up, and deliverability.
+          </p>
+          <Button
+            className="bg-orange text-white hover:bg-orange-hover rounded-lg px-6 h-10 text-sm font-medium"
+            onClick={() => setShowDomainFlow(true)}
+          >
+            Get Started
+          </Button>
+        </div>
+
+        <div className="h-12" />
+
+        {/* Domain Purchase Slide-Over */}
+        <AnimatePresence>
+          {showDomainFlow && (
+            <DomainSlideOver
+              domainStep={domainStep}
+              setDomainStep={setDomainStep}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              searchResults={searchResults}
+              onSearch={handleDomainSearch}
+              onSelect={handleSelectDomain}
+              selectedDomain={selectedDomain}
+              onBuy={handleBuyDomain}
+              provisioningChecks={provisioningChecks}
+              onComplete={handleProvisioningComplete}
+              onClose={() => { setShowDomainFlow(false); setDomainStep('search'); setSearchQuery(''); setSearchResults([]); setSelectedDomain(null); }}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // ---- Main view (domain exists) ----
+  return (
+    <div className="max-w-2xl mx-auto space-y-6">
+      <div>
+        <h1 className="font-heading text-2xl font-bold text-charcoal">Email Accounts</h1>
+        <p className="text-sm text-muted-foreground mt-1">Manage your sending domain and mailboxes.</p>
+      </div>
+
+      {/* Domain Card */}
+      {domain && (
+        <div className="rounded-xl border border-border bg-white p-5 hover:shadow-md hover:-translate-y-[1px] transition-all duration-200">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-3">
+                <Globe className="h-5 w-5 text-orange shrink-0" />
+                <h3 className="font-heading text-base font-semibold text-charcoal">{domain.name}</h3>
+              </div>
+              <div className="flex items-center gap-2 mt-2 ml-8">
+                <span className="inline-flex items-center gap-1 rounded-md border border-success/20 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
+                  <Check className="h-2.5 w-2.5" />MX
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-md border border-success/20 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
+                  <Check className="h-2.5 w-2.5" />SPF
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-md border border-success/20 bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
+                  <Check className="h-2.5 w-2.5" />DKIM
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2 ml-8">
+                Purchased {new Date(domain.purchasedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · Auto-renewed annually
+              </p>
+            </div>
+            <div className="shrink-0">
+              {statusBadge(domain.status)}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mailboxes List */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-heading text-sm font-semibold text-charcoal">Mailboxes</h2>
+          <span className="text-xs text-muted-foreground">{mailboxes.length}/2 slots used</span>
+        </div>
+
+        {mailboxes.length === 0 && (
+          <div className="rounded-xl border border-dashed border-gray-300 bg-white p-6 text-center">
+            <Mail className="h-6 w-6 text-gray-300 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">No mailboxes yet. Create one to start sending.</p>
+          </div>
+        )}
+
+        <div className="rounded-xl border border-border bg-white overflow-hidden">
+          <div className="divide-y divide-gray-100">
+            {mailboxes.map((mb, idx) => {
+              const isExpanded = expandedMailbox === idx;
+              return (
+                <div key={idx} className={cn('transition-all duration-200 group', isExpanded ? 'bg-orange/[0.02]' : 'hover:bg-gray-50')}>
+                  <button
+                    onClick={() => setExpandedMailbox(isExpanded ? null : idx)}
+                    className="w-full text-left px-4 py-3.5 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-sans text-sm font-semibold text-charcoal truncate group-hover:text-orange transition-colors">{mb.email}</p>
+                        <p className="font-sans text-xs text-gray-500 truncate">{mb.displayName}</p>
+                      </div>
+                      <div className="hidden sm:flex items-center gap-5">
+                        <div className="text-right shrink-0">
+                          <p className={cn('font-mono text-sm font-bold leading-tight', healthColor(mb.healthScore))}>{mb.healthScore}</p>
+                          <p className="text-[9px] uppercase text-gray-400 tracking-wider">Health</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-mono text-xs font-medium text-gray-700">{mb.inboxRate}%</p>
+                          <p className="text-[9px] uppercase text-gray-400 tracking-wider">Inbox</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-mono text-xs font-medium text-gray-700">{mb.emailsSent}</p>
+                          <p className="text-[9px] uppercase text-gray-400 tracking-wider">Sent</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {statusBadge(mb.status)}
+                        <ChevronDown className={cn('h-3.5 w-3.5 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Expanded Detail */}
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-5 pb-5 pt-0">
+                          <div className="border-t border-gray-100 pt-4 space-y-5">
+                            {/* Warm-up progress */}
+                            <div>
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-xs font-medium text-charcoal">Warm-up Progress</span>
+                                <span className="text-xs text-muted-foreground">Day {mb.warmupDay} of {mb.warmupTotal}</span>
+                              </div>
+                              <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                                <div
+                                  className="h-full rounded-full bg-orange transition-all duration-500"
+                                  style={{ width: `${(mb.warmupDay / mb.warmupTotal) * 100}%` }}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Health score large */}
+                            <div className="flex items-center gap-4">
+                              <div className="text-center">
+                                <p className={cn('font-mono text-3xl font-bold', healthColor(mb.healthScore))}>{mb.healthScore}</p>
+                                <p className="text-[10px] uppercase text-gray-400 tracking-wider mt-0.5">Health Score</p>
+                              </div>
+                              <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <div className="rounded-lg bg-gray-50 p-2.5 text-center">
+                                  <p className="font-mono text-sm font-bold text-charcoal">{mb.inboxRate}%</p>
+                                  <p className="text-[9px] uppercase text-gray-400 tracking-wider">Inbox Rate</p>
+                                </div>
+                                <div className="rounded-lg bg-gray-50 p-2.5 text-center">
+                                  <p className="font-mono text-sm font-bold text-charcoal">{mb.spamRate}%</p>
+                                  <p className="text-[9px] uppercase text-gray-400 tracking-wider">Spam Rate</p>
+                                </div>
+                                <div className="rounded-lg bg-gray-50 p-2.5 text-center">
+                                  <p className="font-mono text-sm font-bold text-charcoal">{mb.dailySends[mb.dailySends.length - 1]}</p>
+                                  <p className="text-[9px] uppercase text-gray-400 tracking-wider">Sent Today</p>
+                                </div>
+                                <div className="rounded-lg bg-gray-50 p-2.5 text-center">
+                                  <p className="font-mono text-sm font-bold text-charcoal">{mb.emailsSent}</p>
+                                  <p className="text-[9px] uppercase text-gray-400 tracking-wider">Total Sent</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Warm-up chart — simple CSS bars */}
+                            <div>
+                              <p className="text-xs font-medium text-charcoal mb-2">Daily Send Volume (last 7 days)</p>
+                              <div className="flex items-end gap-1.5 h-16">
+                                {mb.dailySends.map((count, i) => {
+                                  const maxSend = Math.max(...mb.dailySends, 1);
+                                  const pct = (count / maxSend) * 100;
+                                  return (
+                                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                      <div
+                                        className="w-full rounded-t bg-orange/70 transition-all duration-300"
+                                        style={{ height: `${Math.max(pct, 4)}%` }}
+                                      />
+                                      <span className="text-[9px] text-gray-400">D{i + 1}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Pause / Resume button */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-lg text-xs"
+                              onClick={(e) => { e.stopPropagation(); togglePauseMailbox(idx); }}
+                            >
+                              {mb.status === 'warming' ? (
+                                <><Pause className="h-3 w-3 mr-1.5" />Pause Warming</>
+                              ) : mb.status === 'paused' ? (
+                                <><Play className="h-3 w-3 mr-1.5" />Resume Warming</>
+                              ) : null}
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Add Mailbox button */}
+        <Button
+          variant="outline"
+          className="w-full rounded-lg h-10 text-sm font-medium border-dashed"
+          disabled={mailboxes.length >= 2}
+          onClick={() => setShowAddMailbox(true)}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          {mailboxes.length >= 2 ? 'Maximum 2 mailboxes' : 'Add Mailbox'}
+        </Button>
+      </div>
+
+      <div className="h-12" />
+
+      {/* Domain Purchase Slide-Over */}
+      <AnimatePresence>
+        {showDomainFlow && (
+          <DomainSlideOver
+            domainStep={domainStep}
+            setDomainStep={setDomainStep}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            searchResults={searchResults}
+            onSearch={handleDomainSearch}
+            onSelect={handleSelectDomain}
+            selectedDomain={selectedDomain}
+            onBuy={handleBuyDomain}
+            provisioningChecks={provisioningChecks}
+            onComplete={handleProvisioningComplete}
+            onClose={() => { setShowDomainFlow(false); setDomainStep('search'); setSearchQuery(''); setSearchResults([]); setSelectedDomain(null); }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Create Mailbox Modal */}
+      <AnimatePresence>
+        {showAddMailbox && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-[2px]"
+              onClick={() => setShowAddMailbox(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-[101] flex items-center justify-center p-4"
+            >
+              <div className="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
+                <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+                  <h3 className="font-heading text-base font-semibold text-charcoal">Create Mailbox</h3>
+                  <button onClick={() => setShowAddMailbox(false)} className="text-gray-400 hover:text-gray-600">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="px-5 py-5 space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-charcoal block mb-1.5">Email Address</label>
+                    <div className="flex items-center gap-0">
+                      <Input
+                        placeholder="sarah"
+                        className="rounded-r-none h-10 text-sm"
+                        value={newMailboxUsername}
+                        onChange={(e) => setNewMailboxUsername(e.target.value)}
+                        autoFocus
+                      />
+                      <div className="h-10 px-3 flex items-center bg-gray-100 border border-l-0 border-border rounded-r-lg text-sm text-muted-foreground whitespace-nowrap">
+                        @{domain?.name}
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-charcoal block mb-1.5">Display Name</label>
+                    <Input
+                      placeholder="Sarah Johnson"
+                      className="h-10 text-sm"
+                      value={newMailboxDisplayName}
+                      onChange={(e) => setNewMailboxDisplayName(e.target.value)}
+                    />
+                  </div>
+                  <Button
+                    className="w-full bg-orange text-white hover:bg-orange-hover rounded-lg h-10 text-sm font-medium"
+                    disabled={!newMailboxUsername.trim() || !newMailboxDisplayName.trim()}
+                    onClick={handleCreateMailbox}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Create Mailbox
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Domain Purchase Slide-Over
+// ---------------------------------------------------------------------------
+
+function DomainSlideOver({
+  domainStep, setDomainStep, searchQuery, setSearchQuery,
+  searchResults, onSearch, onSelect, selectedDomain,
+  onBuy, provisioningChecks, onComplete, onClose,
+}) {
+  const provisioningSteps = [
+    'Domain registered',
+    'DNS records configured',
+    'MX records set',
+    'SPF + DKIM configured',
+    'DMARC policy applied',
+  ];
+
+  return (
+    <>
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-[2px]"
+        onClick={onClose}
+      />
+
+      {/* Panel */}
+      <motion.div
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        className="fixed right-0 top-0 bottom-0 z-[101] w-full max-w-[520px] bg-white shadow-2xl flex flex-col"
+      >
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h3 className="font-heading text-base font-semibold text-charcoal">Find Your Sending Domain</h3>
+            <p className="text-sm text-muted-foreground">Search for an available domain to use for outreach.</p>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {/* Step 1: Search */}
+          {domainStep === 'search' && (
+            <div className="space-y-5">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="e.g. riverside, jones, premier"
+                  className="h-10 text-sm flex-1"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+                  autoFocus
+                />
+                <Button
+                  className="bg-orange text-white hover:bg-orange-hover rounded-lg h-10 px-4 text-sm font-medium shrink-0"
+                  onClick={onSearch}
+                  disabled={!searchQuery.trim()}
+                >
+                  <Search className="h-4 w-4 mr-1.5" />Search
+                </Button>
+              </div>
+
+              {searchResults.length > 0 && (
+                <div className="rounded-xl border border-border bg-white overflow-hidden divide-y divide-gray-100">
+                  {searchResults.map((result, i) => (
+                    <div key={i} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-mono text-sm font-medium text-charcoal">{result.domain}</p>
+                        {result.available ? (
+                          <p className="text-xs text-success font-medium">Available · ${result.price}/yr</p>
+                        ) : (
+                          <p className="text-xs text-gray-400">Unavailable</p>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        className={cn(
+                          'rounded-lg text-xs h-8 px-3',
+                          result.available
+                            ? 'bg-orange text-white hover:bg-orange-hover'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        )}
+                        disabled={!result.available}
+                        onClick={() => onSelect(result)}
+                      >
+                        Select
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 2: Confirm */}
+          {domainStep === 'confirm' && selectedDomain && (
+            <div className="space-y-6">
+              <div className="rounded-xl border border-border bg-white p-5 text-center space-y-3">
+                <Globe className="h-8 w-8 text-orange mx-auto" />
+                <p className="font-heading text-lg font-semibold text-charcoal">{selectedDomain.domain}</p>
+                <p className="font-mono text-2xl font-bold text-charcoal">${selectedDomain.price}<span className="text-sm text-muted-foreground font-normal">/yr</span></p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-charcoal font-medium">This will be your professional sending domain</p>
+                <div className="space-y-1.5">
+                  {['All DNS records (MX, SPF, DKIM, DMARC) configured automatically', 'Domain warm-up begins immediately', 'Annual auto-renewal included'].map((line) => (
+                    <div key={line} className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-success shrink-0 mt-0.5" />
+                      <span className="text-sm text-muted-foreground">{line}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Button
+                className="w-full bg-orange text-white hover:bg-orange-hover rounded-lg h-10 text-sm font-medium"
+                onClick={onBuy}
+              >
+                Buy Domain — ${selectedDomain.price}/yr
+              </Button>
+              <button
+                className="w-full text-sm text-muted-foreground hover:text-charcoal transition-colors text-center"
+                onClick={() => setDomainStep('search')}
+              >
+                Back to search
+              </button>
+            </div>
+          )}
+
+          {/* Step 3: Provisioning */}
+          {domainStep === 'provisioning' && (
+            <div className="space-y-6">
+              <div className="text-center space-y-2">
+                <Loader2 className="h-8 w-8 text-orange mx-auto animate-spin" />
+                <p className="font-heading text-lg font-semibold text-charcoal">Setting up your domain</p>
+                <p className="text-sm text-muted-foreground">This will only take a moment...</p>
+              </div>
+              <div className="space-y-3">
+                {provisioningSteps.map((step) => {
+                  const isDone = provisioningChecks.includes(step);
+                  return (
+                    <div key={step} className="flex items-center gap-3">
+                      {isDone ? (
+                        <div className="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center">
+                          <Check className="h-3.5 w-3.5 text-success" />
+                        </div>
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+                          <div className="w-2 h-2 rounded-full bg-gray-300" />
+                        </div>
+                      )}
+                      <span className={cn('text-sm', isDone ? 'text-charcoal font-medium' : 'text-gray-400')}>{step}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Done */}
+          {domainStep === 'done' && (
+            <div className="space-y-6 text-center">
+              <div className="mx-auto w-14 h-14 rounded-full bg-success/10 flex items-center justify-center">
+                <Check className="h-7 w-7 text-success" />
+              </div>
+              <div>
+                <p className="font-heading text-lg font-semibold text-charcoal">Domain ready!</p>
+                <p className="text-sm text-muted-foreground mt-1">Create your first mailbox to start sending.</p>
+              </div>
+              <div className="space-y-3">
+                {provisioningSteps.map((step) => (
+                  <div key={step} className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center">
+                      <Check className="h-3.5 w-3.5 text-success" />
+                    </div>
+                    <span className="text-sm text-charcoal font-medium">{step}</span>
+                  </div>
+                ))}
+              </div>
+              <Button
+                className="bg-orange text-white hover:bg-orange-hover rounded-lg h-10 px-6 text-sm font-medium"
+                onClick={onComplete}
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                Create Mailbox
+              </Button>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tab: Settings
+// ---------------------------------------------------------------------------
+
 function SettingsTab() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
@@ -3340,6 +3999,7 @@ export default function AppDashboard() {
             {activeTab === 'drafts' && <DraftsTab pitchDrafts={pitchDrafts} onNavigate={handleNavClick} />}
             {activeTab === 'pipeline' && <PipelineTab deals={deals} addDeal={addDeal} moveDealStage={moveDealStage} />}
             {activeTab === 'replies' && <InboxTab addDeal={addDeal} />}
+            {activeTab === 'email' && <EmailAccountsTab />}
             {activeTab === 'settings' && <SettingsTab />}
           </FadePanel>
         </main>
@@ -3352,7 +4012,7 @@ export default function AppDashboard() {
           { key: 'leads', label: 'Leads', icon: Users },
           { key: 'drafts', label: 'Sent', icon: Send },
           { key: 'replies', label: 'Inbox', icon: Inbox },
-          { key: 'pipeline', label: 'Deals', icon: GitBranch },
+          { key: 'email', label: 'Email', icon: Mail },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeNav === tab.key;
