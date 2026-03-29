@@ -273,7 +273,7 @@ function FarmAreaTab() {
 
   // DB orders state
   const [dbOrders, setDbOrders] = useState([]);
-  const [ordersLoading, setOrdersLoading] = useState(true);
+  const [ordersLoading, setOrdersLoading] = useState(false);
 
   // Mock fallback orders
   const mockOrders = [
@@ -1234,7 +1234,7 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
   // DB state for orders and leads
   const [dbOrders, setDbOrders] = useState([]);
   const [dbLeads, setDbLeads] = useState([]);
-  const [leadsLoading, setLeadsLoading] = useState(true);
+  const [leadsLoading, setLeadsLoading] = useState(false);
   const [leadsError, setLeadsError] = useState(null);
 
   // Fetch agent orders on mount
