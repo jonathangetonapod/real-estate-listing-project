@@ -37,6 +37,7 @@ import {
   Building2,
   DollarSign,
   Phone,
+  Menu,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -108,6 +109,7 @@ const tabMap = {
   drafts: 'drafts',
   replies: 'replies',
   pipeline: 'pipeline',
+  settings: 'settings',
 };
 
 const leadTypes = [
@@ -372,7 +374,7 @@ function FarmAreaTab() {
                       <CheckCircle2 className={cn('w-4.5 h-4.5', order.status === 'active' ? 'text-orange' : 'text-gray-400')} />
                     </div>
                     <div>
-                      <div className="font-sans text-sm font-semibold text-charcoal">{order.count} leads delivered</div>
+                      <div className="font-sans text-sm font-semibold text-charcoal">{order.count} {order.count === 1 ? 'lead' : 'leads'} delivered</div>
                       <div className="font-sans text-xs text-gray-400">{order.date} · Zip: {order.zips}</div>
                     </div>
                   </div>
@@ -434,6 +436,23 @@ function FarmAreaTab() {
             <div className="font-sans text-sm font-semibold text-charcoal">Estimated delivery</div>
             <div className="font-mono text-xs text-gray-500">Tomorrow by 9:00 AM</div>
           </div>
+        </div>
+        <div className="flex items-center justify-center gap-3 mt-8">
+          <Button
+            variant="outline"
+            className="rounded-lg"
+            onClick={() => setFarmState('delivered')}
+          >
+            <ArrowRight className="w-3 h-3 mr-2 rotate-180" />
+            Back to Orders
+          </Button>
+          <Button
+            className="rounded-lg bg-orange hover:bg-orange/90 text-white"
+            onClick={() => setFarmState('delivered')}
+          >
+            View Your Leads
+            <ArrowRight className="w-3 h-3 ml-2" />
+          </Button>
         </div>
       </motion.div>
     );
@@ -1166,13 +1185,14 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
     },
   ];
 
-  // Lead type filter tabs
+  // Lead type filter tabs — scope to current order when one is selected
+  const filterSource = selectedOrder ? leads.filter(l => l.order === selectedOrder) : leads;
   const typeFilters = [
-    { key: 'All', count: leads.length },
-    { key: 'Expired', count: leads.filter(l => l.type === 'Expired').length },
-    { key: 'FSBO', count: leads.filter(l => l.type === 'FSBO').length },
-    { key: 'Pre-Foreclosure', count: leads.filter(l => l.type === 'Pre-Foreclosure').length },
-    { key: 'High Equity', count: leads.filter(l => l.type === 'High Equity').length },
+    { key: 'All', count: filterSource.length },
+    { key: 'Expired', count: filterSource.filter(l => l.type === 'Expired').length },
+    { key: 'FSBO', count: filterSource.filter(l => l.type === 'FSBO').length },
+    { key: 'Pre-Foreclosure', count: filterSource.filter(l => l.type === 'Pre-Foreclosure').length },
+    { key: 'High Equity', count: filterSource.filter(l => l.type === 'High Equity').length },
   ];
 
   // Unique order months for grouping toggle
@@ -1303,11 +1323,11 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
   };
 
   const pitchStatusFilters = [
-    { key: 'All', count: leads.length },
-    { key: 'Not Contacted', count: leads.filter((_, i) => getPitchStatus(i) === 'Not Contacted').length },
-    { key: 'Draft', count: leads.filter((_, i) => getPitchStatus(i) === 'Draft').length },
-    { key: 'Sent', count: leads.filter((_, i) => getPitchStatus(i) === 'Sent').length },
-    { key: 'Skipped', count: leads.filter((_, i) => getPitchStatus(i) === 'Skipped').length },
+    { key: 'All', count: filterSource.length },
+    { key: 'Not Contacted', count: filterSource.filter((_, i) => getPitchStatus(selectedOrder ? leads.indexOf(filterSource[i]) : i) === 'Not Contacted').length },
+    { key: 'Draft', count: filterSource.filter((_, i) => getPitchStatus(selectedOrder ? leads.indexOf(filterSource[i]) : i) === 'Draft').length },
+    { key: 'Sent', count: filterSource.filter((_, i) => getPitchStatus(selectedOrder ? leads.indexOf(filterSource[i]) : i) === 'Sent').length },
+    { key: 'Skipped', count: filterSource.filter((_, i) => getPitchStatus(selectedOrder ? leads.indexOf(filterSource[i]) : i) === 'Skipped').length },
   ];
 
   // Filter by lead type, pitch status, and search query
@@ -2068,6 +2088,7 @@ function InboxTab({ addDeal }) {
   const [extraMessages, setExtraMessages] = useState({});
   const [customLabels, setCustomLabels] = useState({});
   const [openLabelDropdown, setOpenLabelDropdown] = useState(null);
+  const [movedToDeals, setMovedToDeals] = useState({});
 
   // Close label dropdown when clicking outside
   useEffect(() => {
@@ -2249,8 +2270,11 @@ function InboxTab({ addDeal }) {
                 isExpanded ? 'ring-1 ring-orange/10 border-orange/30' : 'border-border hover:border-orange/20'
               )}>
                 {/* Compact Row */}
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setExpandedReply(prev => prev === reply.id ? null : reply.id)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedReply(prev => prev === reply.id ? null : reply.id); } }}
                   className="w-full text-left px-4 py-3 cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
@@ -2329,7 +2353,7 @@ function InboxTab({ addDeal }) {
                       <ChevronDown className={cn('h-3.5 w-3.5 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
                     </div>
                   </div>
-                </button>
+                </div>
 
                 {/* Expanded conversation thread */}
                 <AnimatePresence initial={false}>
@@ -2464,14 +2488,28 @@ function InboxTab({ addDeal }) {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="w-full justify-start rounded-lg text-sm"
+                                className={cn(
+                                  'w-full justify-start rounded-lg text-sm',
+                                  movedToDeals[reply.id] && 'border-success/30 text-success bg-success/5 pointer-events-none'
+                                )}
+                                disabled={movedToDeals[reply.id]}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   addDeal({ name: reply.name, address: reply.address, email: reply.email, price: reply.price, type: reply.type, source: 'inbox' });
+                                  setMovedToDeals(prev => ({ ...prev, [reply.id]: true }));
                                 }}
                               >
-                                <ArrowRight className="h-3.5 w-3.5 mr-2" />
-                                Move to Deals
+                                {movedToDeals[reply.id] ? (
+                                  <>
+                                    <Check className="h-3.5 w-3.5 mr-2" />
+                                    Added to Deals
+                                  </>
+                                ) : (
+                                  <>
+                                    <ArrowRight className="h-3.5 w-3.5 mr-2" />
+                                    Move to Deals
+                                  </>
+                                )}
                               </Button>
                             </div>
                           </div>
@@ -2576,7 +2614,7 @@ function PipelineTab({ deals, addDeal, moveDealStage }) {
               <div
                 key={stage}
                 className={cn(
-                  'min-w-[200px] flex-1 rounded-xl border bg-white overflow-hidden transition-colors',
+                  'min-w-[160px] flex-1 rounded-xl border bg-white overflow-hidden transition-colors',
                   dragOverStage === stage ? 'border-orange border-dashed bg-orange/[0.02]' : 'border-border'
                 )}
                 onDragOver={(e) => { e.preventDefault(); setDragOverStage(stage); }}
@@ -2830,10 +2868,45 @@ function LeadsArrivedBanner({ onDismiss, onReview }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Tab: Settings (placeholder)
+// ---------------------------------------------------------------------------
+
+function SettingsTab() {
+  return (
+    <div className="max-w-2xl mx-auto py-12 text-center">
+      <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+        <Settings className="h-7 w-7 text-gray-400" />
+      </div>
+      <h2 className="font-heading text-2xl font-bold text-charcoal mb-2">Settings</h2>
+      <p className="text-sm text-muted-foreground mb-6">Account preferences, notifications, and integrations will live here.</p>
+      <Card className="rounded-xl text-left">
+        <CardContent className="p-6 space-y-4">
+          {[
+            { label: 'Account & Profile', desc: 'Name, email, and password' },
+            { label: 'Notification Preferences', desc: 'Email and in-app alerts' },
+            { label: 'Integrations', desc: 'CRM, calendar, and email sync' },
+            { label: 'Billing', desc: 'Plan, invoices, and payment method' },
+          ].map((item) => (
+            <div key={item.label} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+              <div>
+                <p className="text-sm font-semibold text-charcoal">{item.label}</p>
+                <p className="text-xs text-muted-foreground">{item.desc}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-gray-300" />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function AppDashboard() {
   const [activeNav, setActiveNav] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLeadsArrived, setShowLeadsArrived] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   // Shared state — pitch drafts and contacted leads live here so both tabs can access them
   const [pitchDrafts, setPitchDrafts] = useState({});
@@ -2966,7 +3039,13 @@ export default function AppDashboard() {
         {/* Header */}
         <header className="sticky top-0 z-30 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-border px-4 sm:px-6 py-3">
           <div className="flex items-center gap-3">
-            {/* Mobile hamburger — hidden, bottom tabs replace it */}
+            {/* Mobile hamburger */}
+            <button
+              className="md:hidden rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </button>
             <div>
               <h1 className="font-heading text-lg font-semibold">Good morning, Sarah</h1>
               <p className="text-xs text-muted-foreground">You have <span className="font-semibold text-orange">{leads.length} seller leads</span> and <span className="font-semibold text-success">{sampleReplies.filter(r => r.status === 'new').length} new replies</span>.</p>
@@ -2974,13 +3053,29 @@ export default function AppDashboard() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange" />
-              </span>
-            </button>
+            <div className="relative">
+              <button
+                className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                onClick={() => setShowNotifications(prev => !prev)}
+              >
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-orange" />
+                </span>
+              </button>
+              {showNotifications && (
+                <div className="absolute right-0 top-full mt-2 w-72 rounded-xl border border-border bg-white shadow-lg z-50">
+                  <div className="px-4 py-3 border-b border-border">
+                    <p className="text-sm font-semibold text-charcoal">Notifications</p>
+                  </div>
+                  <div className="px-4 py-8 text-center">
+                    <Bell className="h-6 w-6 text-gray-300 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">No new notifications</p>
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="hidden sm:flex h-8 w-8 items-center justify-center rounded-full bg-orange text-xs font-semibold text-white">
               SJ
             </div>
@@ -2996,6 +3091,7 @@ export default function AppDashboard() {
             {activeTab === 'drafts' && <DraftsTab pitchDrafts={pitchDrafts} onNavigate={handleNavClick} />}
             {activeTab === 'pipeline' && <PipelineTab deals={deals} addDeal={addDeal} moveDealStage={moveDealStage} />}
             {activeTab === 'replies' && <InboxTab addDeal={addDeal} />}
+            {activeTab === 'settings' && <SettingsTab />}
           </FadePanel>
         </main>
       </div>
