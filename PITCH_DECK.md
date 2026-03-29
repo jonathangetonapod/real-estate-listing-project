@@ -47,23 +47,23 @@ We only allow **5 agents per zip code**. Once a zip is full, new agents go on a 
 
 ---
 
-## Slide 5: The Competition
+## Slide 5: Why Us
 
-They charge 10-18x more — and still don't include outreach.
+They give you data. **We give you replies.**
 
-| Platform | Cost | Seller Leads | Exclusive? | AI Emails | Managed Sending |
-|---|---|---|---|---|---|
-| **OffMarket** | **$99/mo** | **6 types** | **5/zip** | **Yes** | **Yes** |
-| BoldLeads | $900-1,800 | Yes | 1/zip | No | No |
-| REDX | $350+ | Phone only | Shared | No | No |
-| Vulcan7 | $305-359 | Phone only | Shared | No | No |
-| Offrs | $300-600 | Predictive | 2x price | No | No |
-| Zillow | $1,200-5,000+ | Buyer leads | Shared | No | No |
-| PropStream | $99-699 | Data only (DIY) | Shared | No | No |
+**What's out there today:**
+- **Zillow** ($1,200-5,000/mo) — Buyer leads only. Shared with every agent in your zip.
+- **REDX / Vulcan7** ($300-400/mo) — Phone numbers. You cold call 8 hours a day. Shared with everyone.
+- **PropStream** ($99-699/mo) — Raw data. You pull lists, write emails, find tools, do everything yourself.
+- **BoldLeads** ($900-1,800/mo) — Exclusive — but 10-18x the price. Plus mandatory Facebook ad spend.
 
-- **Only platform** with AI-drafted emails + managed sending included at any price
-- **10-18x cheaper** than BoldLeads — the only other platform with zip exclusivity
-- **No cold calling** — REDX & Vulcan7 require 8+ hrs/day on the phone. We send emails.
+**OffMarket — $99/mo:**
+- We find the leads (expireds, FSBOs, pre-foreclosure, absentee, high equity, probate)
+- We write the emails (AI-personalized with real property data, 3-step sequences)
+- We send them for you (managed infrastructure, warmed domains, 94% inbox rate)
+- You just close the deal (replies land in your inbox, interested sellers flagged)
+
+Works for **agents, wholesalers, and investors** — anyone who needs motivated sellers in their zip code.
 
 ---
 
