@@ -121,7 +121,7 @@ export default function LoginPage() {
             Your market is waiting.
           </h1>
           <p className="font-sans text-lg text-white/40 leading-relaxed">
-            250 verified seller leads. 3-step email sequences. One pipeline to close.
+            More listing appointments. Less cold calling. One platform to close.
           </p>
 
           {/* Social proof */}
