@@ -3275,7 +3275,7 @@ function EmailAccountsTab() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-heading text-sm font-semibold text-charcoal">Mailboxes</h2>
-          <span className="text-xs text-muted-foreground">{mailboxes.length}/2 slots used</span>
+          <span className="text-xs text-muted-foreground">{mailboxes.length}/5 slots used</span>
         </div>
 
         {mailboxes.length === 0 && (
@@ -3421,12 +3421,73 @@ function EmailAccountsTab() {
         <Button
           variant="outline"
           className="w-full rounded-lg h-10 text-sm font-medium border-dashed"
-          disabled={mailboxes.length >= 2}
+          disabled={mailboxes.length >= 5}
           onClick={() => setShowAddMailbox(true)}
         >
           <Plus className="h-4 w-4 mr-2" />
-          {mailboxes.length >= 2 ? 'Maximum 2 mailboxes' : 'Add Mailbox'}
+          {mailboxes.length >= 5 ? 'Maximum mailboxes reached' : 'Add Mailbox'}
         </Button>
+
+        {/* Status banner */}
+        {mailboxes.length > 0 && (() => {
+          const allActive = mailboxes.every(m => m.status === 'active');
+          const warmingCount = mailboxes.filter(m => m.status === 'warming').length;
+          const avgHealth = Math.round(mailboxes.reduce((sum, m) => sum + m.healthScore, 0) / mailboxes.length);
+
+          if (allActive) {
+            return (
+              <div className="rounded-xl border border-success/20 bg-success/[0.03] p-5">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                    <CheckCircle2 className="h-5 w-5 text-success" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-charcoal">You&apos;re all set!</p>
+                    <p className="text-xs text-gray-500">Your mailboxes are warmed up and ready to send.</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-success/10">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-success" />
+                    <span className="text-xs text-gray-600">{mailboxes.length} {mailboxes.length === 1 ? 'mailbox' : 'mailboxes'} active</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Shield className="h-3.5 w-3.5 text-success" />
+                    <span className="text-xs text-gray-600">Health: {avgHealth}%</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5 text-success" />
+                    <span className="text-xs text-gray-600">{mailboxes.reduce((sum, m) => sum + m.emailsSent, 0)} emails sent</span>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div className="rounded-xl border border-orange/20 bg-orange/[0.03] p-5">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-full bg-orange/10 flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-orange" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-charcoal">Warming up your mailboxes</p>
+                  <p className="text-xs text-gray-500">{warmingCount} {warmingCount === 1 ? 'mailbox is' : 'mailboxes are'} building sender reputation. This takes 7-14 days.</p>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-orange/10">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Warm-up Progress</span>
+                  <span className="text-xs font-mono text-orange">{Math.round(mailboxes.reduce((sum, m) => sum + (m.warmupDay / m.warmupTotal) * 100, 0) / mailboxes.length)}%</span>
+                </div>
+                <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                  <div className="h-full rounded-full bg-orange transition-all" style={{ width: `${Math.round(mailboxes.reduce((sum, m) => sum + (m.warmupDay / m.warmupTotal) * 100, 0) / mailboxes.length)}%` }} />
+                </div>
+                <p className="text-[10px] text-gray-400 mt-2">Your emails will start going out automatically once warm-up is complete. No action needed.</p>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       <div className="h-12" />
