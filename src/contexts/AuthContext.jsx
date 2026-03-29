@@ -29,28 +29,34 @@ export function AuthProvider({ children }) {
   }, [])
 
   useEffect(() => {
+    let mounted = true
+
     // Check existing session on mount
     supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      if (!mounted) return
       setSession(currentSession)
       setUser(currentSession?.user ?? null)
 
       if (currentSession?.user) {
         const profileData = await fetchProfile(currentSession.user.id)
-        setProfile(profileData)
+        if (mounted) setProfile(profileData)
       }
 
-      setLoading(false)
+      if (mounted) setLoading(false)
+    }).catch(() => {
+      if (mounted) setLoading(false)
     })
 
     // Subscribe to auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
+        if (!mounted) return
         setSession(newSession)
         setUser(newSession?.user ?? null)
 
         if (newSession?.user) {
           const profileData = await fetchProfile(newSession.user.id)
-          setProfile(profileData)
+          if (mounted) setProfile(profileData)
         } else {
           setProfile(null)
         }
@@ -59,8 +65,15 @@ export function AuthProvider({ children }) {
       }
     )
 
+    // Safety timeout — never stay loading forever
+    const timeout = setTimeout(() => {
+      if (mounted && loading) setLoading(false)
+    }, 5000)
+
     return () => {
+      mounted = false
       subscription.unsubscribe()
+      clearTimeout(timeout)
     }
   }, [fetchProfile])
 
