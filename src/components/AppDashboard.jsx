@@ -3071,7 +3071,9 @@ function EmailAccountsTab() {
   const generateUser = () => {
     const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
     const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
-    return { fullName: `${fn} ${ln}`, username: `${fn.toLowerCase()}.${ln.toLowerCase()}` };
+    const styles = [`${fn.toLowerCase()}`, `${fn.toLowerCase()}.${ln[0].toLowerCase()}`, `${fn[0].toLowerCase()}.${ln.toLowerCase()}`];
+    const username = styles[Math.floor(Math.random() * styles.length)];
+    return { fullName: `${fn} ${ln}`, username, edited: false };
   };
   const [newUsers, setNewUsers] = useState(() => [generateUser(), generateUser()]);
 
@@ -3473,12 +3475,20 @@ function EmailAccountsTab() {
                 const updateUser = (idx, field, value) => {
                   setNewUsers(newUsers.map((u, i) => {
                     if (i !== idx) return u;
+                    if (field === 'edited') return { ...u, edited: true };
                     if (field === 'fullName') {
-                      const parts = value.split(' ');
-                      const username = parts.length >= 2 ? `${parts[0].toLowerCase()}.${parts[parts.length - 1].toLowerCase()}` : value.toLowerCase().replace(/\s+/g, '.');
-                      return { ...u, fullName: value, username };
+                      const parts = value.trim().split(' ').filter(Boolean);
+                      let username;
+                      if (parts.length >= 2) {
+                        username = `${parts[0].toLowerCase()}.${parts[parts.length - 1][0].toLowerCase()}`;
+                      } else if (parts.length === 1) {
+                        username = parts[0].toLowerCase();
+                      } else {
+                        username = '';
+                      }
+                      return { ...u, fullName: value, username, edited: true };
                     }
-                    return { ...u, [field]: value };
+                    return { ...u, [field]: value, edited: true };
                   }));
                 };
 
@@ -3556,18 +3566,19 @@ function EmailAccountsTab() {
                             <Input
                               value={user.fullName}
                               onChange={(e) => updateUser(idx, 'fullName', e.target.value)}
-                              className="h-8 text-xs rounded-md"
+                              className={cn('h-8 text-xs rounded-md', !user.edited && 'text-gray-400')}
                               placeholder="Full Name"
+                              onFocus={() => updateUser(idx, 'edited', true)}
                             />
                             <div className="flex items-center gap-0">
                               <Input
                                 value={user.username}
                                 onChange={(e) => updateUser(idx, 'username', e.target.value)}
-                                className="h-8 text-xs rounded-r-none font-mono"
+                                className={cn('h-8 text-xs rounded-r-none font-mono', !user.edited && 'text-gray-400')}
                                 placeholder="username"
                               />
                             </div>
-                            <span className="text-[11px] font-mono text-gray-500 truncate">{user.username}@{domain?.name}</span>
+                            <span className="text-[11px] font-mono text-gray-400 truncate">{user.username}@{domain?.name}</span>
                             <button onClick={() => removeRow(idx)} className={cn('text-gray-300 hover:text-danger transition-colors', newUsers.length <= 1 && 'opacity-0 pointer-events-none')}>
                               <X className="h-3.5 w-3.5" />
                             </button>
