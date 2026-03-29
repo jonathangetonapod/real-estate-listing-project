@@ -3754,7 +3754,7 @@ function EmailAccountsTab() {
                       console.log('Calling create-mailboxes edge function for', domain.name);
 
                       const edgeRes = await fetch(
-                        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-mailboxes`,
+                        `https://qtoptwgmqulrumyojtjv.supabase.co/functions/v1/create-mailboxes`,
                         {
                           method: 'POST',
                           headers: {
