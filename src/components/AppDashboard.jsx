@@ -3251,7 +3251,7 @@ function EmailAccountsTab() {
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-2 ml-8">
-                Purchased {new Date(domain.purchasedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · Auto-renewed annually
+                Purchased {new Date(domain.purchasedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · Renews annually
               </p>
             </div>
             <div className="shrink-0">
@@ -3744,7 +3744,7 @@ function DomainSlideOver({
               <div className="space-y-2">
                 <p className="text-sm text-charcoal font-medium">This will be your professional sending domain</p>
                 <div className="space-y-1.5">
-                  {['All DNS records (MX, SPF, DKIM, DMARC) configured automatically', 'Mailboxes are active immediately with smart daily send limits', 'Annual auto-renewal included'].map((line) => (
+                  {['All DNS records (MX, SPF, DKIM, DMARC) configured automatically', 'Mailboxes are active immediately with smart daily send limits', 'Domain included with your plan'].map((line) => (
                     <div key={line} className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-success shrink-0 mt-0.5" />
                       <span className="text-sm text-muted-foreground">{line}</span>
