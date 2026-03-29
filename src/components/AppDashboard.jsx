@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard,
   Users,
@@ -2873,6 +2875,23 @@ function LeadsArrivedBanner({ onDismiss, onReview }) {
 // ---------------------------------------------------------------------------
 
 function SettingsTab() {
+  const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const settingsName = profile?.full_name || 'Agent';
+  const settingsInitials = profile?.initials || settingsName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  const settingsEmail = profile?.email || '';
+  const settingsMarket = profile?.market || 'Set your market';
+
+  const handleLogOut = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (err) {
+      console.error('Error signing out:', err);
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
@@ -2884,12 +2903,12 @@ function SettingsTab() {
       <div className="rounded-xl border border-border bg-white p-5">
         <div className="flex items-center gap-4 mb-5">
           <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-orange text-xl font-bold text-white">
-            SJ
+            {settingsInitials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-heading text-lg font-semibold text-charcoal">Sarah Johnson</p>
-            <p className="text-sm text-muted-foreground">sarah@offmarket.com</p>
-            <p className="text-xs text-gray-400 mt-0.5">Riverside Heights, CA · Member since Jan 2026</p>
+            <p className="font-heading text-lg font-semibold text-charcoal">{settingsName}</p>
+            <p className="text-sm text-muted-foreground">{settingsEmail}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{settingsMarket}</p>
           </div>
           <Button variant="outline" size="sm" className="rounded-lg text-xs shrink-0">
             Edit Profile
@@ -2928,7 +2947,12 @@ function SettingsTab() {
             <p className="text-sm font-semibold text-charcoal">Log Out</p>
             <p className="text-xs text-muted-foreground">Sign out of your OffMarket account</p>
           </div>
-          <Button variant="outline" size="sm" className="rounded-lg text-xs border-danger/20 text-danger hover:bg-danger/5 hover:text-danger">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-lg text-xs border-danger/20 text-danger hover:bg-danger/5 hover:text-danger"
+            onClick={handleLogOut}
+          >
             Log Out
           </Button>
         </div>
@@ -2940,10 +2964,28 @@ function SettingsTab() {
 }
 
 export default function AppDashboard() {
+  const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
   const [activeNav, setActiveNav] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLeadsArrived, setShowLeadsArrived] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  // Derive display values from auth profile
+  const displayName = profile?.full_name || 'Agent';
+  const displayInitials = profile?.initials || displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  const displayMarket = profile?.market || 'Set your market';
+  const displayEmail = profile?.email || '';
+  const firstName = displayName.split(' ')[0];
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (err) {
+      console.error('Error signing out:', err);
+    }
+  };
 
   // Shared state — pitch drafts and contacted leads live here so both tabs can access them
   const [pitchDrafts, setPitchDrafts] = useState({});
@@ -3061,11 +3103,11 @@ export default function AppDashboard() {
         <div className="px-4 py-5 border-t border-white/10">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange text-sm font-semibold text-white">
-              SJ
+              {displayInitials}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-white truncate">Sarah Johnson</p>
-              <p className="text-xs text-white/50 truncate">Riverside Heights, CA</p>
+              <p className="text-sm font-medium text-white truncate">{displayName}</p>
+              <p className="text-xs text-white/50 truncate">{displayMarket}</p>
             </div>
           </div>
         </div>
@@ -3084,7 +3126,7 @@ export default function AppDashboard() {
               <Menu className="h-5 w-5" />
             </button>
             <div>
-              <h1 className="font-heading text-lg font-semibold">Good morning, Sarah</h1>
+              <h1 className="font-heading text-lg font-semibold">Good morning, {firstName}</h1>
               <p className="text-xs text-muted-foreground">You have <span className="font-semibold text-orange">{leads.length} seller leads</span> and <span className="font-semibold text-success">{sampleReplies.filter(r => r.status === 'new').length} new replies</span>.</p>
             </div>
           </div>
@@ -3114,7 +3156,7 @@ export default function AppDashboard() {
               )}
             </div>
             <div className="hidden sm:flex h-8 w-8 items-center justify-center rounded-full bg-orange text-xs font-semibold text-white">
-              SJ
+              {displayInitials}
             </div>
           </div>
         </header>

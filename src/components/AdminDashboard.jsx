@@ -1,10 +1,12 @@
 import { useState, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard,
   Users,
@@ -2035,12 +2037,17 @@ function AgentsView({ onUploadForAgent, agentsList, setAgentsList }) {
 // ---------------------------------------------------------------------------
 
 export function AdminDashboard() {
+  const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
   const [activeNav, setActiveNav] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [preselectedAgent, setPreselectedAgent] = useState(null);
   const [sourceRequest, setSourceRequest] = useState(null);
   const [notifOpen, setNotifOpen] = useState(false);
   const [agentsList, setAgentsList] = useState(agents);
+
+  const adminName = profile?.full_name || 'Admin';
+  const adminInitials = profile?.initials || adminName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   function handleNavClick(key) {
     setActiveNav(key);
@@ -2130,10 +2137,10 @@ export function AdminDashboard() {
         <div className="px-4 py-5 border-t border-white/10">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange text-sm font-semibold text-white">
-              JG
+              {adminInitials}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-white truncate">Jonathan G</p>
+              <p className="text-sm font-medium text-white truncate">{adminName}</p>
               <p className="text-xs text-white/50 truncate">Admin</p>
             </div>
           </div>
