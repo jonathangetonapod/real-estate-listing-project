@@ -3201,32 +3201,35 @@ function EmailAccountsTab() {
       // Stash winnr domain ID for handleProvisioningComplete
       setLastWinnrDomainId(setupResult?.data?.id || null);
 
-      // Save to Supabase
-      if (user?.id) {
-        const { data: domainData } = await supabase
-          .from('agent_domains')
-          .insert({
-            agent_id: user.id,
-            domain_name: selectedDomain.domain,
-            status: 'active',
-            mx_verified: true,
-            spf_verified: true,
-            dkim_verified: true,
-            price: selectedDomain.price,
-            winnr_domain_id: setupResult?.data?.id || null,
-          })
-          .select()
-          .single();
+      // Save to Supabase (non-blocking — don't let DB errors prevent UI from completing)
+      try {
+        if (user?.id) {
+          const { data: domainData } = await supabase
+            .from('agent_domains')
+            .insert({
+              agent_id: user.id,
+              domain_name: selectedDomain.domain,
+              status: 'active',
+              mx_verified: true,
+              spf_verified: true,
+              dkim_verified: true,
+              price: selectedDomain.price,
+              winnr_domain_id: setupResult?.data?.id || null,
+            })
+            .select()
+            .single();
 
-        // Save winnr mapping
-        if (domainData) {
-          await supabase.from('winnr_mappings').insert({
-            agent_id: user.id,
-            resource_type: 'domain',
-            local_id: domainData.id,
-            winnr_id: setupResult?.data?.id || null,
-          });
+          if (domainData) {
+            await supabase.from('winnr_mappings').insert({
+              agent_id: user.id,
+              resource_type: 'domain',
+              local_id: domainData.id,
+              winnr_id: setupResult?.data?.id || null,
+            });
+          }
         }
+      } catch (dbErr) {
+        console.error('Supabase save failed (domain still purchased):', dbErr);
       }
 
       setDomainStep('done');
