@@ -76,15 +76,21 @@ function PropertyGrid() {
   );
 }
 
-export default function LoginPage() {
+export default function SignUpPage() {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleSignUp = (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) return;
+    if (!agreedToTerms) return;
     setLoading(true);
     setTimeout(() => {
       navigate('/app');
@@ -118,16 +124,15 @@ export default function LoginPage() {
           transition={{ duration: 0.8, delay: 0.3 }}
         >
           <h1 className="font-heading text-4xl font-bold text-white leading-tight mb-4">
-            Your market is waiting.
+            Start closing more listings.
           </h1>
           <p className="font-sans text-lg text-white/40 leading-relaxed">
-            More listing appointments. Less cold calling. One platform to close.
+            Join thousands of agents using OffMarket to reach motivated sellers.
           </p>
-
         </motion.div>
       </div>
 
-      {/* Right panel — login form */}
+      {/* Right panel — sign up form */}
       <div className="flex-1 flex items-center justify-center bg-light-bg p-6 sm:p-12">
         <motion.div
           className="w-full max-w-[400px]"
@@ -144,11 +149,26 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-8">
-            <h2 className="font-heading text-2xl font-bold text-charcoal">Welcome back</h2>
-            <p className="font-sans text-sm text-gray-500 mt-1">Sign in to your account to continue</p>
+            <h2 className="font-heading text-2xl font-bold text-charcoal">Create your account</h2>
+            <p className="font-sans text-sm text-gray-500 mt-1">Get started with OffMarket today</p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={handleSignUp} className="space-y-5">
+            {/* Full Name */}
+            <div>
+              <label className="block font-sans text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Sarah Johnson"
+                className="w-full h-12 rounded-lg border border-gray-200 bg-white px-4 font-sans text-sm text-charcoal placeholder:text-gray-400 outline-none transition-all focus:border-orange focus:ring-2 focus:ring-orange/10"
+                required
+              />
+            </div>
+
             {/* Email */}
             <div>
               <label className="block font-sans text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
@@ -166,20 +186,15 @@ export default function LoginPage() {
 
             {/* Password */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="font-sans text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Password
-                </label>
-                <button type="button" className="font-sans text-xs text-orange hover:text-orange-hover transition-colors">
-                  Forgot password?
-                </button>
-              </div>
+              <label className="block font-sans text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                Password
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="Create a password"
                   className="w-full h-12 rounded-lg border border-gray-200 bg-white px-4 pr-12 font-sans text-sm text-charcoal placeholder:text-gray-400 outline-none transition-all focus:border-orange focus:ring-2 focus:ring-orange/10"
                   required
                 />
@@ -193,27 +208,71 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Remember me */}
-            <div className="flex items-center gap-2">
+            {/* Confirm Password */}
+            <div>
+              <label className="block font-sans text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
+                  className={cn(
+                    'w-full h-12 rounded-lg border bg-white px-4 pr-12 font-sans text-sm text-charcoal placeholder:text-gray-400 outline-none transition-all focus:ring-2 focus:ring-orange/10',
+                    confirmPassword && password !== confirmPassword
+                      ? 'border-red-400 focus:border-red-400'
+                      : 'border-gray-200 focus:border-orange'
+                  )}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 font-sans text-xs text-gray-400 hover:text-charcoal transition-colors"
+                >
+                  {showConfirmPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              {confirmPassword && password !== confirmPassword && (
+                <p className="font-sans text-xs text-red-500 mt-1">Passwords do not match</p>
+              )}
+            </div>
+
+            {/* Terms agreement */}
+            <div className="flex items-start gap-2">
               <input
                 type="checkbox"
-                id="remember"
-                className="w-4 h-4 rounded border-gray-300 text-orange focus:ring-orange/20 cursor-pointer"
+                id="terms"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                className="w-4 h-4 mt-0.5 rounded border-gray-300 text-orange focus:ring-orange/20 cursor-pointer"
+                required
               />
-              <label htmlFor="remember" className="font-sans text-sm text-gray-500 cursor-pointer select-none">
-                Keep me signed in
+              <label htmlFor="terms" className="font-sans text-sm text-gray-500 cursor-pointer select-none">
+                I agree to the{' '}
+                <span className="text-orange font-medium hover:text-orange-hover transition-colors cursor-pointer">
+                  Terms of Service
+                </span>{' '}
+                and{' '}
+                <span className="text-orange font-medium hover:text-orange-hover transition-colors cursor-pointer">
+                  Privacy Policy
+                </span>
               </label>
             </div>
 
             {/* Submit */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || password !== confirmPassword || !agreedToTerms}
               className={cn(
                 'w-full h-12 rounded-lg font-sans text-sm font-semibold transition-all duration-200',
                 loading
                   ? 'bg-orange/70 text-white cursor-wait'
-                  : 'bg-orange text-white hover:bg-orange-hover hover:shadow-lg hover:shadow-orange/20 active:scale-[0.98]'
+                  : (!agreedToTerms || (confirmPassword && password !== confirmPassword))
+                    ? 'bg-orange/40 text-white/70 cursor-not-allowed'
+                    : 'bg-orange text-white hover:bg-orange-hover hover:shadow-lg hover:shadow-orange/20 active:scale-[0.98]'
               )}
             >
               {loading ? (
@@ -222,10 +281,10 @@ export default function LoginPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Signing in...
+                  Creating account...
                 </span>
               ) : (
-                'Sign In'
+                'Create Account'
               )}
             </button>
           </form>
@@ -237,7 +296,7 @@ export default function LoginPage() {
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          {/* Google sign in */}
+          {/* Google sign up */}
           <button
             type="button"
             className="w-full h-12 rounded-lg border border-gray-200 bg-white font-sans text-sm font-medium text-charcoal hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center justify-center gap-3"
@@ -248,14 +307,14 @@ export default function LoginPage() {
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
-            Continue with Google
+            Sign up with Google
           </button>
 
-          {/* Sign up link */}
+          {/* Sign in link */}
           <p className="text-center mt-8 font-sans text-sm text-gray-500">
-            Don&apos;t have an account?{' '}
-            <a href="/signup" className="text-orange font-medium hover:text-orange-hover transition-colors no-underline">
-              Sign up
+            Already have an account?{' '}
+            <a href="/login" className="text-orange font-medium hover:text-orange-hover transition-colors no-underline">
+              Sign in
             </a>
           </p>
         </motion.div>

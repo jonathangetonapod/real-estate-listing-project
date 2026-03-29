@@ -16,6 +16,7 @@ import WaitlistPage from './components/WaitlistPage'
 import AppDashboard from './components/AppDashboard'
 import AdminDashboard from './components/AdminDashboard'
 import LoginPage from './components/LoginPage'
+import SignUpPage from './components/SignUpPage'
 
 function LandingPage() {
   return (
@@ -46,6 +47,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/waitlist" element={<WaitlistPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
         <Route path="/app" element={<AppDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
