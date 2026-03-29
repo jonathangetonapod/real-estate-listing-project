@@ -3099,7 +3099,7 @@ function EmailAccountsTab() {
     return users;
   };
 
-  const [newUsers, setNewUsers] = useState(() => generateUniqueUsers(2));
+  const [newUsers, setNewUsers] = useState(() => generateUniqueUsers(1));
 
   const [searchLoading, setSearchLoading] = useState(false);
 
@@ -3859,6 +3859,22 @@ function EmailAccountsTab() {
                           </div>
                         ))}
                       </div>
+
+                      {/* Add another mailbox card */}
+                      {newUsers.length < maxAllowed && maxAllowed > 0 && (
+                        <button
+                          onClick={addRow}
+                          className="w-full mt-2 flex items-center gap-3 rounded-lg border-2 border-dashed border-gray-200 hover:border-orange/30 hover:bg-orange/[0.02] px-4 py-3 transition-all group"
+                        >
+                          <div className="w-7 h-7 rounded-full bg-gray-100 group-hover:bg-orange/10 flex items-center justify-center transition-colors">
+                            <Plus className="h-3.5 w-3.5 text-gray-400 group-hover:text-orange transition-colors" />
+                          </div>
+                          <div className="text-left">
+                            <p className="text-xs font-medium text-gray-500 group-hover:text-charcoal transition-colors">Add another mailbox</p>
+                            <p className="text-[10px] text-gray-400">More mailboxes improve deliverability with sender rotation</p>
+                          </div>
+                        </button>
+                      )}
 
                       {maxAllowed <= 0 && (
                         <p className="text-xs text-danger mt-3">Maximum mailboxes reached (5). Delete existing mailboxes to add more.</p>
