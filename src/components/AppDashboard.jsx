@@ -3751,7 +3751,7 @@ function EmailAccountsTab() {
                       const domainId = domainRow?.[0]?.id;
 
                       const { data: { session } } = await supabase.auth.getSession();
-                      console.log('Calling create-mailboxes edge function for', domain.name);
+                      console.log('Calling create-mailboxes edge function for', domain.name, 'token:', session?.access_token?.slice(0, 20));
 
                       const edgeRes = await fetch(
                         `https://qtoptwgmqulrumyojtjv.supabase.co/functions/v1/create-mailboxes`,
@@ -3759,6 +3759,7 @@ function EmailAccountsTab() {
                           method: 'POST',
                           headers: {
                             'Content-Type': 'application/json',
+                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0b3B0d2dtcXVscnVteW9qdGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Mzk2MTAsImV4cCI6MjA5MDMxNTYxMH0.qeRXNytcgBKc4fyFpTqnUkhGdtHEBYAi0_AU-9AFF74',
                             Authorization: `Bearer ${session?.access_token}`,
                           },
                           body: JSON.stringify({
