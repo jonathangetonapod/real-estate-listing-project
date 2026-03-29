@@ -57,7 +57,7 @@ export function FinalCTA() {
         whileInView="visible"
         viewport={{ once: true, margin: '-20px' }}
       >
-        No credit card required &middot; Cancel anytime &middot; Founding members get $79/mo for life
+        No credit card required &middot; Cancel anytime
       </motion.p>
     </section>
   );

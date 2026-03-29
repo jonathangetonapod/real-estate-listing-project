@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
-const FOUNDING_PRICE = 79;
 const REGULAR_PRICE = 99;
 const SPOTS_PER_MARKET = 5;
 
@@ -42,10 +41,6 @@ const faqItems = [
     a: 'Zillow shares each lead with dozens of agents and charges $1,200+/mo. OffMarket delivers exclusive, verified seller data with AI-drafted pitches for $99/mo. Your leads are yours. No bidding, no sharing.',
   },
   {
-    q: 'What does "founding member" mean?',
-    a: 'The first 500 agents to join lock in $79/mo for life instead of the regular $99/mo. Founding members also get priority access when their market opens and early input on new features.',
-  },
-  {
     q: 'Will this hurt my email reputation?',
     a: 'We never touch your personal email. Every email goes out from our managed infrastructure with your name and brand in the from field. We handle warm-up, rotation, and deliverability. Replies come into your OffMarket dashboard.',
   },
@@ -63,7 +58,7 @@ const faqItems = [
   },
   {
     q: 'When do you launch?',
-    a: 'We are onboarding markets in waves. Waitlist members get first access when their market opens. Founding members are prioritized.',
+    a: 'We are onboarding markets in waves. Waitlist members get first access when their market opens.',
   },
   {
     q: 'What if I want to cancel?',
@@ -283,25 +278,9 @@ export function WaitlistPage() {
                   <p className="font-heading text-2xl font-bold text-charcoal mb-2">
                     You&apos;re on the waitlist
                   </p>
-                  <p className="font-sans text-sm text-gray-400 mb-4">
-                    Founding members get priority access at ${FOUNDING_PRICE}/mo for life (regular ${REGULAR_PRICE}/mo).
+                  <p className="font-sans text-sm text-gray-400">
+                    We&apos;ll notify you when your market opens.
                   </p>
-                  <div className="pt-4 border-t border-gray-200">
-                    <p className="font-sans text-xs text-gray-400 mb-2">
-                      Know an agent in a different market? You both lock in founding pricing.
-                    </p>
-                    <div className="flex items-center gap-2 rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">
-                      <span className="flex-1 font-mono text-xs text-gray-500 truncate">
-                        offmarket.com/ref/{email.split('@')[0]}
-                      </span>
-                      <button
-                        className="shrink-0 font-sans text-xs font-semibold text-orange hover:text-orange/80 transition-colors"
-                        onClick={() => navigator.clipboard?.writeText(`offmarket.com/ref/${email.split('@')[0]}`)}
-                      >
-                        Copy
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </motion.div>
             )}
@@ -408,34 +387,6 @@ export function WaitlistPage() {
               </span>
             </div>
           </div>
-        </motion.div>
-      </section>
-
-      {/* Founding member pricing */}
-      <section className="px-4 pb-12 md:px-6 md:pb-20">
-        <motion.div
-          className="mx-auto max-w-xl rounded-xl border border-orange/20 bg-orange/[0.04] p-5 md:p-8 text-center"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <span className="inline-block font-mono text-xs font-medium uppercase tracking-widest text-orange mb-3">
-            Founding Member Offer
-          </span>
-          <h3 className="font-heading text-xl md:text-3xl font-bold text-charcoal mb-2">
-            <span className="line-through text-gray-400 mr-2">${REGULAR_PRICE}/mo</span>
-            ${FOUNDING_PRICE}/mo for life
-          </h3>
-          <p className="font-sans text-sm text-gray-400 mb-6 max-w-sm mx-auto">
-            First 500 agents lock in founding pricing forever. Join the waitlist to reserve your spot.
-          </p>
-          <Button
-            className="h-auto w-full sm:w-auto rounded-xl bg-orange px-8 py-4 font-sans text-base font-semibold text-white border-none hover:bg-orange/90 transition-colors"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          >
-            Join the Waitlist &rarr;
-          </Button>
         </motion.div>
       </section>
 
