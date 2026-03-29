@@ -29,6 +29,14 @@ import {
   DollarSign,
   Activity,
   Power,
+  Mail,
+  XCircle,
+  Send,
+  ExternalLink,
+  MapPin,
+  Tag,
+  Calendar,
+  MessageSquare,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -130,6 +138,11 @@ const pendingRequests = [
     priceRange: '$200K-$800K',
     requested: '2h ago',
     status: 'Pending',
+    statusHistory: [
+      { status: 'Submitted', date: 'Mar 28, 10:15 AM', detail: 'Request submitted by Sarah Johnson' },
+      { status: 'Zip codes requested', date: 'Mar 28, 10:15 AM', detail: 'Zip codes: 92506, 92507' },
+    ],
+    notes: 'Looking for high-equity properties near UC Riverside. Prefers expired listings 60+ days.',
   },
   {
     id: 2,
@@ -142,6 +155,11 @@ const pendingRequests = [
     priceRange: '$150K-$600K',
     requested: '1d ago',
     status: 'Pending',
+    statusHistory: [
+      { status: 'Submitted', date: 'Mar 27, 3:42 PM', detail: 'Request submitted by Mike Chen' },
+      { status: 'Zip codes requested', date: 'Mar 27, 3:42 PM', detail: 'Zip codes: 85001, 85003, 85004' },
+    ],
+    notes: 'Expanding into downtown Phoenix area. First bulk request.',
   },
   {
     id: 3,
@@ -154,6 +172,48 @@ const pendingRequests = [
     priceRange: '$300K-$900K',
     requested: '3d ago',
     status: 'In Progress',
+    statusHistory: [
+      { status: 'Submitted', date: 'Mar 25, 9:30 AM', detail: 'Request submitted by Jessica Williams' },
+      { status: 'Zip codes requested', date: 'Mar 25, 9:30 AM', detail: 'Zip codes: 78701, 78702' },
+      { status: 'Processing', date: 'Mar 26, 11:00 AM', detail: 'Admin began processing request' },
+    ],
+    notes: 'Trial agent, high-value market. Prioritize quality over quantity.',
+  },
+  {
+    id: 4,
+    agentId: 5,
+    agent: 'Amanda Foster',
+    initials: 'AF',
+    market: 'Denver',
+    zipCodes: ['80202', '80203', '80205'],
+    leadTypes: ['Pre-Foreclosure', 'Absentee'],
+    priceRange: '$250K-$700K',
+    requested: '5d ago',
+    status: 'Completed',
+    statusHistory: [
+      { status: 'Submitted', date: 'Mar 23, 2:15 PM', detail: 'Request submitted by Amanda Foster' },
+      { status: 'Processing', date: 'Mar 24, 9:00 AM', detail: 'Admin began processing request' },
+      { status: 'Leads Uploaded', date: 'Mar 24, 10:30 AM', detail: '312 leads uploaded and assigned' },
+      { status: 'Agent Notified', date: 'Mar 24, 10:31 AM', detail: 'Amanda Foster notified via email' },
+    ],
+    notes: 'Pro agent, monthly recurring order.',
+  },
+  {
+    id: 5,
+    agentId: 4,
+    agent: 'David Park',
+    initials: 'DP',
+    market: 'San Diego',
+    zipCodes: ['92101'],
+    leadTypes: ['FSBO'],
+    priceRange: '$400K-$1.2M',
+    requested: '7d ago',
+    status: 'Rejected',
+    statusHistory: [
+      { status: 'Submitted', date: 'Mar 21, 4:00 PM', detail: 'Request submitted by David Park' },
+      { status: 'Rejected', date: 'Mar 22, 8:45 AM', detail: 'Rejected: Account subscription expired. Renew to continue.' },
+    ],
+    notes: '',
   },
 ];
 
@@ -198,6 +258,10 @@ function statusBadgeClass(status) {
       return 'bg-orange/10 text-orange border-orange/20';
     case 'In Progress':
       return 'bg-blue-50 text-blue-600 border-blue-200';
+    case 'Completed':
+      return 'bg-success/10 text-success border-success/20';
+    case 'Rejected':
+      return 'bg-danger/10 text-danger border-danger/20';
     default:
       return 'bg-muted text-muted-foreground';
   }
@@ -232,6 +296,17 @@ function planBadgeClass(plan) {
 }
 
 // ---------------------------------------------------------------------------
+// Helper: timeline dot colour
+// ---------------------------------------------------------------------------
+
+function timelineDotClass(status) {
+  if (status === 'Rejected') return 'bg-danger';
+  if (status === 'Leads Uploaded' || status === 'Agent Notified' || status === 'Completed') return 'bg-success';
+  if (status === 'Processing') return 'bg-blue-500';
+  return 'bg-orange';
+}
+
+// ---------------------------------------------------------------------------
 // Fade wrapper
 // ---------------------------------------------------------------------------
 
@@ -253,230 +328,647 @@ function FadePanel({ children, tabKey }) {
 }
 
 // ---------------------------------------------------------------------------
+// Mini timeline component (reusable)
+// ---------------------------------------------------------------------------
+
+function StatusTimeline({ history, compact = false }) {
+  return (
+    <div className={cn('relative', compact ? 'space-y-2' : 'space-y-3')}>
+      {history.map((entry, i) => {
+        const isLast = i === history.length - 1;
+        return (
+          <div key={i} className="flex gap-3">
+            <div className="flex flex-col items-center">
+              <div
+                className={cn(
+                  'rounded-full shrink-0',
+                  compact ? 'w-2 h-2 mt-1.5' : 'w-2.5 h-2.5 mt-1',
+                  timelineDotClass(entry.status)
+                )}
+              />
+              {!isLast && (
+                <div className="w-px flex-1 bg-gray-200 mt-1" />
+              )}
+            </div>
+            <div className={cn('pb-1 min-w-0', !isLast && (compact ? 'pb-0' : 'pb-1'))}>
+              <p className={cn('font-medium text-foreground', compact ? 'text-[11px]' : 'text-xs')}>
+                {entry.detail || entry.status}
+              </p>
+              <p className={cn('text-muted-foreground font-mono', compact ? 'text-[10px]' : 'text-[11px]')}>
+                {entry.date}
+              </p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Request Detail Slide-over Panel
+// ---------------------------------------------------------------------------
+
+function RequestDetailPanel({ request, onClose, onUploadLeads, onReject }) {
+  const [showRejectInput, setShowRejectInput] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+
+  const agent = agents.find((a) => a.id === request.agentId);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      transition={{ duration: 0.2, ease: 'easeInOut' }}
+      className="border-t border-border bg-white"
+    >
+      <div className="px-4 py-5 space-y-5">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h3 className="font-heading text-base font-semibold text-charcoal">Request Details</h3>
+          <button
+            onClick={(e) => { e.stopPropagation(); onClose(); }}
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Agent Info Card */}
+        <div className="rounded-xl border border-border bg-muted/20 p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Agent Profile</p>
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-charcoal text-[11px] font-semibold text-white">
+              {request.initials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">{request.agent}</p>
+              <p className="text-xs text-muted-foreground">{agent?.email}</p>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium', statusBadgeClass(agent?.status || 'Active'))}>
+                  {agent?.status}
+                </span>
+                <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium', planBadgeClass(agent?.plan || 'Starter'))}>
+                  {agent?.plan}
+                </span>
+                <span className="text-[10px] text-muted-foreground font-mono">{agent?.leadsPerMonth}/mo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Request Details Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div className="flex items-center gap-1.5 mb-1">
+              <MapPin className="w-3 h-3 text-muted-foreground" />
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Market</p>
+            </div>
+            <p className="text-sm font-medium text-foreground">{request.market}</p>
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5 mb-1">
+              <MapPin className="w-3 h-3 text-muted-foreground" />
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Zip Codes</p>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {request.zipCodes.map((z) => (
+                <span key={z} className="inline-block rounded-md bg-muted px-1.5 py-0.5 text-xs font-mono text-foreground">
+                  {z}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5 mb-1">
+              <Tag className="w-3 h-3 text-muted-foreground" />
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Lead Types</p>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {request.leadTypes.map((t) => (
+                <span key={t} className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium', typeBadgeClass(t))}>
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5 mb-1">
+              <DollarSign className="w-3 h-3 text-muted-foreground" />
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Price Range</p>
+            </div>
+            <p className="text-sm font-mono text-foreground">{request.priceRange}</p>
+          </div>
+        </div>
+
+        {/* Agent Notes */}
+        {request.notes && (
+          <div>
+            <div className="flex items-center gap-1.5 mb-2">
+              <MessageSquare className="w-3 h-3 text-muted-foreground" />
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Agent Notes</p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/10 px-3 py-2.5">
+              <p className="text-xs text-gray-600 leading-relaxed">{request.notes}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Status Timeline */}
+        <div>
+          <div className="flex items-center gap-1.5 mb-3">
+            <Clock className="w-3 h-3 text-muted-foreground" />
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Request History</p>
+          </div>
+          <div className="rounded-lg border border-border bg-white p-3">
+            <StatusTimeline history={request.statusHistory} compact />
+          </div>
+        </div>
+
+        {/* Reject reason input */}
+        <AnimatePresence>
+          {showRejectInput && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="overflow-hidden"
+            >
+              <div className="rounded-lg border border-danger/20 bg-danger/[0.02] p-3 space-y-2">
+                <label className="text-xs font-medium text-danger">Rejection Reason</label>
+                <textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="e.g., Account subscription expired. Renew to continue."
+                  className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-danger/30 resize-none"
+                  rows={2}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    className="rounded-lg bg-danger text-white hover:bg-danger/90 text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (rejectReason.trim()) {
+                        onReject(request.id, rejectReason);
+                        setShowRejectInput(false);
+                        setRejectReason('');
+                      }
+                    }}
+                  >
+                    Confirm Rejection
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-lg text-xs"
+                    onClick={(e) => { e.stopPropagation(); setShowRejectInput(false); setRejectReason(''); }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Action Buttons */}
+        {(request.status === 'Pending' || request.status === 'In Progress') && !showRejectInput && (
+          <div className="flex items-center gap-2 pt-1">
+            <Button
+              className="rounded-lg bg-orange text-white hover:bg-orange/90 text-sm flex-1"
+              onClick={(e) => { e.stopPropagation(); onUploadLeads(request); }}
+            >
+              <Upload className="w-4 h-4 mr-1.5" />
+              Upload Leads for This Request
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-lg text-sm text-danger border-danger/20 hover:bg-danger/5"
+              onClick={(e) => { e.stopPropagation(); setShowRejectInput(true); }}
+            >
+              <XCircle className="w-4 h-4 mr-1.5" />
+              Reject
+            </Button>
+          </div>
+        )}
+
+        {request.status === 'Completed' && (
+          <div className="rounded-lg border border-success/20 bg-success/[0.03] px-4 py-3 flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+            <p className="text-xs text-success font-medium">This request has been fulfilled and the agent has been notified.</p>
+          </div>
+        )}
+
+        {request.status === 'Rejected' && (
+          <div className="rounded-lg border border-danger/20 bg-danger/[0.03] px-4 py-3 flex items-center gap-2">
+            <XCircle className="w-4 h-4 text-danger shrink-0" />
+            <p className="text-xs text-danger font-medium">This request was rejected.</p>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // View: Admin Overview (Command Center)
 // ---------------------------------------------------------------------------
 
-function OverviewView({ onProcessRequest }) {
+function OverviewView({ onProcessRequest, showRequestsOnly = false }) {
   const [expandedRequest, setExpandedRequest] = useState(null);
+  const [detailRequest, setDetailRequest] = useState(null);
+  const [requestFilter, setRequestFilter] = useState('All');
+  const [requests, setRequests] = useState(pendingRequests);
+  const [toast, setToast] = useState(null);
+
+  const filterTabs = [
+    { key: 'All', count: requests.length },
+    { key: 'Pending', count: requests.filter((r) => r.status === 'Pending').length },
+    { key: 'In Progress', count: requests.filter((r) => r.status === 'In Progress').length },
+    { key: 'Completed', count: requests.filter((r) => r.status === 'Completed').length },
+    { key: 'Rejected', count: requests.filter((r) => r.status === 'Rejected').length },
+  ];
+
+  const filteredRequests = useMemo(() => {
+    if (requestFilter === 'All') return requests;
+    return requests.filter((r) => r.status === requestFilter);
+  }, [requests, requestFilter]);
+
+  function handleRejectRequest(requestId, reason) {
+    setRequests((prev) =>
+      prev.map((r) =>
+        r.id === requestId
+          ? {
+              ...r,
+              status: 'Rejected',
+              statusHistory: [
+                ...r.statusHistory,
+                { status: 'Rejected', date: 'Mar 28, ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), detail: `Rejected: ${reason}` },
+              ],
+            }
+          : r
+      )
+    );
+    setDetailRequest(null);
+    setExpandedRequest(null);
+    setToast({ message: 'Request rejected', type: 'danger' });
+    setTimeout(() => setToast(null), 3000);
+  }
+
+  function handleClickProcess(req) {
+    setExpandedRequest(req.id);
+    setDetailRequest(req.id);
+  }
 
   const metrics = [
     { label: 'Active Agents', value: '8', icon: UserCheck, accent: 'text-charcoal', iconBg: 'bg-charcoal/5', iconColor: 'text-charcoal' },
-    { label: 'Pending Requests', value: '3', icon: AlertCircle, accent: 'text-orange', badge: 'needs action', badgeColor: 'bg-orange/10 text-orange', iconBg: 'bg-orange/5', iconColor: 'text-orange' },
+    { label: 'Pending Requests', value: String(requests.filter((r) => r.status === 'Pending').length), icon: AlertCircle, accent: 'text-orange', badge: 'needs action', badgeColor: 'bg-orange/10 text-orange', iconBg: 'bg-orange/5', iconColor: 'text-orange' },
     { label: 'Leads Delivered', value: '1,847', icon: TrendingUp, accent: 'text-charcoal', iconBg: 'bg-success/5', iconColor: 'text-success' },
     { label: 'Monthly Revenue', value: '$632', icon: DollarSign, accent: 'text-charcoal', mono: true, iconBg: 'bg-charcoal/5', iconColor: 'text-charcoal' },
   ];
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Metric cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {metrics.map((m) => {
-          const Icon = m.icon;
-          return (
-            <Card
-              key={m.label}
-              className="relative overflow-visible group cursor-pointer hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
-            >
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    {m.label}
-                  </p>
-                  <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', m.iconBg)}>
-                    <Icon className={cn('w-4 h-4', m.iconColor)} />
-                  </div>
-                </div>
-                <div className="flex items-end gap-2">
-                  <span
-                    className={cn(
-                      'text-3xl font-heading font-semibold leading-none',
-                      m.accent,
-                      m.mono && 'font-mono'
-                    )}
-                  >
-                    {m.value}
-                  </span>
-                  {m.badge && (
-                    <span
-                      className={cn(
-                        'ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium',
-                        m.badgeColor
-                      )}
-                    >
-                      {m.badge}
-                    </span>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {/* Toast notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-4 right-4 z-50"
+          >
+            <div className={cn(
+              'rounded-xl border px-4 py-3 shadow-lg flex items-center gap-2',
+              toast.type === 'danger' ? 'bg-white border-danger/20 text-danger' : 'bg-white border-success/20 text-success'
+            )}>
+              {toast.type === 'danger' ? <XCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+              <span className="text-sm font-medium">{toast.message}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Pending Lead Requests — expandable cards */}
-      <div>
-        <h2 className="font-heading text-lg font-semibold mb-4">Pending Lead Requests</h2>
-        <div className="space-y-3">
-          {pendingRequests.map((req) => {
-            const isExpanded = expandedRequest === req.id;
+      {/* Metric cards (hide on requests-only view) */}
+      {!showRequestsOnly && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {metrics.map((m) => {
+            const Icon = m.icon;
             return (
               <Card
-                key={req.id}
-                className={cn(
-                  'rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group',
-                  'hover:shadow-md hover:-translate-y-0.5',
-                  isExpanded && 'ring-1 ring-orange/20 shadow-md'
-                )}
-                onClick={() => setExpandedRequest(isExpanded ? null : req.id)}
+                key={m.label}
+                className="relative overflow-visible group cursor-pointer hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
               >
-                <CardContent className="p-0">
-                  {/* Collapsed row */}
-                  <div className="flex items-center gap-3 px-4 py-3.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-charcoal text-[11px] font-semibold text-white">
-                      {req.initials}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-sm text-foreground">{req.agent}</span>
-                        <span className="text-xs text-muted-foreground">{req.market}</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="font-mono text-[11px] text-muted-foreground">
-                          {req.zipCodes.join(', ')}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground/50">|</span>
-                        <span className="text-[11px] text-muted-foreground">
-                          {req.leadTypes.join(', ')}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-[11px] text-muted-foreground hidden sm:inline-flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {req.requested}
-                      </span>
-                      <span
-                        className={cn(
-                          'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium',
-                          statusBadgeClass(req.status)
-                        )}
-                      >
-                        {req.status}
-                      </span>
-                      <ChevronDown
-                        className={cn(
-                          'w-4 h-4 text-muted-foreground transition-transform duration-200',
-                          isExpanded && 'rotate-180'
-                        )}
-                      />
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      {m.label}
+                    </p>
+                    <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', m.iconBg)}>
+                      <Icon className={cn('w-4 h-4', m.iconColor)} />
                     </div>
                   </div>
-
-                  {/* Expanded details */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2, ease: 'easeInOut' }}
-                        className="overflow-hidden"
+                  <div className="flex items-end gap-2">
+                    <span
+                      className={cn(
+                        'text-3xl font-heading font-semibold leading-none',
+                        m.accent,
+                        m.mono && 'font-mono'
+                      )}
+                    >
+                      {m.value}
+                    </span>
+                    {m.badge && (
+                      <span
+                        className={cn(
+                          'ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium',
+                          m.badgeColor
+                        )}
                       >
-                        <div className="border-t border-border px-4 py-4 bg-muted/10">
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-                            <div>
-                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Market</p>
-                              <p className="text-sm font-medium text-foreground">{req.market}</p>
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Zip Codes</p>
-                              <p className="text-sm font-mono text-foreground">{req.zipCodes.join(', ')}</p>
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Price Range</p>
-                              <p className="text-sm font-mono text-foreground">{req.priceRange}</p>
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Lead Types</p>
-                              <div className="flex flex-wrap gap-1">
-                                {req.leadTypes.map((t) => (
-                                  <span key={t} className="inline-block rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
-                                    {t}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-end gap-2">
-                            {req.status === 'Pending' ? (
-                              <Button
-                                size="sm"
-                                className="rounded-lg bg-orange text-white hover:bg-orange/90 text-xs"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onProcessRequest(req);
-                                }}
-                              >
-                                Process Request
-                                <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                              </Button>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="rounded-lg text-xs"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onProcessRequest(req);
-                                }}
-                              >
-                                <Upload className="w-3 h-3 mr-1" />
-                                Upload Leads
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </motion.div>
+                        {m.badge}
+                      </span>
                     )}
-                  </AnimatePresence>
+                  </div>
                 </CardContent>
               </Card>
             );
           })}
         </div>
-      </div>
+      )}
 
-      {/* Recent Activity Feed */}
+      {/* Lead Requests with filter tabs */}
       <div>
-        <h2 className="font-heading text-lg font-semibold mb-4">Recent Activity</h2>
-        <Card className="rounded-xl overflow-hidden">
-          <div className="divide-y divide-border">
-            {recentActivity.map((item, i) => (
-              <div
-                key={i}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-heading text-lg font-semibold">
+            {showRequestsOnly ? 'Lead Requests' : 'Pending Lead Requests'}
+          </h2>
+        </div>
+
+        {/* Filter tabs */}
+        <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-1">
+          {filterTabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setRequestFilter(tab.key)}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all shrink-0',
+                requestFilter === tab.key
+                  ? 'bg-charcoal text-white shadow-sm'
+                  : 'bg-white text-muted-foreground border border-border hover:bg-muted/30 hover:text-foreground'
+              )}
+            >
+              {tab.key}
+              <span
                 className={cn(
-                  'flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/30',
-                  item.highlight && 'bg-orange/[0.02]',
-                  item.warn && 'bg-danger/[0.02]'
+                  'inline-flex items-center justify-center rounded-full min-w-[18px] h-[18px] px-1 text-[10px] font-semibold',
+                  requestFilter === tab.key
+                    ? 'bg-white/20 text-white'
+                    : 'bg-muted text-muted-foreground'
                 )}
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={cn(
-                      'w-2 h-2 rounded-full shrink-0',
-                      item.highlight ? 'bg-orange' : item.warn ? 'bg-danger' : 'bg-gray-300'
-                    )}
-                  />
-                  <p className={cn('text-[13px]', item.highlight ? 'font-medium text-charcoal' : 'text-gray-600')}>
-                    {item.text}
-                  </p>
-                </div>
-                <span className="text-[11px] text-gray-400 shrink-0 ml-3 font-mono">{item.time}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Request cards */}
+        <div className="space-y-3">
+          {filteredRequests.length === 0 ? (
+            <Card className="rounded-xl">
+              <CardContent className="py-12 text-center">
+                <p className="text-sm text-muted-foreground">No requests match this filter.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredRequests.map((req) => {
+              const isExpanded = expandedRequest === req.id;
+              const showDetail = detailRequest === req.id;
+              return (
+                <Card
+                  key={req.id}
+                  className={cn(
+                    'rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group',
+                    'hover:shadow-md hover:-translate-y-0.5',
+                    isExpanded && 'ring-1 ring-orange/20 shadow-md'
+                  )}
+                  onClick={() => {
+                    if (isExpanded) {
+                      setExpandedRequest(null);
+                      setDetailRequest(null);
+                    } else {
+                      setExpandedRequest(req.id);
+                      setDetailRequest(null);
+                    }
+                  }}
+                >
+                  <CardContent className="p-0">
+                    {/* Collapsed row */}
+                    <div className="flex items-center gap-3 px-4 py-3.5">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-charcoal text-[11px] font-semibold text-white">
+                        {req.initials}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-sm text-foreground">{req.agent}</span>
+                          <span className="text-xs text-muted-foreground">{req.market}</span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          <span className="font-mono text-[11px] text-muted-foreground">
+                            {req.zipCodes.join(', ')}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground/50">|</span>
+                          <span className="text-[11px] text-muted-foreground">
+                            {req.leadTypes.join(', ')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-[11px] text-muted-foreground hidden sm:inline-flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {req.requested}
+                        </span>
+                        <span
+                          className={cn(
+                            'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium',
+                            statusBadgeClass(req.status)
+                          )}
+                        >
+                          {req.status}
+                        </span>
+                        <ChevronDown
+                          className={cn(
+                            'w-4 h-4 text-muted-foreground transition-transform duration-200',
+                            isExpanded && 'rotate-180'
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Expanded: summary row with Process button */}
+                    <AnimatePresence>
+                      {isExpanded && !showDetail && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: 'easeInOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div className="border-t border-border px-4 py-4 bg-muted/10">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                              <div>
+                                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Market</p>
+                                <p className="text-sm font-medium text-foreground">{req.market}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Zip Codes</p>
+                                <p className="text-sm font-mono text-foreground">{req.zipCodes.join(', ')}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Price Range</p>
+                                <p className="text-sm font-mono text-foreground">{req.priceRange}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Lead Types</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {req.leadTypes.map((t) => (
+                                    <span key={t} className="inline-block rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                                      {t}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              {/* Mini timeline preview */}
+                              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                <Clock className="w-3 h-3" />
+                                <span>
+                                  {req.statusHistory.length} event{req.statusHistory.length !== 1 ? 's' : ''}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {(req.status === 'Pending' || req.status === 'In Progress') && (
+                                  <Button
+                                    size="sm"
+                                    className="rounded-lg bg-orange text-white hover:bg-orange/90 text-xs"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleClickProcess(req);
+                                    }}
+                                  >
+                                    Process Request
+                                    <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                                  </Button>
+                                )}
+                                {req.status === 'Completed' && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="rounded-lg text-xs text-success border-success/20"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDetailRequest(req.id);
+                                    }}
+                                  >
+                                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                                    View Details
+                                  </Button>
+                                )}
+                                {req.status === 'Rejected' && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="rounded-lg text-xs text-danger border-danger/20"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDetailRequest(req.id);
+                                    }}
+                                  >
+                                    <Eye className="w-3 h-3 mr-1" />
+                                    View Details
+                                  </Button>
+                                )}
+                                {!['Completed', 'Rejected'].includes(req.status) && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="rounded-lg text-xs"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDetailRequest(req.id);
+                                    }}
+                                  >
+                                    <Eye className="w-3 h-3 mr-1" />
+                                    Full Details
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Request Detail Panel (slide-over replacement) */}
+                    <AnimatePresence>
+                      {isExpanded && showDetail && (
+                        <RequestDetailPanel
+                          request={req}
+                          onClose={() => setDetailRequest(null)}
+                          onUploadLeads={(r) => {
+                            onProcessRequest(r);
+                          }}
+                          onReject={handleRejectRequest}
+                        />
+                      )}
+                    </AnimatePresence>
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
+        </div>
       </div>
+
+      {/* Recent Activity Feed (hide on requests-only view) */}
+      {!showRequestsOnly && (
+        <div>
+          <h2 className="font-heading text-lg font-semibold mb-4">Recent Activity</h2>
+          <Card className="rounded-xl overflow-hidden">
+            <div className="divide-y divide-border">
+              {recentActivity.map((item, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    'flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/30',
+                    item.highlight && 'bg-orange/[0.02]',
+                    item.warn && 'bg-danger/[0.02]'
+                  )}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={cn(
+                        'w-2 h-2 rounded-full shrink-0',
+                        item.highlight ? 'bg-orange' : item.warn ? 'bg-danger' : 'bg-gray-300'
+                      )}
+                    />
+                    <p className={cn('text-[13px]', item.highlight ? 'font-medium text-charcoal' : 'text-gray-600')}>
+                      {item.text}
+                    </p>
+                  </div>
+                  <span className="text-[11px] text-gray-400 shrink-0 ml-3 font-mono">{item.time}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
@@ -485,7 +977,7 @@ function OverviewView({ onProcessRequest }) {
 // View: Upload Leads
 // ---------------------------------------------------------------------------
 
-function UploadLeadsView({ preselectedAgent }) {
+function UploadLeadsView({ preselectedAgent, sourceRequest }) {
   const [selectedAgentId, setSelectedAgentId] = useState(
     preselectedAgent ? preselectedAgent.agentId : null
   );
@@ -495,6 +987,8 @@ function UploadLeadsView({ preselectedAgent }) {
   const [showPreview, setShowPreview] = useState(false);
   const [uploaded, setUploaded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [notified, setNotified] = useState(false);
+  const [showNotifyConfirm, setShowNotifyConfirm] = useState(false);
   const fileInputRef = useRef(null);
 
   const selectedAgent = agents.find((a) => a.id === selectedAgentId);
@@ -622,6 +1116,44 @@ function UploadLeadsView({ preselectedAgent }) {
     }
   }
 
+  // Request-aware status timeline
+  function RequestStatusTimeline() {
+    const timelineSteps = [
+      { label: 'Request Submitted', done: true },
+      { label: 'Leads Uploaded', done: uploaded },
+      { label: 'Agent Notified', done: notified },
+    ];
+
+    return (
+      <div className="flex items-center justify-center gap-0 mb-2">
+        {timelineSteps.map((step, i) => (
+          <div key={step.label} className="flex items-center">
+            <div className="flex items-center gap-1.5">
+              <div
+                className={cn(
+                  'w-5 h-5 rounded-full flex items-center justify-center transition-all',
+                  step.done ? 'bg-success' : 'bg-gray-200'
+                )}
+              >
+                {step.done ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                ) : (
+                  <div className="w-2 h-2 rounded-full bg-gray-400" />
+                )}
+              </div>
+              <span className={cn('text-[11px] font-medium', step.done ? 'text-success' : 'text-gray-400')}>
+                {step.label}
+              </span>
+            </div>
+            {i < timelineSteps.length - 1 && (
+              <div className={cn('w-6 sm:w-10 h-px mx-1.5', step.done ? 'bg-success' : 'bg-gray-200')} />
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   // Success state
   if (uploaded && selectedAgent) {
     return (
@@ -630,7 +1162,7 @@ function UploadLeadsView({ preselectedAgent }) {
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-2xl mx-auto text-center py-20"
+          className="max-w-2xl mx-auto text-center py-12"
         >
           <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-8 h-8 text-success" />
@@ -644,12 +1176,88 @@ function UploadLeadsView({ preselectedAgent }) {
           <p className="font-sans text-base text-gray-400 mb-8">
             {selectedAgent.name} will see these leads in their dashboard on next login.
           </p>
-          <div className="inline-flex items-center gap-3 rounded-xl bg-light-bg border border-gray-200 px-6 py-4">
+
+          {/* Request workflow status timeline */}
+          {sourceRequest && (
+            <div className="mb-8">
+              <RequestStatusTimeline />
+            </div>
+          )}
+
+          <div className="inline-flex items-center gap-3 rounded-xl bg-light-bg border border-gray-200 px-6 py-4 mb-8">
             <CheckCircle2 className="w-5 h-5 text-success" />
             <div className="text-left">
               <div className="font-sans text-sm font-semibold text-charcoal">Upload complete</div>
               <div className="font-mono text-xs text-gray-500">248 leads, {selectedAgent.market}</div>
             </div>
+          </div>
+
+          {/* Post-upload action buttons */}
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            {!notified ? (
+              <>
+                {!showNotifyConfirm ? (
+                  <Button
+                    className="rounded-xl bg-orange text-white font-sans font-semibold hover:bg-orange/90 transition-colors"
+                    onClick={() => setShowNotifyConfirm(true)}
+                  >
+                    <Send className="w-4 h-4 mr-1.5" />
+                    Notify Agent
+                  </Button>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="rounded-xl border border-orange/20 bg-orange/[0.03] px-5 py-4 text-center"
+                  >
+                    <p className="text-sm text-charcoal mb-3">
+                      <span className="font-semibold">{selectedAgent.name}</span> will be notified that{' '}
+                      <span className="font-mono font-semibold">248 leads</span> are ready
+                    </p>
+                    <div className="flex items-center justify-center gap-2">
+                      <Button
+                        size="sm"
+                        className="rounded-lg bg-orange text-white hover:bg-orange/90 text-xs"
+                        onClick={() => {
+                          setNotified(true);
+                          setShowNotifyConfirm(false);
+                        }}
+                      >
+                        <Send className="w-3 h-3 mr-1" />
+                        Confirm & Send
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-lg text-xs"
+                        onClick={() => setShowNotifyConfirm(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="inline-flex items-center gap-2 rounded-xl bg-success/5 border border-success/20 px-4 py-2.5"
+              >
+                <CheckCircle2 className="w-4 h-4 text-success" />
+                <span className="text-sm font-medium text-success">
+                  {selectedAgent.name} has been notified
+                </span>
+              </motion.div>
+            )}
+
+            <Button
+              variant="outline"
+              className="rounded-xl text-sm"
+            >
+              <ExternalLink className="w-4 h-4 mr-1.5" />
+              View Agent Dashboard
+            </Button>
           </div>
         </motion.div>
       </div>
@@ -704,7 +1312,7 @@ function UploadLeadsView({ preselectedAgent }) {
           </CardContent>
         </Card>
 
-        {/* Lead type breakdown — horizontal bar chart */}
+        {/* Lead type breakdown -- horizontal bar chart */}
         <Card className="rounded-xl">
           <CardContent className="py-4 px-4">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Lead Type Breakdown</p>
@@ -810,6 +1418,29 @@ function UploadLeadsView({ preselectedAgent }) {
           Upload a CSV and assign leads to an agent.
         </p>
       </div>
+
+      {/* Source request context banner */}
+      {sourceRequest && (
+        <motion.div
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border border-orange/20 bg-orange/[0.02] px-4 py-3"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center shrink-0">
+              <ClipboardList className="w-4 h-4 text-orange" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-charcoal">
+                Fulfilling request from {sourceRequest.agent}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {sourceRequest.zipCodes.join(', ')} | {sourceRequest.leadTypes.join(', ')} | {sourceRequest.priceRange}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Agent selector */}
       <Card className="rounded-xl">
@@ -1216,17 +1847,20 @@ export function AdminDashboard() {
   const [activeNav, setActiveNav] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [preselectedAgent, setPreselectedAgent] = useState(null);
+  const [sourceRequest, setSourceRequest] = useState(null);
 
   function handleNavClick(key) {
     setActiveNav(key);
     setMobileMenuOpen(false);
     if (key !== 'upload') {
       setPreselectedAgent(null);
+      setSourceRequest(null);
     }
   }
 
   function handleProcessRequest(request) {
     setPreselectedAgent(request);
+    setSourceRequest(request);
     setActiveNav('upload');
   }
 
@@ -1343,12 +1977,13 @@ export function AdminDashboard() {
             )}
             {activeNav === 'agents' && <AgentsView />}
             {activeNav === 'requests' && (
-              <OverviewView onProcessRequest={handleProcessRequest} />
+              <OverviewView onProcessRequest={handleProcessRequest} showRequestsOnly />
             )}
             {activeNav === 'upload' && (
               <UploadLeadsView
                 key={preselectedAgent?.agentId || 'default'}
                 preselectedAgent={preselectedAgent}
+                sourceRequest={sourceRequest}
               />
             )}
             {activeNav === 'payments' && (
