@@ -3203,8 +3203,9 @@ function EmailAccountsTab() {
 
       // Save to Supabase (non-blocking — don't let DB errors prevent UI from completing)
       try {
+        console.log('Saving domain to Supabase. User ID:', user?.id);
         if (user?.id) {
-          const { data: domainData } = await supabase
+          const { data: domainData, error: domainError } = await supabase
             .from('agent_domains')
             .insert({
               agent_id: user.id,
@@ -3218,6 +3219,9 @@ function EmailAccountsTab() {
             })
             .select()
             .single();
+
+          if (domainError) console.error('Supabase domain insert error:', domainError);
+          else console.log('Domain saved to Supabase:', domainData);
 
           if (domainData) {
             await supabase.from('winnr_mappings').insert({
