@@ -33,7 +33,7 @@ const faqData = [
   },
   {
     q: 'How long until I see results?',
-    a: 'We set up a protected sending domain for you, which takes 14-21 days to warm up. This is non-negotiable \u2014 it\u2019s what keeps your emails out of spam. Once warm-up is done, your 3-step sequences auto-deploy on business days. Most agents see their first replies within 3-4 weeks, and you can track every step on the sequence timeline.',
+    a: 'We set up a protected sending domain for you, which takes 7-14 days to warm up. This is non-negotiable \u2014 it\u2019s what keeps your emails out of spam. Once warm-up is done, your 3-step sequences auto-deploy on business days. Most agents see their first replies within 3-4 weeks, and you can track every step on the sequence timeline.',
   },
   {
     q: 'Can I customize which lead types I target?',

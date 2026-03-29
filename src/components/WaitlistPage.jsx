@@ -50,7 +50,7 @@ const faqItems = [
   },
   {
     q: 'How long until I see results?',
-    a: 'Your sending domain needs 14-21 days to warm up. This is non-negotiable \u2014 it keeps your emails out of spam. Most agents see their first replies within 3-4 weeks. Once warm-up is done, you have a reliable outreach channel that works month after month.',
+    a: 'Your sending domain needs 7-14 days to warm up. This is non-negotiable \u2014 it keeps your emails out of spam. Most agents see their first replies within 3-4 weeks. Once warm-up is done, you have a reliable outreach channel that works month after month.',
   },
   {
     q: 'Is cold emailing homeowners legal?',

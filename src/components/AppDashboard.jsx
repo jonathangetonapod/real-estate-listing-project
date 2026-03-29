@@ -3182,7 +3182,7 @@ function EmailAccountsTab() {
             {[
               'Protects your personal email reputation — your Gmail stays untouched',
               'Automatic DNS setup (SPF, DKIM, DMARC) for maximum inbox placement',
-              'Dedicated warm-up builds sender trust over 14-21 days',
+              'Dedicated warm-up builds sender trust over 7-14 days',
               'Real-time health monitoring so you know your emails are landing',
             ].map((item) => (
               <div key={item} className="flex items-start gap-2.5">
