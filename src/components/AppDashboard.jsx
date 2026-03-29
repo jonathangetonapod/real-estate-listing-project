@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { createLeadOrder, getAgentOrders, getLeadsByOrder } from '@/lib/leads';
-import { suggestDomains, setupDomain, getJob, bulkCreateEmailUsers, setupRedirect } from '@/lib/winnr';
+import { suggestDomains, setupDomain, getJob, setupRedirect } from '@/lib/winnr';
 import { supabase } from '@/lib/supabase';
 import {
   LayoutDashboard,
@@ -3740,63 +3740,47 @@ function EmailAccountsTab() {
                   });
                   setShowAddMailbox(false);
 
-                  // Wire to Winnr + Supabase in background
+                  // Wire to Winnr + Bison + Supabase via edge function
                   try {
                     if (domain?.name) {
-                      const winnrUsers = newUsers.map(u => ({
-                        username: u.username,
-                        name: u.fullName,
-                      }));
-                      console.log('Creating Winnr mailboxes on', domain.name, ':', winnrUsers);
-                      const result = await bulkCreateEmailUsers(domain.name, winnrUsers);
+                      const { data: domainRow } = await supabase
+                        .from('agent_domains')
+                        .select('id')
+                        .eq('agent_id', user.id)
+                        .limit(1);
+                      const domainId = domainRow?.[0]?.id;
 
-                      // Save each mailbox to Supabase
-                      if (user?.id) {
-                        for (let i = 0; i < createdMbs.length; i++) {
-                          const mb = createdMbs[i];
-                          const winnrUser = result?.data?.[i] || null;
-                          // Get domain_id from Supabase
-                          const { data: domainRow } = await supabase
-                            .from('agent_domains')
-                            .select('id')
-                            .eq('agent_id', user.id)
-                            .limit(1);
-                          const domainId = domainRow?.[0]?.id;
+                      const { data: { session } } = await supabase.auth.getSession();
+                      console.log('Calling create-mailboxes edge function for', domain.name);
 
-                          const { data: mbData, error: mbError } = await supabase
-                            .from('agent_mailboxes')
-                            .insert({
-                              agent_id: user.id,
-                              domain_id: domainId,
-                              email: mb.email,
-                              display_name: mb.displayName,
-                              username: mb.email.split('@')[0],
-                              status: 'active',
-                              health_score: 0,
-                              inbox_rate: 0,
-                              total_sent: 0,
-                              daily_limit: 10,
-                              sent_today: 0,
-                              winnr_user_id: winnrUser?.id || null,
-                            })
-                            .select()
-                            .single();
-                          if (mbError) console.error('Supabase mailbox insert error:', mbError);
-
-                          if (mbData && winnrUser?.id) {
-                            await supabase.from('winnr_mappings').insert({
-                              agent_id: user.id,
-                              resource_type: 'email_user',
-                              local_id: mbData.id,
-                              winnr_id: winnrUser.id,
-                            });
-                          }
+                      const edgeRes = await fetch(
+                        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-mailboxes`,
+                        {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${session?.access_token}`,
+                          },
+                          body: JSON.stringify({
+                            mailboxes: newUsers.map(u => ({
+                              username: u.username,
+                              name: u.fullName,
+                            })),
+                            domainName: domain.name,
+                            domainId: domainId,
+                          }),
                         }
+                      );
+
+                      const edgeData = await edgeRes.json();
+                      if (!edgeRes.ok) {
+                        console.error('Edge function failed:', edgeData);
+                      } else {
+                        console.log('Mailboxes created successfully:', edgeData);
                       }
                     }
                   } catch (err) {
-                    console.error('Winnr mailbox creation failed:', err);
-                    // Local state already updated, Winnr sync failed silently
+                    console.error('Mailbox creation failed:', err);
                   }
                 };
 

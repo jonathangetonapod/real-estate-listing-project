@@ -133,14 +133,14 @@ There are 86,000 brokerages in the U.S. One broker sale = 5-10 agent seats locke
 
 ## Slide 10: What I Need
 
-**$25,000. Revenue share. No equity.**
+**$15,000. Revenue share. No equity.**
 
 | Where it goes | Amount |
 |---|---|
-| Meta ads (6 months) | $15,000 |
-| Part-time VA / sales help | $4,800 |
+| Meta ads (4 months) | $8,000 |
+| Part-time VA / sales help | $3,200 |
 | PropStream (lead data) | $1,200 |
-| Buffer | $4,000 |
+| Buffer | $2,600 |
 
 $0 goes to building — the product is built. Every dollar goes to getting agents in the door.
 
@@ -148,20 +148,20 @@ $0 goes to building — the product is built. Every dollar goes to getting agent
 
 | | |
 |---|---|
-| You invest | $25,000 |
-| You get back | $50,000 (2x) |
+| You invest | $15,000 |
+| You get back | $30,000 (2x) |
 | How | 20% of monthly revenue |
 | Starts when | Revenue passes $1,000/mo |
 | Deadline | 36 months from first payment |
 | Equity | None. I keep 100%. |
 
-The faster I grow, the faster you get paid back. At $10K/mo revenue, you're getting $2,000/mo. Fully repaid in ~2 years.
+The faster I grow, the faster you get paid back. At $10K/mo revenue, you're getting $2,000/mo. Fully repaid in ~15 months.
 
 > "I'm not asking you to fund a dream. I'm asking you to fund distribution for a product that already exists."
 
 **50 agents = $5K/mo. Self-sustaining.**
 **100 agents = $10K/mo. Real business.**
-**You double your money. 100% return. No equity. One-page agreement.**
+**You double your money. $15K becomes $30K. No equity. One-page agreement.**
 
 ---
 
