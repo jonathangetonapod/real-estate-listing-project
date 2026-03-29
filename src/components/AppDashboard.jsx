@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { createLeadOrder, getAgentOrders, getLeadsByOrder } from '@/lib/leads';
 import {
   LayoutDashboard,
   Users,
@@ -258,6 +259,7 @@ function HelpCard({ value, label, tip }) {
 }
 
 function FarmAreaTab() {
+  const { user } = useAuth();
   // 'form' | 'pending' | 'delivered'
   const [farmState, setFarmState] = useState('delivered');
   const [zipCodes, setZipCodes] = useState(['92506', '92507']);
@@ -265,6 +267,82 @@ function FarmAreaTab() {
   const [selectedTypes, setSelectedTypes] = useState(['expired', 'fsbo', 'preforeclosure']);
   const [priceMin, setPriceMin] = useState('200000');
   const [priceMax, setPriceMax] = useState('800000');
+  const [orderNotes, setOrderNotes] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+
+  // DB orders state
+  const [dbOrders, setDbOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
+
+  // Mock fallback orders
+  const mockOrders = [
+    { date: 'Mar 28, 2026', zips: '92506, 92507', count: 248, sent: 186, opened: 142, replied: 14, appointments: 3, replyRate: '7.5%', status: 'active' },
+    { date: 'Feb 28, 2026', zips: '92506, 92507', count: 250, sent: 250, opened: 198, replied: 18, appointments: 4, replyRate: '7.2%', status: 'done' },
+    { date: 'Jan 28, 2026', zips: '92506', count: 243, sent: 243, opened: 171, replied: 12, appointments: 2, replyRate: '4.9%', status: 'done' },
+  ];
+
+  // Fetch agent orders from DB
+  useEffect(() => {
+    if (!user?.id) { setOrdersLoading(false); return; }
+    let cancelled = false;
+    (async () => {
+      setOrdersLoading(true);
+      const { data, error } = await getAgentOrders(user.id);
+      if (!cancelled) {
+        if (!error && data.length > 0) {
+          setDbOrders(data.map(o => ({
+            id: o.id,
+            date: new Date(o.requested_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            zips: (o.zip_codes || []).join(', '),
+            count: o.quantity_requested || 250,
+            sent: 0, opened: 0, replied: 0, appointments: 0,
+            replyRate: '0%',
+            status: o.status === 'completed' ? 'done' : 'active',
+            dbStatus: o.status,
+          })));
+        }
+        setOrdersLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  const displayOrders = dbOrders.length > 0 ? dbOrders : mockOrders;
+
+  const handlePlaceOrder = async () => {
+    if (!user?.id) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    const { error } = await createLeadOrder({
+      agentId: user.id,
+      zipCodes,
+      leadTypes: selectedTypes,
+      priceMin: Number(priceMin),
+      priceMax: Number(priceMax),
+      notes: orderNotes,
+    });
+    setSubmitting(false);
+    if (error) {
+      setSubmitError(error.message || 'Failed to place order. Please try again.');
+    } else {
+      // Refresh orders list
+      const { data } = await getAgentOrders(user.id);
+      if (data && data.length > 0) {
+        setDbOrders(data.map(o => ({
+          id: o.id,
+          date: new Date(o.requested_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          zips: (o.zip_codes || []).join(', '),
+          count: o.quantity_requested || 250,
+          sent: 0, opened: 0, replied: 0, appointments: 0,
+          replyRate: '0%',
+          status: o.status === 'completed' ? 'done' : 'active',
+          dbStatus: o.status,
+        })));
+      }
+      setFarmState('pending');
+    }
+  };
 
   const addZip = () => {
     if (newZip.length === 5 && !zipCodes.includes(newZip)) {
@@ -359,12 +437,14 @@ function FarmAreaTab() {
 
         {/* Past Orders — enriched report cards */}
         <h3 className="font-sans text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Past Orders</h3>
+        {ordersLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <RefreshCw className="w-5 h-5 text-gray-400 animate-spin" />
+            <span className="ml-2 text-sm text-gray-400">Loading orders...</span>
+          </div>
+        ) : (
         <div className="space-y-4">
-          {[
-            { date: 'Mar 28, 2026', zips: '92506, 92507', count: 248, sent: 186, opened: 142, replied: 14, appointments: 3, replyRate: '7.5%', status: 'active' },
-            { date: 'Feb 28, 2026', zips: '92506, 92507', count: 250, sent: 250, opened: 198, replied: 18, appointments: 4, replyRate: '7.2%', status: 'done' },
-            { date: 'Jan 28, 2026', zips: '92506', count: 243, sent: 243, opened: 171, replied: 12, appointments: 2, replyRate: '4.9%', status: 'done' },
-          ].map((order, i) => (
+          {displayOrders.map((order, i) => (
             <Card key={i} className="rounded-xl">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-4">
@@ -409,6 +489,7 @@ function FarmAreaTab() {
             </Card>
           ))}
         </div>
+        )}
         <div className="h-12" />
       </div>
     );
@@ -625,12 +706,28 @@ function FarmAreaTab() {
         </div>
       </div>
 
+      {submitError && (
+        <div className="rounded-xl border border-danger/20 bg-danger/[0.03] px-4 py-3 mb-4 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-danger shrink-0" />
+          <p className="text-sm text-danger">{submitError}</p>
+        </div>
+      )}
+
       <Button
-        onClick={() => setFarmState('pending')}
-        disabled={zipCodes.length === 0 || selectedTypes.length === 0}
+        onClick={handlePlaceOrder}
+        disabled={zipCodes.length === 0 || selectedTypes.length === 0 || submitting}
         className="w-full h-auto rounded-xl bg-orange text-white font-sans text-base font-semibold py-4 hover:bg-orange/90 transition-colors disabled:opacity-50"
       >
-        Place My Order <ArrowRight className="w-4 h-4 ml-2" />
+        {submitting ? (
+          <>
+            <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+            Submitting...
+          </>
+        ) : (
+          <>
+            Place My Order <ArrowRight className="w-4 h-4 ml-2" />
+          </>
+        )}
       </Button>
 
       <p className="font-sans text-xs text-gray-400 text-center mt-3">
@@ -1120,6 +1217,7 @@ function PitchSlideOver({ lead, draft, onSave, onSend, onRegenerate, onDiscard, 
 const filterOptions = ['All', 'Expired', 'FSBO', 'Pre-Foreclosure', 'High Equity'];
 
 function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLeads }) {
+  const { user } = useAuth();
   const [expandedLead, setExpandedLead] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
   const [activePitchStatus, setActivePitchStatus] = useState('All');
@@ -1128,6 +1226,56 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
   const [skippedLeads, setSkippedLeads] = useState({});
   const [pitchSlideOverIndex, setPitchSlideOverIndex] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  // DB state for orders and leads
+  const [dbOrders, setDbOrders] = useState([]);
+  const [dbLeads, setDbLeads] = useState([]);
+  const [leadsLoading, setLeadsLoading] = useState(true);
+  const [leadsError, setLeadsError] = useState(null);
+
+  // Fetch agent orders on mount
+  useEffect(() => {
+    if (!user?.id) { setLeadsLoading(false); return; }
+    let cancelled = false;
+    (async () => {
+      setLeadsLoading(true);
+      const { data, error } = await getAgentOrders(user.id);
+      if (!cancelled) {
+        if (!error && data.length > 0) {
+          setDbOrders(data);
+        }
+        if (error) setLeadsError(error.message);
+        setLeadsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // Fetch leads when selectedOrder changes (for a DB order)
+  useEffect(() => {
+    if (!selectedOrder || dbOrders.length === 0) return;
+    // Check if selectedOrder matches a DB order's order_number string
+    const matchingDbOrder = dbOrders.find(o =>
+      `${o.order_number} · ${new Date(o.requested_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` === selectedOrder
+    );
+    if (!matchingDbOrder) return;
+    let cancelled = false;
+    (async () => {
+      setLeadsLoading(true);
+      const { data, error } = await getLeadsByOrder(matchingDbOrder.id);
+      if (!cancelled) {
+        if (!error && data.length > 0) {
+          setDbLeads(data);
+        }
+        if (error) setLeadsError(error.message);
+        setLeadsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [selectedOrder, dbOrders]);
+
+  // Use DB leads if available, otherwise fall back to mock data
+  const activeLeads = dbLeads.length > 0 ? dbLeads : leads;
 
   // Extended property data for each lead (keyed by index in the leads array)
   const extendedLeadData = [
@@ -1188,7 +1336,7 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
   ];
 
   // Lead type filter tabs — scope to current order when one is selected
-  const filterSource = selectedOrder ? leads.filter(l => l.order === selectedOrder) : leads;
+  const filterSource = selectedOrder ? activeLeads.filter(l => l.order === selectedOrder) : activeLeads;
   const typeFilters = [
     { key: 'All', count: filterSource.length },
     { key: 'Expired', count: filterSource.filter(l => l.type === 'Expired').length },
@@ -1198,7 +1346,7 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
   ];
 
   // Unique order months for grouping toggle
-  const orderMonths = ['All', ...Array.from(new Set(leads.map(l => l.order)))];
+  const orderMonths = ['All', ...Array.from(new Set(activeLeads.map(l => l.order)))];
 
   const typeDotColor = (type) => {
     switch (type) {
@@ -1278,11 +1426,11 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
 
   const handleOpenPitchSlideOver = useCallback((idx) => {
     if (!pitchDrafts[idx]) {
-      const lead = leads[idx];
+      const lead = activeLeads[idx];
       setPitchDrafts(prev => ({ ...prev, [idx]: generatePitch(lead) }));
     }
     setPitchSlideOverIndex(idx);
-  }, [pitchDrafts, generatePitch]);
+  }, [pitchDrafts, generatePitch, activeLeads]);
 
   const handleSaveDraft = useCallback((idx, steps) => {
     setPitchDrafts(prev => ({
@@ -1303,9 +1451,9 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
   }, []);
 
   const handleRegeneratePitch = useCallback((idx) => {
-    const lead = leads[idx];
+    const lead = activeLeads[idx];
     setPitchDrafts(prev => ({ ...prev, [idx]: generatePitch(lead) }));
-  }, [generatePitch]);
+  }, [generatePitch, activeLeads]);
 
   const handleDiscardPitch = useCallback((idx) => {
     setPitchDrafts(prev => {
@@ -1326,14 +1474,14 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
 
   const pitchStatusFilters = [
     { key: 'All', count: filterSource.length },
-    { key: 'Not Contacted', count: filterSource.filter((_, i) => getPitchStatus(selectedOrder ? leads.indexOf(filterSource[i]) : i) === 'Not Contacted').length },
-    { key: 'Draft', count: filterSource.filter((_, i) => getPitchStatus(selectedOrder ? leads.indexOf(filterSource[i]) : i) === 'Draft').length },
-    { key: 'Sent', count: filterSource.filter((_, i) => getPitchStatus(selectedOrder ? leads.indexOf(filterSource[i]) : i) === 'Sent').length },
-    { key: 'Skipped', count: filterSource.filter((_, i) => getPitchStatus(selectedOrder ? leads.indexOf(filterSource[i]) : i) === 'Skipped').length },
+    { key: 'Not Contacted', count: filterSource.filter((_, i) => getPitchStatus(selectedOrder ? activeLeads.indexOf(filterSource[i]) : i) === 'Not Contacted').length },
+    { key: 'Draft', count: filterSource.filter((_, i) => getPitchStatus(selectedOrder ? activeLeads.indexOf(filterSource[i]) : i) === 'Draft').length },
+    { key: 'Sent', count: filterSource.filter((_, i) => getPitchStatus(selectedOrder ? activeLeads.indexOf(filterSource[i]) : i) === 'Sent').length },
+    { key: 'Skipped', count: filterSource.filter((_, i) => getPitchStatus(selectedOrder ? activeLeads.indexOf(filterSource[i]) : i) === 'Skipped').length },
   ];
 
   // Filter by lead type, pitch status, and search query
-  const filtered = leads.map((l, i) => ({ ...l, _origIndex: i })).filter((l) => {
+  const filtered = activeLeads.map((l, i) => ({ ...l, _origIndex: i })).filter((l) => {
     const matchesType = activeFilter === 'All' || l.type === activeFilter;
     const matchesOrder = activeOrder === 'All' || l.order === activeOrder;
     const matchesPitchStatus = activePitchStatus === 'All' || getPitchStatus(l._origIndex) === activePitchStatus;
@@ -1622,6 +1770,29 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
     );
   }
 
+  // Loading state
+  if (leadsLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <RefreshCw className="w-6 h-6 text-orange animate-spin" />
+        <span className="ml-3 text-sm text-gray-500">Loading leads...</span>
+      </div>
+    );
+  }
+
+  // Error state
+  if (leadsError) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <AlertCircle className="w-8 h-8 text-danger mx-auto mb-3" />
+          <p className="text-sm text-danger font-medium">Failed to load leads</p>
+          <p className="text-xs text-gray-400 mt-1">{leadsError}</p>
+        </div>
+      </div>
+    );
+  }
+
   // Order overview — show order groups as clickable cards
   return (
     <div className="space-y-6">
@@ -1630,7 +1801,7 @@ function LeadsTab({ pitchDrafts, setPitchDrafts, contactedLeads, setContactedLea
         <div>
           <h1 className="font-heading text-2xl font-bold text-charcoal">Seller Leads</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            <span className="font-semibold text-charcoal">{leads.length}</span> leads in your market
+            <span className="font-semibold text-charcoal">{activeLeads.length}</span> leads in your market
             {Object.values(pitchDrafts).filter(d => d?.status === 'sent').length > 0 && (
               <span> · <span className="text-success font-medium">{Object.values(pitchDrafts).filter(d => d?.status === 'sent').length} pitched</span></span>
             )}
