@@ -94,10 +94,10 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left panel — brand + visualization */}
-      <div className="hidden lg:flex lg:w-[55%] relative bg-charcoal flex-col justify-between p-12 overflow-hidden">
+      <div className="hidden lg:flex lg:w-[55%] relative bg-charcoal flex-col p-12 overflow-hidden">
         <PropertyGrid />
 
-        {/* Logo */}
+        {/* Logo — pinned top */}
         <motion.div
           className="relative z-10"
           initial={{ opacity: 0, y: -10 }}
@@ -110,9 +110,9 @@ export default function LoginPage() {
           </a>
         </motion.div>
 
-        {/* Tagline */}
+        {/* Tagline — centered vertically */}
         <motion.div
-          className="relative z-10 max-w-md"
+          className="relative z-10 max-w-md flex-1 flex flex-col justify-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
