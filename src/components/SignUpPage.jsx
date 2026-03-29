@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 // Animated dots simulating property locations on a dark grid
 function PropertyGrid() {
@@ -85,16 +87,67 @@ export default function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+  const { user, loading: authLoading, signUp } = useAuth();
 
-  const handleSignUp = (e) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/app', { replace: true });
+    }
+  }, [user, authLoading, navigate]);
+
+  const handleSignUp = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) return;
+    setError('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
     if (!agreedToTerms) return;
+
     setLoading(true);
-    setTimeout(() => {
-      navigate('/app');
-    }, 800);
+    try {
+      const data = await signUp(email, password, fullName);
+      // If user is immediately confirmed (no email confirmation), redirect
+      if (data?.user?.confirmed_at || data?.session) {
+        navigate('/app');
+      } else {
+        // Show confirmation message
+        setSuccess(true);
+      }
+    } catch (err) {
+      const msg = err.message || 'Something went wrong';
+      if (msg.includes('User already registered')) {
+        setError('An account with this email already exists. Try signing in instead.');
+      } else if (msg.includes('Password should be')) {
+        setError('Password is too weak. Use at least 6 characters.');
+      } else {
+        setError(msg);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/app`,
+        },
+      });
+    } catch (err) {
+      setError(err.message || 'Failed to sign up with Google');
+    }
   };
 
   return (
@@ -153,7 +206,28 @@ export default function SignUpPage() {
             <p className="font-sans text-sm text-gray-500 mt-1">Get started with OffMarket today</p>
           </div>
 
+          {success ? (
+            <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="font-heading text-lg font-semibold text-charcoal mb-2">Check your email</h3>
+              <p className="font-sans text-sm text-gray-500">
+                We sent a confirmation link to <strong>{email}</strong>. Click the link to activate your account.
+              </p>
+            </div>
+          ) : (
+          <>
           <form onSubmit={handleSignUp} className="space-y-5">
+            {/* Error message */}
+            {error && (
+              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
+                <p className="font-sans text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
             {/* Full Name */}
             <div>
               <label className="block font-sans text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
@@ -299,6 +373,7 @@ export default function SignUpPage() {
           {/* Google sign up */}
           <button
             type="button"
+            onClick={handleGoogleSignUp}
             className="w-full h-12 rounded-lg border border-gray-200 bg-white font-sans text-sm font-medium text-charcoal hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center justify-center gap-3"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -317,6 +392,8 @@ export default function SignUpPage() {
               Sign in
             </a>
           </p>
+          </>
+          )}
         </motion.div>
       </div>
     </div>
