@@ -54,6 +54,11 @@ export function AuthProvider({ children }) {
         setSession(newSession)
         setUser(newSession?.user ?? null)
 
+        // Clean up the # fragment left by OAuth redirect
+        if (event === 'SIGNED_IN' && window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname)
+        }
+
         if (newSession?.user) {
           const profileData = await fetchProfile(newSession.user.id)
           if (mounted) setProfile(profileData)
