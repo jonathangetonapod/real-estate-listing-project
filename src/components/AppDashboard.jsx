@@ -3840,7 +3840,7 @@ function EmailAccountsTab() {
                             <Input
                               value={user.fullName}
                               onChange={(e) => updateUser(idx, 'fullName', e.target.value)}
-                              className={cn('h-8 text-xs rounded-md', !user.edited && 'text-gray-400')}
+                              className="h-8 text-xs rounded-md"
                               placeholder="Full Name"
                               onFocus={() => updateUser(idx, 'edited', true)}
                             />
@@ -3848,7 +3848,7 @@ function EmailAccountsTab() {
                               <Input
                                 value={user.username}
                                 onChange={(e) => updateUser(idx, 'username', e.target.value)}
-                                className={cn('h-8 text-xs rounded-r-none font-mono', !user.edited && 'text-gray-400')}
+                                className="h-8 text-xs rounded-r-none font-mono"
                                 placeholder="username"
                               />
                             </div>
