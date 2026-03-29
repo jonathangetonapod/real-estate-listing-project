@@ -3988,11 +3988,7 @@ function DomainSlideOver({
             const [redirectSaved, setRedirectSaved] = useState(false);
 
             const handleSaveRedirect = async () => {
-              if (!redirectUrl.trim()) {
-                // Skip redirect — go straight to mailbox creation
-                onComplete();
-                return;
-              }
+              if (!redirectUrl.trim()) return;
               setRedirectSaving(true);
               try {
                 // Get the Winnr domain ID
@@ -4056,14 +4052,12 @@ function DomainSlideOver({
                       <Button
                         className="w-full bg-orange text-white hover:bg-orange-hover rounded-lg h-10 text-sm font-medium"
                         onClick={handleSaveRedirect}
-                        disabled={redirectSaving}
+                        disabled={redirectSaving || !redirectUrl.trim()}
                       >
                         {redirectSaving ? (
                           <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving...</>
-                        ) : redirectUrl.trim() ? (
-                          <><Globe className="h-4 w-4 mr-2" />Save Redirect & Create Mailboxes</>
                         ) : (
-                          <><Mail className="h-4 w-4 mr-2" />Skip & Create Mailboxes</>
+                          <><Globe className="h-4 w-4 mr-2" />Save Redirect & Create Mailboxes</>
                         )}
                       </Button>
                       <p className="text-[10px] text-gray-400 text-center">
