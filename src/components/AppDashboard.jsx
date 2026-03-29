@@ -44,8 +44,6 @@ import {
   Globe,
   Shield,
   Loader2,
-  Pause,
-  Play,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -3134,13 +3132,13 @@ function EmailAccountsTab() {
     const newMb = {
       email: `${newMailboxUsername.trim()}@${domain.name}`,
       displayName: newMailboxDisplayName.trim(),
-      status: 'warming',
+      status: 'active',
       healthScore: 0,
       inboxRate: 0,
       spamRate: 0,
       emailsSent: 0,
-      warmupDay: 1,
-      warmupTotal: 21,
+      dailyLimit: 10,
+      sentToday: 0,
       dailySends: [0, 0, 0, 0, 0, 0, 0],
       createdAt: new Date().toISOString(),
     };
@@ -3150,16 +3148,8 @@ function EmailAccountsTab() {
     setShowAddMailbox(false);
   };
 
-  const togglePauseMailbox = (idx) => {
-    setMailboxes(prev => prev.map((mb, i) => {
-      if (i !== idx) return mb;
-      return { ...mb, status: mb.status === 'warming' ? 'paused' : mb.status === 'paused' ? 'warming' : mb.status };
-    }));
-  };
-
   const statusBadge = (status) => {
     if (status === 'active') return <span className="inline-flex items-center rounded-full border border-success/20 bg-success/10 px-2.5 py-0.5 text-[11px] font-medium text-success">Active</span>;
-    if (status === 'warming' || status === 'paused') return <span className="inline-flex items-center rounded-full border border-orange/20 bg-orange/10 px-2.5 py-0.5 text-[11px] font-medium text-orange">{status === 'paused' ? 'Paused' : 'Warming'}</span>;
     return <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-100 px-2.5 py-0.5 text-[11px] font-medium text-gray-500">Provisioning</span>;
   };
 
@@ -3190,7 +3180,7 @@ function EmailAccountsTab() {
             {[
               'Protects your personal email reputation — your Gmail stays untouched',
               'Automatic DNS setup (SPF, DKIM, DMARC) for maximum inbox placement',
-              'Dedicated warm-up builds sender trust over 7-14 days',
+              'Smart daily send limits protect your sender reputation',
               'Real-time health monitoring so you know your emails are landing',
             ].map((item) => (
               <div key={item} className="flex items-start gap-2.5">
@@ -3333,18 +3323,19 @@ function EmailAccountsTab() {
                       >
                         <div className="px-5 pb-5 pt-0">
                           <div className="border-t border-gray-100 pt-4 space-y-5">
-                            {/* Warm-up progress */}
+                            {/* Daily Send Limit */}
                             <div>
                               <div className="flex items-center justify-between mb-1.5">
-                                <span className="text-xs font-medium text-charcoal">Warm-up Progress</span>
-                                <span className="text-xs text-muted-foreground">Day {mb.warmupDay} of {mb.warmupTotal}</span>
+                                <span className="text-xs font-medium text-charcoal">Daily Send Limit</span>
+                                <span className="text-xs text-muted-foreground">{mb.sentToday} / {mb.dailyLimit} emails today</span>
                               </div>
                               <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
                                 <div
-                                  className="h-full rounded-full bg-orange transition-all duration-500"
-                                  style={{ width: `${(mb.warmupDay / mb.warmupTotal) * 100}%` }}
+                                  className="h-full rounded-full bg-success transition-all duration-500"
+                                  style={{ width: `${(mb.sentToday / mb.dailyLimit) * 100}%` }}
                                 />
                               </div>
+                              <p className="text-[10px] text-gray-400 mt-1.5">Your mailbox can send up to 10 emails per day to maintain high deliverability.</p>
                             </div>
 
                             {/* Health score large */}
@@ -3373,7 +3364,7 @@ function EmailAccountsTab() {
                               </div>
                             </div>
 
-                            {/* Warm-up chart — simple CSS bars */}
+                            {/* Daily send volume chart */}
                             <div>
                               <p className="text-xs font-medium text-charcoal mb-2">Daily Send Volume (last 7 days)</p>
                               <div className="flex items-end gap-1.5 h-16">
@@ -3383,7 +3374,7 @@ function EmailAccountsTab() {
                                   return (
                                     <div key={i} className="flex-1 flex flex-col items-center gap-1">
                                       <div
-                                        className="w-full rounded-t bg-orange/70 transition-all duration-300"
+                                        className="w-full rounded-t bg-success/70 transition-all duration-300"
                                         style={{ height: `${Math.max(pct, 4)}%` }}
                                       />
                                       <span className="text-[9px] text-gray-400">D{i + 1}</span>
@@ -3392,20 +3383,6 @@ function EmailAccountsTab() {
                                 })}
                               </div>
                             </div>
-
-                            {/* Pause / Resume button */}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="rounded-lg text-xs"
-                              onClick={(e) => { e.stopPropagation(); togglePauseMailbox(idx); }}
-                            >
-                              {mb.status === 'warming' ? (
-                                <><Pause className="h-3 w-3 mr-1.5" />Pause Warming</>
-                              ) : mb.status === 'paused' ? (
-                                <><Play className="h-3 w-3 mr-1.5" />Resume Warming</>
-                              ) : null}
-                            </Button>
                           </div>
                         </div>
                       </motion.div>
@@ -3430,60 +3407,33 @@ function EmailAccountsTab() {
 
         {/* Status banner */}
         {mailboxes.length > 0 && (() => {
-          const allActive = mailboxes.every(m => m.status === 'active');
-          const warmingCount = mailboxes.filter(m => m.status === 'warming').length;
           const avgHealth = Math.round(mailboxes.reduce((sum, m) => sum + m.healthScore, 0) / mailboxes.length);
-
-          if (allActive) {
-            return (
-              <div className="rounded-xl border border-success/20 bg-success/[0.03] p-5">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                    <CheckCircle2 className="h-5 w-5 text-success" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-charcoal">You&apos;re all set!</p>
-                    <p className="text-xs text-gray-500">Your mailboxes are warmed up and ready to send.</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-success/10">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-success" />
-                    <span className="text-xs text-gray-600">{mailboxes.length} {mailboxes.length === 1 ? 'mailbox' : 'mailboxes'} active</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Shield className="h-3.5 w-3.5 text-success" />
-                    <span className="text-xs text-gray-600">Health: {avgHealth}%</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Mail className="h-3.5 w-3.5 text-success" />
-                    <span className="text-xs text-gray-600">{mailboxes.reduce((sum, m) => sum + m.emailsSent, 0)} emails sent</span>
-                  </div>
-                </div>
-              </div>
-            );
-          }
+          const totalDailyLimit = mailboxes.length * 10;
 
           return (
-            <div className="rounded-xl border border-orange/20 bg-orange/[0.03] p-5">
+            <div className="rounded-xl border border-success/20 bg-success/[0.03] p-5">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-full bg-orange/10 flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-orange" />
+                <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                  <CheckCircle2 className="h-5 w-5 text-success" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-charcoal">Warming up your mailboxes</p>
-                  <p className="text-xs text-gray-500">{warmingCount} {warmingCount === 1 ? 'mailbox is' : 'mailboxes are'} building sender reputation. This takes 7-14 days.</p>
+                  <p className="text-sm font-semibold text-charcoal">You&apos;re all set!</p>
+                  <p className="text-xs text-gray-500">Your mailboxes are active and ready to send.</p>
                 </div>
               </div>
-              <div className="mt-3 pt-3 border-t border-orange/10">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Warm-up Progress</span>
-                  <span className="text-xs font-mono text-orange">{Math.round(mailboxes.reduce((sum, m) => sum + (m.warmupDay / m.warmupTotal) * 100, 0) / mailboxes.length)}%</span>
+              <div className="flex items-center gap-4 mt-3 pt-3 border-t border-success/10">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-success" />
+                  <span className="text-xs text-gray-600">{mailboxes.length} {mailboxes.length === 1 ? 'mailbox' : 'mailboxes'} active</span>
                 </div>
-                <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-                  <div className="h-full rounded-full bg-orange transition-all" style={{ width: `${Math.round(mailboxes.reduce((sum, m) => sum + (m.warmupDay / m.warmupTotal) * 100, 0) / mailboxes.length)}%` }} />
+                <div className="flex items-center gap-1.5">
+                  <Shield className="h-3.5 w-3.5 text-success" />
+                  <span className="text-xs text-gray-600">{totalDailyLimit} emails/day limit</span>
                 </div>
-                <p className="text-[10px] text-gray-400 mt-2">Your emails will start going out automatically once warm-up is complete. No action needed.</p>
+                <div className="flex items-center gap-1.5">
+                  <Mail className="h-3.5 w-3.5 text-success" />
+                  <span className="text-xs text-gray-600">{mailboxes.reduce((sum, m) => sum + m.emailsSent, 0)} total emails sent</span>
+                </div>
               </div>
             </div>
           );
@@ -3558,13 +3508,13 @@ function EmailAccountsTab() {
                     const mb = {
                       email: `${u.username}@${domain.name}`,
                       displayName: u.fullName,
-                      status: 'warming',
+                      status: 'active',
                       healthScore: 0,
                       inboxRate: 0,
                       spamRate: 0,
                       emailsSent: 0,
-                      warmupDay: 1,
-                      warmupTotal: 14,
+                      dailyLimit: 10,
+                      sentToday: 0,
                       dailySends: [0, 0, 0, 0, 0, 0, 0],
                       createdAt: new Date().toISOString(),
                     };
@@ -3794,7 +3744,7 @@ function DomainSlideOver({
               <div className="space-y-2">
                 <p className="text-sm text-charcoal font-medium">This will be your professional sending domain</p>
                 <div className="space-y-1.5">
-                  {['All DNS records (MX, SPF, DKIM, DMARC) configured automatically', 'Domain warm-up begins immediately', 'Annual auto-renewal included'].map((line) => (
+                  {['All DNS records (MX, SPF, DKIM, DMARC) configured automatically', 'Mailboxes are active immediately with smart daily send limits', 'Annual auto-renewal included'].map((line) => (
                     <div key={line} className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-success shrink-0 mt-0.5" />
                       <span className="text-sm text-muted-foreground">{line}</span>
