@@ -13,11 +13,33 @@ export async function searchDomain(query) {
   return res.json()
 }
 
-// Get domain suggestions based on keywords
+// Generate domain variations and check availability in bulk
 export async function suggestDomains(keywords) {
-  const res = await fetch(`${WINNR_API_URL}/v1/domains/suggest?keywords=${encodeURIComponent(keywords)}`, { headers })
-  if (!res.ok) throw new Error('Domain suggestions failed')
-  return res.json()
+  const q = keywords.trim().toLowerCase().replace(/\s+/g, '')
+  const variations = [
+    `${q}-homes.com`,
+    `${q}-realty.com`,
+    `${q}-listings.com`,
+    `${q}-properties.com`,
+    `get${q}.com`,
+    `${q}-group.com`,
+    `${q}re.com`,
+    `${q}-sales.com`,
+  ]
+  const res = await fetch(`${WINNR_API_URL}/v1/domains/search-bulk`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ domains: variations }),
+  })
+  if (!res.ok) throw new Error('Domain search failed')
+  const json = await res.json()
+  return {
+    data: (json.data?.results || []).map(r => ({
+      domain: r.domain,
+      available: r.available,
+      price: r.price,
+    })),
+  }
 }
 
 // Purchase/setup a domain
