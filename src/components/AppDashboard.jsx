@@ -3687,7 +3687,7 @@ function EmailAccountsTab() {
                     if (domain?.winnrDomainId) {
                       const winnrUsers = newUsers.map(u => ({
                         username: u.username,
-                        domain: domain.winnrDomainId,
+                        domain: domain.name,
                         name: u.fullName,
                       }));
                       const result = await bulkCreateEmailUsers(winnrUsers);
