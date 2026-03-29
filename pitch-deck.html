@@ -1033,15 +1033,12 @@
     <div style="display: flex; align-items: center; justify-content: space-between;">
       <div>
         <div class="tag">The Product — Built & Working</div>
-        <h2 style="margin-bottom: 12px; font-size: 36px;">This isn't a mockup. <span class="highlight">It's live.</span></h2>
-      </div>
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 11px; color: #999; font-weight: 600;">Built solo. Hosted free. $0 cost.</span>
+        <h2 style="margin-bottom: 4px; font-size: 32px;">This isn't a mockup. <span class="highlight">It's live.</span></h2>
+        <p style="font-size: 13px; color: #999; margin: 0;">Click any sidebar item to explore. Built solo. Hosted free. $0 cost.</p>
       </div>
     </div>
 
-    <div class="mockup-wrapper">
-      <!-- Main app shell -->
+    <div class="mockup-wrapper" style="margin-top: 12px;">
       <div class="app-shell" style="flex: 1;">
         <!-- Sidebar -->
         <div class="mock-sidebar">
@@ -1049,33 +1046,33 @@
             <div class="mock-sidebar-logo-icon">OM</div>
             <span>OffMarket</span>
           </div>
-          <div class="mock-nav-item active">
-            <div class="mock-nav-icon"></div>
+          <div class="mock-nav-item active" data-view="home" onclick="showMockView('home')" style="cursor:pointer;">
+            <div class="mock-nav-icon">&#9776;</div>
             Home
           </div>
-          <div class="mock-nav-item">
-            <div class="mock-nav-icon"></div>
+          <div class="mock-nav-item" data-view="email-accounts" onclick="showMockView('email-accounts')" style="cursor:pointer;">
+            <div class="mock-nav-icon">&#9993;</div>
             Email Accounts
           </div>
-          <div class="mock-nav-item">
-            <div class="mock-nav-icon"></div>
+          <div class="mock-nav-item" data-view="order-leads" onclick="showMockView('order-leads')" style="cursor:pointer;">
+            <div class="mock-nav-icon">&#9733;</div>
             Order Leads
           </div>
-          <div class="mock-nav-item" id="nav-leads" onclick="showMockView('leads')" style="cursor:pointer;">
-            <div class="mock-nav-icon"></div>
+          <div class="mock-nav-item" data-view="leads" onclick="showMockView('leads')" style="cursor:pointer;">
+            <div class="mock-nav-icon">&#9679;</div>
             Seller Leads
           </div>
-          <div class="mock-nav-item">
-            <div class="mock-nav-icon"></div>
+          <div class="mock-nav-item" data-view="pitches" onclick="showMockView('pitches')" style="cursor:pointer;">
+            <div class="mock-nav-icon">&#10148;</div>
             Pitches Sent
           </div>
-          <div class="mock-nav-item" id="nav-inbox" onclick="showMockView('inbox')" style="cursor:pointer;">
-            <div class="mock-nav-icon"></div>
+          <div class="mock-nav-item" data-view="inbox" onclick="showMockView('inbox')" style="cursor:pointer;">
+            <div class="mock-nav-icon">&#9993;</div>
             Inbox
             <div class="mock-nav-badge">2</div>
           </div>
-          <div class="mock-nav-item" id="nav-deals" onclick="showMockView('deals')" style="cursor:pointer;">
-            <div class="mock-nav-icon"></div>
+          <div class="mock-nav-item" data-view="deals" onclick="showMockView('deals')" style="cursor:pointer;">
+            <div class="mock-nav-icon">&#36;</div>
             My Deals
           </div>
           <div class="mock-sidebar-user">
@@ -1084,13 +1081,12 @@
           </div>
         </div>
 
-        <!-- Content area -->
+        <!-- Content area — all views stacked, JS toggles visibility -->
         <div class="mock-content" id="mock-content">
 
-          <!-- HOME VIEW (default) -->
+          <!-- HOME VIEW -->
           <div class="mock-view active" id="view-home" style="flex-direction: column; gap: 14px;">
             <div class="mock-content-header">Dashboard</div>
-            <!-- Metrics -->
             <div class="mock-metrics">
               <div class="mock-metric-card">
                 <div class="mock-metric-label">Seller Leads</div>
@@ -1113,7 +1109,6 @@
                 <div class="mock-metric-sub" style="background: #D1FAE5; color: #059669;">2 meetings</div>
               </div>
             </div>
-            <!-- Alerts -->
             <div style="display: flex; gap: 10px;">
               <div style="flex:1; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.2); background: rgba(16,185,129,0.02); display: flex; align-items: center; gap: 10px;">
                 <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(16,185,129,0.1); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; color: #059669;">2</div>
@@ -1130,17 +1125,17 @@
                 </div>
               </div>
             </div>
-            <!-- Lead rows preview -->
             <div class="mock-leads" style="flex: 1;">
               <div class="mock-leads-header">
                 <span>Recent Leads</span>
                 <div class="mock-filters">
-                  <div class="mock-filter active">All</div>
-                  <div class="mock-filter">Expired</div>
-                  <div class="mock-filter">FSBO</div>
+                  <div class="mock-filter active" onclick="filterLeads(this,'all')">All</div>
+                  <div class="mock-filter" onclick="filterLeads(this,'expired')">Expired</div>
+                  <div class="mock-filter" onclick="filterLeads(this,'fsbo')">FSBO</div>
+                  <div class="mock-filter" onclick="filterLeads(this,'prefc')">Pre-FC</div>
                 </div>
               </div>
-              <div class="mock-lead-row">
+              <div class="mock-lead-row" data-type="expired" onclick="toggleLeadDetail(this)" style="cursor:pointer;">
                 <div class="mock-avatar" style="background: #D1FAE5; color: #059669; width: 22px; height: 22px; font-size: 8px;">MT</div>
                 <div class="mock-lead-name">Michael Torres</div>
                 <div class="mock-lead-address">4821 Oakwood Dr, Riverside Heights</div>
@@ -1148,7 +1143,20 @@
                 <div class="mock-badge mock-badge--expired">Expired</div>
                 <div class="mock-badge mock-badge--sent">Sent</div>
               </div>
-              <div class="mock-lead-row">
+              <div class="mock-lead-detail" style="display:none; padding: 8px 12px 8px 34px; background: #FAFAFA; border-bottom: 1px solid #f0f0f0;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 9px;">
+                  <div><span style="color:#999;">Beds/Bath:</span> <strong>4bd / 2.5ba</strong></div>
+                  <div><span style="color:#999;">Sqft:</span> <strong>2,180</strong></div>
+                  <div><span style="color:#999;">Year Built:</span> <strong>1998</strong></div>
+                  <div><span style="color:#999;">Days Expired:</span> <strong style="color:var(--orange);">47</strong></div>
+                  <div><span style="color:#999;">Est. Equity:</span> <strong style="color:var(--green);">$218K</strong></div>
+                  <div><span style="color:#999;">Loan Balance:</span> <strong>$267K</strong></div>
+                </div>
+                <div style="margin-top: 6px; padding: 6px 8px; background: white; border-radius: 6px; border: 1px solid #eee; font-size: 9px; color: #555; line-height: 1.5;">
+                  <strong style="color: var(--orange);">AI Draft:</strong> "Your home at 4821 Oakwood came off MLS 47 days ago at $485K. A 4-bed on Riverside just closed at $502K — market's shifted since your listing. Quick comp analysis?"
+                </div>
+              </div>
+              <div class="mock-lead-row" data-type="fsbo" onclick="toggleLeadDetail(this)" style="cursor:pointer;">
                 <div class="mock-avatar" style="background: #FFF7ED; color: #EA580C; width: 22px; height: 22px; font-size: 8px;">SK</div>
                 <div class="mock-lead-name">Sarah Kim</div>
                 <div class="mock-lead-address">1203 Maple Ridge Ln, Canyon Crest</div>
@@ -1156,7 +1164,20 @@
                 <div class="mock-badge mock-badge--fsbo">FSBO</div>
                 <div class="mock-badge mock-badge--draft">Draft</div>
               </div>
-              <div class="mock-lead-row">
+              <div class="mock-lead-detail" style="display:none; padding: 8px 12px 8px 34px; background: #FAFAFA; border-bottom: 1px solid #f0f0f0;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 9px;">
+                  <div><span style="color:#999;">Beds/Bath:</span> <strong>3bd / 2ba</strong></div>
+                  <div><span style="color:#999;">Sqft:</span> <strong>1,640</strong></div>
+                  <div><span style="color:#999;">Year Built:</span> <strong>2005</strong></div>
+                  <div><span style="color:#999;">Days FSBO:</span> <strong style="color:var(--orange);">23</strong></div>
+                  <div><span style="color:#999;">Est. Equity:</span> <strong style="color:var(--green);">$185K</strong></div>
+                  <div><span style="color:#999;">Asking:</span> <strong>$392K</strong></div>
+                </div>
+                <div style="margin-top: 6px; padding: 6px 8px; background: white; border-radius: 6px; border: 1px solid #eee; font-size: 9px; color: #555; line-height: 1.5;">
+                  <strong style="color: var(--orange);">AI Draft:</strong> "I saw your listing on Maple Ridge — beautiful home. FSBOs in Canyon Crest avg 23% below agent-listed sales. I can show you what comps support and where you might be leaving money."
+                </div>
+              </div>
+              <div class="mock-lead-row" data-type="prefc" onclick="toggleLeadDetail(this)" style="cursor:pointer;">
                 <div class="mock-avatar" style="background: #F3F4F6; color: #6B7280; width: 22px; height: 22px; font-size: 8px;">DH</div>
                 <div class="mock-lead-name">David Hernandez</div>
                 <div class="mock-lead-address">892 Sunset Blvd, Palm Canyon</div>
@@ -1164,7 +1185,20 @@
                 <div class="mock-badge mock-badge--prefc">Pre-FC</div>
                 <div class="mock-badge mock-badge--new">New</div>
               </div>
-              <div class="mock-lead-row">
+              <div class="mock-lead-detail" style="display:none; padding: 8px 12px 8px 34px; background: #FAFAFA; border-bottom: 1px solid #f0f0f0;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 9px;">
+                  <div><span style="color:#999;">Beds/Bath:</span> <strong>5bd / 3ba</strong></div>
+                  <div><span style="color:#999;">Sqft:</span> <strong>2,890</strong></div>
+                  <div><span style="color:#999;">Year Built:</span> <strong>1992</strong></div>
+                  <div><span style="color:#999;">NOD Filed:</span> <strong style="color:#EF4444;">12 days ago</strong></div>
+                  <div><span style="color:#999;">Est. Equity:</span> <strong style="color:var(--green);">$310K</strong></div>
+                  <div><span style="color:#999;">Loan Balance:</span> <strong>$210K</strong></div>
+                </div>
+                <div style="margin-top: 6px; padding: 6px 8px; background: white; border-radius: 6px; border: 1px solid #eee; font-size: 9px; color: #555; line-height: 1.5;">
+                  <strong style="color: var(--orange);">AI Draft:</strong> "I work with homeowners in Palm Canyon exploring their options. With $310K in equity, a quick sale could net you significant cash. Want to see a confidential market analysis?"
+                </div>
+              </div>
+              <div class="mock-lead-row" data-type="expired" onclick="toggleLeadDetail(this)" style="cursor:pointer;">
                 <div class="mock-avatar" style="background: #D1FAE5; color: #059669; width: 22px; height: 22px; font-size: 8px;">LC</div>
                 <div class="mock-lead-name">Linda Chen</div>
                 <div class="mock-lead-address">2710 Harbor View Dr, Eastlake</div>
@@ -1172,7 +1206,17 @@
                 <div class="mock-badge mock-badge--equity">High Equity</div>
                 <div class="mock-badge mock-badge--sent">Sent</div>
               </div>
-              <div class="mock-lead-row">
+              <div class="mock-lead-detail" style="display:none; padding: 8px 12px 8px 34px; background: #FAFAFA; border-bottom: 1px solid #f0f0f0;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 9px;">
+                  <div><span style="color:#999;">Beds/Bath:</span> <strong>3bd / 2ba</strong></div>
+                  <div><span style="color:#999;">Sqft:</span> <strong>1,820</strong></div>
+                  <div><span style="color:#999;">Year Built:</span> <strong>2001</strong></div>
+                  <div><span style="color:#999;">Owned Since:</span> <strong>2004</strong></div>
+                  <div><span style="color:#999;">Est. Equity:</span> <strong style="color:var(--green);">$348K</strong></div>
+                  <div><span style="color:#999;">Tax Bill:</span> <strong>$4,200/yr</strong></div>
+                </div>
+              </div>
+              <div class="mock-lead-row" data-type="expired" onclick="toggleLeadDetail(this)" style="cursor:pointer;">
                 <div class="mock-avatar" style="background: #FFF7ED; color: #EA580C; width: 22px; height: 22px; font-size: 8px;">RW</div>
                 <div class="mock-lead-name">Robert Williams</div>
                 <div class="mock-lead-address">558 Palm Ave, Northpark</div>
@@ -1180,141 +1224,382 @@
                 <div class="mock-badge mock-badge--expired">Expired</div>
                 <div class="mock-badge mock-badge--draft">Draft</div>
               </div>
+              <div class="mock-lead-detail" style="display:none; padding: 8px 12px 8px 34px; background: #FAFAFA; border-bottom: 1px solid #f0f0f0;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 9px;">
+                  <div><span style="color:#999;">Beds/Bath:</span> <strong>2bd / 1ba</strong></div>
+                  <div><span style="color:#999;">Sqft:</span> <strong>1,050</strong></div>
+                  <div><span style="color:#999;">Year Built:</span> <strong>1978</strong></div>
+                  <div><span style="color:#999;">Days Expired:</span> <strong style="color:var(--orange);">91</strong></div>
+                  <div><span style="color:#999;">Est. Equity:</span> <strong style="color:var(--green);">$142K</strong></div>
+                  <div><span style="color:#999;">Prior Agent:</span> <strong>RE/MAX</strong></div>
+                </div>
+              </div>
             </div>
           </div>
 
-        </div>
-      </div>
+          <!-- EMAIL ACCOUNTS VIEW -->
+          <div class="mock-view" id="view-email-accounts" style="flex-direction: column; gap: 14px;">
+            <div class="mock-content-header">Email Accounts</div>
+            <div style="display: flex; gap: 10px; margin-bottom: 4px;">
+              <div class="mock-metric-card">
+                <div class="mock-metric-label">Active Accounts</div>
+                <div class="mock-metric-value" style="color: var(--green);">3</div>
+                <div class="mock-metric-sub" style="background: #D1FAE5; color: #059669;">All healthy</div>
+              </div>
+              <div class="mock-metric-card">
+                <div class="mock-metric-label">Emails Sent Today</div>
+                <div class="mock-metric-value" style="color: #333;">42</div>
+                <div class="mock-metric-sub" style="background: #F3F4F6; color: #6B7280;">60 daily limit</div>
+              </div>
+              <div class="mock-metric-card">
+                <div class="mock-metric-label">Inbox Rate</div>
+                <div class="mock-metric-value" style="color: var(--green);">94%</div>
+                <div class="mock-metric-sub" style="background: #D1FAE5; color: #059669;">Excellent</div>
+              </div>
+            </div>
+            <div style="border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+              <div style="padding: 8px 12px; background: #FAFAFA; font-size: 9px; font-weight: 700; color: #999; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                <span>Account</span><span>Status</span><span>Warmup</span><span>Sent Today</span><span>Health</span>
+              </div>
+              <div style="padding: 10px 12px; border-bottom: 1px solid #f0f0f0; font-size: 10px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 8px; align-items: center;">
+                <div><strong style="color: #333;">sarah@sarahjohnsonhomes.com</strong><br><span style="font-size: 8px; color: #999;">Primary sending account</span></div>
+                <div><span style="background: #D1FAE5; color: #059669; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 600;">Active</span></div>
+                <div><span style="background: #D1FAE5; color: #059669; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 600;">Complete</span></div>
+                <div style="font-weight: 600; color: #333;">18 / 20</div>
+                <div style="display: flex; gap: 2px;"><div style="width:12px;height:4px;background:var(--green);border-radius:2px;"></div><div style="width:12px;height:4px;background:var(--green);border-radius:2px;"></div><div style="width:12px;height:4px;background:var(--green);border-radius:2px;"></div><div style="width:12px;height:4px;background:var(--green);border-radius:2px;"></div><div style="width:12px;height:4px;background:var(--green);border-radius:2px;"></div></div>
+              </div>
+              <div style="padding: 10px 12px; border-bottom: 1px solid #f0f0f0; font-size: 10px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 8px; align-items: center;">
+                <div><strong style="color: #333;">listings@sarahjohnsonhomes.com</strong><br><span style="font-size: 8px; color: #999;">Secondary account</span></div>
+                <div><span style="background: #D1FAE5; color: #059669; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 600;">Active</span></div>
+                <div><span style="background: #D1FAE5; color: #059669; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 600;">Complete</span></div>
+                <div style="font-weight: 600; color: #333;">14 / 20</div>
+                <div style="display: flex; gap: 2px;"><div style="width:12px;height:4px;background:var(--green);border-radius:2px;"></div><div style="width:12px;height:4px;background:var(--green);border-radius:2px;"></div><div style="width:12px;height:4px;background:var(--green);border-radius:2px;"></div><div style="width:12px;height:4px;background:var(--green);border-radius:2px;"></div><div style="width:12px;height:4px;background:#eee;border-radius:2px;"></div></div>
+              </div>
+              <div style="padding: 10px 12px; font-size: 10px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 8px; align-items: center;">
+                <div><strong style="color: #333;">sarah@sjrealtygroup.com</strong><br><span style="font-size: 8px; color: #999;">Warming up</span></div>
+                <div><span style="background: #FFF7ED; color: #EA580C; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 600;">Warming</span></div>
+                <div><span style="background: #FFF7ED; color: #EA580C; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 600;">Day 12/21</span></div>
+                <div style="font-weight: 600; color: #333;">10 / 20</div>
+                <div style="display: flex; gap: 2px;"><div style="width:12px;height:4px;background:var(--green);border-radius:2px;"></div><div style="width:12px;height:4px;background:var(--green);border-radius:2px;"></div><div style="width:12px;height:4px;background:var(--green);border-radius:2px;"></div><div style="width:12px;height:4px;background:#eee;border-radius:2px;"></div><div style="width:12px;height:4px;background:#eee;border-radius:2px;"></div></div>
+              </div>
+            </div>
+            <div style="padding: 12px; border: 2px dashed #eee; border-radius: 10px; text-align: center; cursor: pointer; font-size: 11px; color: #999; font-weight: 600;">
+              + Add Email Account
+            </div>
+          </div>
 
-      <!-- Right side panels -->
-      <div class="mockup-side">
-        <!-- Inbox panel -->
-        <div class="mock-inbox">
-          <div class="mock-inbox-header">
-            <span>Inbox</span>
-            <div class="mock-inbox-badge">2 new</div>
-          </div>
-          <div class="mock-thread mock-thread--unread">
-            <div class="mock-thread-dot mock-thread-dot--unread"></div>
-            <div class="mock-thread-content">
-              <div class="mock-thread-name">Michael Torres</div>
-              <div class="mock-thread-preview">Hi Sarah, thanks for reaching out. I have been thinking about relisting...</div>
-              <div class="mock-thread-meta">
-                <div class="mock-thread-date">2h ago</div>
-                <div class="mock-sentiment mock-sentiment--interested">Interested</div>
+          <!-- ORDER LEADS VIEW -->
+          <div class="mock-view" id="view-order-leads" style="flex-direction: column; gap: 14px;">
+            <div class="mock-content-header">Order Leads</div>
+            <div style="padding: 16px; border: 1px solid #eee; border-radius: 10px; background: #FAFAFA;">
+              <div style="font-size: 11px; font-weight: 700; color: #333; margin-bottom: 8px;">Your Zip Codes</div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <div style="padding: 6px 12px; border-radius: 8px; background: var(--orange); color: white; font-size: 10px; font-weight: 700;">92101 <span style="opacity:0.7;">— 4/5 agents</span></div>
+                <div style="padding: 6px 12px; border-radius: 8px; background: var(--orange); color: white; font-size: 10px; font-weight: 700;">92102 <span style="opacity:0.7;">— 3/5 agents</span></div>
+                <div style="padding: 6px 12px; border-radius: 8px; background: #eee; color: #666; font-size: 10px; font-weight: 700; cursor: pointer;">+ Add Zip Code</div>
               </div>
             </div>
-          </div>
-          <div class="mock-thread mock-thread--unread">
-            <div class="mock-thread-dot mock-thread-dot--unread"></div>
-            <div class="mock-thread-content">
-              <div class="mock-thread-name">Maria Gonzalez</div>
-              <div class="mock-thread-preview">Thank you for the information. My husband and I have been discussing...</div>
-              <div class="mock-thread-meta">
-                <div class="mock-thread-date">4h ago</div>
-                <div class="mock-sentiment mock-sentiment--interested">Interested</div>
+            <div style="font-size: 11px; font-weight: 700; color: #333; margin-bottom: -8px;">Select Lead Types</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+              <div style="padding: 12px; border-radius: 10px; border: 2px solid var(--orange); background: rgba(255,89,36,0.04); cursor: pointer;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--orange);">&#10003; Expired Listings</div>
+                <div style="font-size: 8px; color: #999; margin-top: 2px;">7 in 10 choose a new agent</div>
+              </div>
+              <div style="padding: 12px; border-radius: 10px; border: 2px solid var(--orange); background: rgba(255,89,36,0.04); cursor: pointer;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--orange);">&#10003; FSBO</div>
+                <div style="font-size: 8px; color: #999; margin-top: 2px;">Sell 23% less without an agent</div>
+              </div>
+              <div style="padding: 12px; border-radius: 10px; border: 2px solid var(--orange); background: rgba(255,89,36,0.04); cursor: pointer;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--orange);">&#10003; Pre-Foreclosure</div>
+                <div style="font-size: 8px; color: #999; margin-top: 2px;">357K+ NOD filings in 2023</div>
+              </div>
+              <div style="padding: 12px; border-radius: 10px; border: 2px solid #eee; cursor: pointer;">
+                <div style="font-size: 11px; font-weight: 700; color: #333;">Absentee Owners</div>
+                <div style="font-size: 8px; color: #999; margin-top: 2px;">1 in 4 U.S. properties</div>
+              </div>
+              <div style="padding: 12px; border-radius: 10px; border: 2px solid #eee; cursor: pointer;">
+                <div style="font-size: 11px; font-weight: 700; color: #333;">High Equity</div>
+                <div style="font-size: 8px; color: #999; margin-top: 2px;">$315K avg homeowner equity</div>
+              </div>
+              <div style="padding: 12px; border-radius: 10px; border: 2px solid #eee; cursor: pointer;">
+                <div style="font-size: 11px; font-weight: 700; color: #333;">Probate / Estate</div>
+                <div style="font-size: 8px; color: #999; margin-top: 2px;">1.5-2M properties/year</div>
               </div>
             </div>
-          </div>
-          <div class="mock-thread">
-            <div class="mock-thread-dot mock-thread-dot--read"></div>
-            <div class="mock-thread-content">
-              <div class="mock-thread-name">David Hernandez</div>
-              <div class="mock-thread-preview">Can we talk on the phone instead of email?</div>
-              <div class="mock-thread-meta">
-                <div class="mock-thread-date">1d ago</div>
-                <div class="mock-sentiment mock-sentiment--warm">Warm Lead</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 10px; background: var(--dark); color: white;">
+              <div>
+                <div style="font-size: 10px; color: #999;">Your order</div>
+                <div style="font-size: 13px; font-weight: 700;">250 leads &times; 2 zip codes &times; 3 types</div>
               </div>
+              <div style="padding: 8px 20px; background: var(--orange); color: white; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer;">Generate Leads</div>
             </div>
           </div>
-          <div class="mock-thread">
-            <div class="mock-thread-dot mock-thread-dot--read"></div>
-            <div class="mock-thread-content">
-              <div class="mock-thread-name">Jennifer Adams</div>
-              <div class="mock-thread-preview">Yes, I'd love to schedule a walkthrough this week...</div>
-              <div class="mock-thread-meta">
-                <div class="mock-thread-date">2d ago</div>
-                <div class="mock-sentiment mock-sentiment--meeting">Meeting Set</div>
-              </div>
-            </div>
-          </div>
-          <div class="mock-thread">
-            <div class="mock-thread-dot mock-thread-dot--read"></div>
-            <div class="mock-thread-content">
-              <div class="mock-thread-name">Robert Williams</div>
-              <div class="mock-thread-preview">Not interested at this time.</div>
-              <div class="mock-thread-meta">
-                <div class="mock-thread-date">3d ago</div>
-                <div class="mock-sentiment mock-sentiment--not">Not Interested</div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Deals panel -->
-        <div class="mock-deals">
-          <div class="mock-deals-header">My Deals</div>
-          <div class="mock-kanban">
-            <div class="mock-kanban-col">
-              <div class="mock-kanban-header">
-                <div class="mock-kanban-dot" style="background: var(--green);"></div>
-                <div class="mock-kanban-label">Reply</div>
-                <div class="mock-kanban-count">2</div>
-              </div>
-              <div class="mock-deal-card mock-deal-card--active">
-                <div class="mock-deal-name">M. Torres</div>
-                <div class="mock-deal-value">$485K</div>
-              </div>
-              <div class="mock-deal-card">
-                <div class="mock-deal-name">M. Gonzalez</div>
-                <div class="mock-deal-value">$372K</div>
-              </div>
+          <!-- SELLER LEADS VIEW (full page) -->
+          <div class="mock-view" id="view-leads" style="flex-direction: column; gap: 10px;">
+            <div class="mock-content-header">Seller Leads <span style="font-size: 11px; color: #999; font-weight: 500;">248 leads</span></div>
+            <div class="mock-filters" style="gap: 6px;">
+              <div class="mock-filter active">All (248)</div>
+              <div class="mock-filter">Expired (89)</div>
+              <div class="mock-filter">FSBO (42)</div>
+              <div class="mock-filter">Pre-FC (31)</div>
+              <div class="mock-filter">Absentee (44)</div>
+              <div class="mock-filter">High Equity (28)</div>
+              <div class="mock-filter">Probate (14)</div>
             </div>
-            <div class="mock-kanban-col">
-              <div class="mock-kanban-header">
-                <div class="mock-kanban-dot" style="background: var(--orange);"></div>
-                <div class="mock-kanban-label">Follow Up</div>
-                <div class="mock-kanban-count">1</div>
+            <div style="border: 1px solid #eee; border-radius: 10px; overflow: hidden; flex: 1;">
+              <div style="padding: 6px 12px; background: #FAFAFA; font-size: 8px; font-weight: 700; color: #999; display: grid; grid-template-columns: 24px 1.5fr 2fr 0.8fr 0.8fr 0.8fr; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                <span></span><span>Name</span><span>Address</span><span>Value</span><span>Type</span><span>Status</span>
               </div>
-              <div class="mock-deal-card">
-                <div class="mock-deal-name">D. Hernandez</div>
-                <div class="mock-deal-value">$520K</div>
+              <div class="mock-lead-row" style="display: grid; grid-template-columns: 24px 1.5fr 2fr 0.8fr 0.8fr 0.8fr; gap: 8px; cursor: pointer;" onclick="toggleLeadDetail(this)">
+                <div class="mock-avatar" style="background: #D1FAE5; color: #059669; width: 20px; height: 20px; font-size: 7px;">MT</div>
+                <div class="mock-lead-name">Michael Torres</div>
+                <div class="mock-lead-address">4821 Oakwood Dr</div>
+                <div class="mock-lead-value">$485K</div>
+                <div class="mock-badge mock-badge--expired" style="font-size:7px;">Expired</div>
+                <div class="mock-badge mock-badge--sent" style="font-size:7px;">Sent</div>
               </div>
-            </div>
-            <div class="mock-kanban-col">
-              <div class="mock-kanban-header">
-                <div class="mock-kanban-dot" style="background: #2563EB;"></div>
-                <div class="mock-kanban-label">Meeting</div>
-                <div class="mock-kanban-count">1</div>
+              <div class="mock-lead-row" style="display: grid; grid-template-columns: 24px 1.5fr 2fr 0.8fr 0.8fr 0.8fr; gap: 8px;">
+                <div class="mock-avatar" style="background: #FFF7ED; color: #EA580C; width: 20px; height: 20px; font-size: 7px;">SK</div>
+                <div class="mock-lead-name">Sarah Kim</div>
+                <div class="mock-lead-address">1203 Maple Ridge Ln</div>
+                <div class="mock-lead-value">$392K</div>
+                <div class="mock-badge mock-badge--fsbo" style="font-size:7px;">FSBO</div>
+                <div class="mock-badge mock-badge--draft" style="font-size:7px;">Draft</div>
               </div>
-              <div class="mock-deal-card">
-                <div class="mock-deal-name">J. Adams</div>
-                <div class="mock-deal-value">$445K</div>
+              <div class="mock-lead-row" style="display: grid; grid-template-columns: 24px 1.5fr 2fr 0.8fr 0.8fr 0.8fr; gap: 8px;">
+                <div class="mock-avatar" style="background: #F3F4F6; color: #6B7280; width: 20px; height: 20px; font-size: 7px;">DH</div>
+                <div class="mock-lead-name">David Hernandez</div>
+                <div class="mock-lead-address">892 Sunset Blvd</div>
+                <div class="mock-lead-value">$520K</div>
+                <div class="mock-badge mock-badge--prefc" style="font-size:7px;">Pre-FC</div>
+                <div class="mock-badge mock-badge--new" style="font-size:7px;">New</div>
               </div>
-            </div>
-            <div class="mock-kanban-col">
-              <div class="mock-kanban-header">
-                <div class="mock-kanban-dot" style="background: #333;"></div>
-                <div class="mock-kanban-label">Nurture</div>
-                <div class="mock-kanban-count">1</div>
+              <div class="mock-lead-row" style="display: grid; grid-template-columns: 24px 1.5fr 2fr 0.8fr 0.8fr 0.8fr; gap: 8px;">
+                <div class="mock-avatar" style="background: #D1FAE5; color: #059669; width: 20px; height: 20px; font-size: 7px;">LC</div>
+                <div class="mock-lead-name">Linda Chen</div>
+                <div class="mock-lead-address">2710 Harbor View Dr</div>
+                <div class="mock-lead-value">$415K</div>
+                <div class="mock-badge mock-badge--equity" style="font-size:7px;">High Eq.</div>
+                <div class="mock-badge mock-badge--sent" style="font-size:7px;">Sent</div>
               </div>
-              <div class="mock-deal-card">
-                <div class="mock-deal-name">A. Nguyen</div>
-                <div class="mock-deal-value">$390K</div>
+              <div class="mock-lead-row" style="display: grid; grid-template-columns: 24px 1.5fr 2fr 0.8fr 0.8fr 0.8fr; gap: 8px;">
+                <div class="mock-avatar" style="background: #FFF7ED; color: #EA580C; width: 20px; height: 20px; font-size: 7px;">RW</div>
+                <div class="mock-lead-name">Robert Williams</div>
+                <div class="mock-lead-address">558 Palm Ave</div>
+                <div class="mock-lead-value">$349K</div>
+                <div class="mock-badge mock-badge--expired" style="font-size:7px;">Expired</div>
+                <div class="mock-badge mock-badge--draft" style="font-size:7px;">Draft</div>
               </div>
-            </div>
-            <div class="mock-kanban-col">
-              <div class="mock-kanban-header">
-                <div class="mock-kanban-dot" style="background: var(--green);"></div>
-                <div class="mock-kanban-label">Closed</div>
-                <div class="mock-kanban-count">1</div>
+              <div class="mock-lead-row" style="display: grid; grid-template-columns: 24px 1.5fr 2fr 0.8fr 0.8fr 0.8fr; gap: 8px;">
+                <div class="mock-avatar" style="background: #EEF2FF; color: #4F46E5; width: 20px; height: 20px; font-size: 7px;">AN</div>
+                <div class="mock-lead-name">Angela Nguyen</div>
+                <div class="mock-lead-address">3401 Coastline Way</div>
+                <div class="mock-lead-value">$620K</div>
+                <div class="mock-badge mock-badge--prefc" style="font-size:7px;">Absentee</div>
+                <div class="mock-badge mock-badge--new" style="font-size:7px;">New</div>
               </div>
-              <div class="mock-deal-card" style="border-color: #D1FAE5;">
-                <div class="mock-deal-name">C. Morales</div>
-                <div class="mock-deal-value">$510K</div>
+              <div class="mock-lead-row" style="display: grid; grid-template-columns: 24px 1.5fr 2fr 0.8fr 0.8fr 0.8fr; gap: 8px;">
+                <div class="mock-avatar" style="background: #F3F4F6; color: #6B7280; width: 20px; height: 20px; font-size: 7px;">JM</div>
+                <div class="mock-lead-name">James Miller</div>
+                <div class="mock-lead-address">1089 Vista Del Mar</div>
+                <div class="mock-lead-value">$475K</div>
+                <div class="mock-badge mock-badge--expired" style="font-size:7px;">Expired</div>
+                <div class="mock-badge mock-badge--sent" style="font-size:7px;">Replied</div>
               </div>
             </div>
           </div>
+
+          <!-- PITCHES SENT VIEW -->
+          <div class="mock-view" id="view-pitches" style="flex-direction: column; gap: 14px;">
+            <div class="mock-content-header">Pitches Sent <span style="font-size: 11px; color: #999; font-weight: 500;">186 leads &bull; 558 emails</span></div>
+            <div class="mock-metrics">
+              <div class="mock-metric-card">
+                <div class="mock-metric-label">Open Rate</div>
+                <div class="mock-metric-value" style="color: var(--green);">62%</div>
+                <div class="mock-metric-sub" style="background: #D1FAE5; color: #059669;">Industry avg: 21%</div>
+              </div>
+              <div class="mock-metric-card">
+                <div class="mock-metric-label">Reply Rate</div>
+                <div class="mock-metric-value" style="color: var(--orange);">7.5%</div>
+                <div class="mock-metric-sub" style="background: #FFF7ED; color: #EA580C;">14 replies</div>
+              </div>
+              <div class="mock-metric-card">
+                <div class="mock-metric-label">Bounce Rate</div>
+                <div class="mock-metric-value" style="color: var(--green);">1.2%</div>
+                <div class="mock-metric-sub" style="background: #D1FAE5; color: #059669;">Healthy</div>
+              </div>
+            </div>
+            <div style="border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+              <div style="padding: 6px 12px; background: #FAFAFA; font-size: 8px; font-weight: 700; color: #999; display: grid; grid-template-columns: 1.5fr 2fr 0.6fr 0.6fr 0.6fr; gap: 8px; text-transform: uppercase;">
+                <span>Lead</span><span>Subject Line</span><span>Step</span><span>Opened</span><span>Replied</span>
+              </div>
+              <div style="padding: 8px 12px; border-bottom: 1px solid #f0f0f0; font-size: 10px; display: grid; grid-template-columns: 1.5fr 2fr 0.6fr 0.6fr 0.6fr; gap: 8px; align-items: center;">
+                <strong>Michael Torres</strong>
+                <span style="color: #666;">Your home at 4821 Oakwood — quick question</span>
+                <span style="background: #D1FAE5; color: #059669; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 600;">3/3</span>
+                <span style="color: var(--green); font-weight: 600;">&#10003;</span>
+                <span style="color: var(--green); font-weight: 600;">&#10003;</span>
+              </div>
+              <div style="padding: 8px 12px; border-bottom: 1px solid #f0f0f0; font-size: 10px; display: grid; grid-template-columns: 1.5fr 2fr 0.6fr 0.6fr 0.6fr; gap: 8px; align-items: center;">
+                <strong>Sarah Kim</strong>
+                <span style="color: #666;">FSBO on Maple Ridge — are you leaving money?</span>
+                <span style="background: #FFF7ED; color: #EA580C; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 600;">1/3</span>
+                <span style="color: var(--green); font-weight: 600;">&#10003;</span>
+                <span style="color: #ddd;">&#8212;</span>
+              </div>
+              <div style="padding: 8px 12px; border-bottom: 1px solid #f0f0f0; font-size: 10px; display: grid; grid-template-columns: 1.5fr 2fr 0.6fr 0.6fr 0.6fr; gap: 8px; align-items: center;">
+                <strong>Linda Chen</strong>
+                <span style="color: #666;">$348K equity in your Harbor View home</span>
+                <span style="background: #D1FAE5; color: #059669; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 600;">2/3</span>
+                <span style="color: var(--green); font-weight: 600;">&#10003;</span>
+                <span style="color: var(--green); font-weight: 600;">&#10003;</span>
+              </div>
+              <div style="padding: 8px 12px; font-size: 10px; display: grid; grid-template-columns: 1.5fr 2fr 0.6fr 0.6fr 0.6fr; gap: 8px; align-items: center;">
+                <strong>Robert Williams</strong>
+                <span style="color: #666;">558 Palm Ave — 91 days off market</span>
+                <span style="background: #F3F4F6; color: #6B7280; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 600;">1/3</span>
+                <span style="color: #ddd;">&#8212;</span>
+                <span style="color: #ddd;">&#8212;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- INBOX VIEW (full page) -->
+          <div class="mock-view" id="view-inbox" style="flex-direction: column; gap: 10px;">
+            <div class="mock-content-header">Inbox <span style="font-size: 11px; color: #999; font-weight: 500;">14 conversations</span></div>
+            <div class="mock-filters" style="gap: 6px;">
+              <div class="mock-filter active">All (14)</div>
+              <div class="mock-filter">Interested (6)</div>
+              <div class="mock-filter">Warm (4)</div>
+              <div class="mock-filter">Meeting Set (2)</div>
+              <div class="mock-filter">Not Interested (2)</div>
+            </div>
+            <div style="display: flex; gap: 10px; flex: 1;">
+              <div style="flex: 1; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+                <div class="mock-thread mock-thread--unread" onclick="showInboxThread(this)" style="cursor:pointer; background: rgba(255,89,36,0.03);">
+                  <div class="mock-thread-dot mock-thread-dot--unread"></div>
+                  <div class="mock-thread-content">
+                    <div class="mock-thread-name">Michael Torres <span style="font-size: 8px; color: #999; font-weight: 400;">4821 Oakwood Dr — $485K</span></div>
+                    <div class="mock-thread-preview">Hi Sarah, thanks for reaching out. I have been thinking about relisting and your comp analysis was spot on...</div>
+                    <div class="mock-thread-meta">
+                      <div class="mock-thread-date">2h ago</div>
+                      <div class="mock-sentiment mock-sentiment--interested">Interested</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mock-thread mock-thread--unread" onclick="showInboxThread(this)" style="cursor:pointer;">
+                  <div class="mock-thread-dot mock-thread-dot--unread"></div>
+                  <div class="mock-thread-content">
+                    <div class="mock-thread-name">Maria Gonzalez <span style="font-size: 8px; color: #999; font-weight: 400;">1547 Elm St — $372K</span></div>
+                    <div class="mock-thread-preview">Thank you for the information. My husband and I have been discussing whether to sell before...</div>
+                    <div class="mock-thread-meta">
+                      <div class="mock-thread-date">4h ago</div>
+                      <div class="mock-sentiment mock-sentiment--interested">Interested</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mock-thread" onclick="showInboxThread(this)" style="cursor:pointer;">
+                  <div class="mock-thread-dot mock-thread-dot--read"></div>
+                  <div class="mock-thread-content">
+                    <div class="mock-thread-name">David Hernandez <span style="font-size: 8px; color: #999; font-weight: 400;">892 Sunset Blvd — $520K</span></div>
+                    <div class="mock-thread-preview">Can we talk on the phone instead of email? Call me at 619-555-0142.</div>
+                    <div class="mock-thread-meta">
+                      <div class="mock-thread-date">1d ago</div>
+                      <div class="mock-sentiment mock-sentiment--warm">Warm Lead</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mock-thread" onclick="showInboxThread(this)" style="cursor:pointer;">
+                  <div class="mock-thread-dot mock-thread-dot--read"></div>
+                  <div class="mock-thread-content">
+                    <div class="mock-thread-name">Jennifer Adams <span style="font-size: 8px; color: #999; font-weight: 400;">445 Lakeview Ct — $445K</span></div>
+                    <div class="mock-thread-preview">Yes, I'd love to schedule a walkthrough this week. Tuesday or Wednesday work?</div>
+                    <div class="mock-thread-meta">
+                      <div class="mock-thread-date">2d ago</div>
+                      <div class="mock-sentiment mock-sentiment--meeting">Meeting Set</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mock-thread" onclick="showInboxThread(this)" style="cursor:pointer;">
+                  <div class="mock-thread-dot mock-thread-dot--read"></div>
+                  <div class="mock-thread-content">
+                    <div class="mock-thread-name">Linda Chen <span style="font-size: 8px; color: #999; font-weight: 400;">2710 Harbor View — $415K</span></div>
+                    <div class="mock-thread-preview">Very interested. We're thinking of downsizing. What would the timeline look like?</div>
+                    <div class="mock-thread-meta">
+                      <div class="mock-thread-date">2d ago</div>
+                      <div class="mock-sentiment mock-sentiment--interested">Interested</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DEALS VIEW (full page kanban) -->
+          <div class="mock-view" id="view-deals" style="flex-direction: column; gap: 10px;">
+            <div class="mock-content-header">My Deals <span style="font-size: 11px; color: #999; font-weight: 500;">Pipeline: $2.82M</span></div>
+            <div class="mock-kanban" style="flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
+              <div class="mock-kanban-col" style="background: #FAFAFA; border-radius: 10px; padding: 8px;">
+                <div class="mock-kanban-header"><div class="mock-kanban-dot" style="background: var(--green);"></div><div class="mock-kanban-label">Reply</div><div class="mock-kanban-count">2</div></div>
+                <div class="mock-deal-card mock-deal-card--active" style="padding: 10px;">
+                  <div class="mock-deal-name">M. Torres</div>
+                  <div class="mock-deal-value">$485K</div>
+                  <div style="font-size: 7px; color: #999; margin-top: 4px;">4821 Oakwood Dr</div>
+                  <div style="font-size: 7px; color: var(--green); font-weight: 600; margin-top: 2px;">Interested — 2h ago</div>
+                </div>
+                <div class="mock-deal-card" style="padding: 10px;">
+                  <div class="mock-deal-name">M. Gonzalez</div>
+                  <div class="mock-deal-value">$372K</div>
+                  <div style="font-size: 7px; color: #999; margin-top: 4px;">1547 Elm St</div>
+                  <div style="font-size: 7px; color: var(--green); font-weight: 600; margin-top: 2px;">Interested — 4h ago</div>
+                </div>
+              </div>
+              <div class="mock-kanban-col" style="background: #FAFAFA; border-radius: 10px; padding: 8px;">
+                <div class="mock-kanban-header"><div class="mock-kanban-dot" style="background: var(--orange);"></div><div class="mock-kanban-label">Follow Up</div><div class="mock-kanban-count">1</div></div>
+                <div class="mock-deal-card" style="padding: 10px;">
+                  <div class="mock-deal-name">D. Hernandez</div>
+                  <div class="mock-deal-value">$520K</div>
+                  <div style="font-size: 7px; color: #999; margin-top: 4px;">892 Sunset Blvd</div>
+                  <div style="font-size: 7px; color: var(--orange); font-weight: 600; margin-top: 2px;">Wants phone call</div>
+                </div>
+              </div>
+              <div class="mock-kanban-col" style="background: #FAFAFA; border-radius: 10px; padding: 8px;">
+                <div class="mock-kanban-header"><div class="mock-kanban-dot" style="background: #2563EB;"></div><div class="mock-kanban-label">Meeting</div><div class="mock-kanban-count">2</div></div>
+                <div class="mock-deal-card" style="padding: 10px;">
+                  <div class="mock-deal-name">J. Adams</div>
+                  <div class="mock-deal-value">$445K</div>
+                  <div style="font-size: 7px; color: #999; margin-top: 4px;">445 Lakeview Ct</div>
+                  <div style="font-size: 7px; color: #2563EB; font-weight: 600; margin-top: 2px;">Tues walkthrough</div>
+                </div>
+                <div class="mock-deal-card" style="padding: 10px;">
+                  <div class="mock-deal-name">L. Chen</div>
+                  <div class="mock-deal-value">$415K</div>
+                  <div style="font-size: 7px; color: #999; margin-top: 4px;">2710 Harbor View</div>
+                  <div style="font-size: 7px; color: #2563EB; font-weight: 600; margin-top: 2px;">Downsizing consult</div>
+                </div>
+              </div>
+              <div class="mock-kanban-col" style="background: #FAFAFA; border-radius: 10px; padding: 8px;">
+                <div class="mock-kanban-header"><div class="mock-kanban-dot" style="background: #333;"></div><div class="mock-kanban-label">Nurture</div><div class="mock-kanban-count">1</div></div>
+                <div class="mock-deal-card" style="padding: 10px;">
+                  <div class="mock-deal-name">A. Nguyen</div>
+                  <div class="mock-deal-value">$390K</div>
+                  <div style="font-size: 7px; color: #999; margin-top: 4px;">3401 Coastline Way</div>
+                  <div style="font-size: 7px; color: #666; font-weight: 600; margin-top: 2px;">Checking in Q2</div>
+                </div>
+              </div>
+              <div class="mock-kanban-col" style="background: #FAFAFA; border-radius: 10px; padding: 8px;">
+                <div class="mock-kanban-header"><div class="mock-kanban-dot" style="background: var(--green);"></div><div class="mock-kanban-label">Closed</div><div class="mock-kanban-count">1</div></div>
+                <div class="mock-deal-card" style="border-color: #D1FAE5; padding: 10px;">
+                  <div class="mock-deal-name">C. Morales</div>
+                  <div class="mock-deal-value">$510K</div>
+                  <div style="font-size: 7px; color: #999; margin-top: 4px;">780 Canyon Rd</div>
+                  <div style="font-size: 7px; color: var(--green); font-weight: 600; margin-top: 2px;">$30,600 GCI &#10003;</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -1638,6 +1923,49 @@
   });
 
   show(0);
+
+  // Interactive mockup functions
+  function showMockView(viewName) {
+    // Hide all views
+    document.querySelectorAll('.mock-view').forEach(v => v.classList.remove('active'));
+    // Show target view
+    const target = document.getElementById('view-' + viewName);
+    if (target) target.classList.add('active');
+    // Update sidebar active state
+    document.querySelectorAll('.mock-nav-item').forEach(n => {
+      n.classList.toggle('active', n.getAttribute('data-view') === viewName);
+    });
+  }
+
+  function toggleLeadDetail(row) {
+    const detail = row.nextElementSibling;
+    if (detail && detail.classList.contains('mock-lead-detail')) {
+      detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+      row.style.background = detail.style.display === 'none' ? '' : 'rgba(255,89,36,0.03)';
+    }
+  }
+
+  function filterLeads(el, type) {
+    // Update active filter
+    el.parentElement.querySelectorAll('.mock-filter').forEach(f => f.classList.remove('active'));
+    el.classList.add('active');
+    // Show/hide lead rows
+    const rows = el.closest('.mock-leads').querySelectorAll('.mock-lead-row');
+    const details = el.closest('.mock-leads').querySelectorAll('.mock-lead-detail');
+    details.forEach(d => d.style.display = 'none');
+    rows.forEach(r => {
+      if (type === 'all' || r.getAttribute('data-type') === type) {
+        r.style.display = '';
+      } else {
+        r.style.display = 'none';
+      }
+    });
+  }
+
+  function showInboxThread(el) {
+    el.closest('.mock-view').querySelectorAll('.mock-thread').forEach(t => t.style.background = '');
+    el.style.background = 'rgba(255,89,36,0.04)';
+  }
 </script>
 
 </body>
