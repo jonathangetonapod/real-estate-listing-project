@@ -197,16 +197,22 @@ Deno.serve(async (req) => {
     // ─── Step 4: Upload CSV to Bison as sender emails ───────────────
     console.log("Step 4: Uploading sender emails to Bison");
 
-    const formData = new FormData();
-    const csvBlob = new Blob([bisonCsv], { type: "text/csv" });
-    formData.append("csv", csvBlob, "mailboxes.csv");
+    // Build multipart form data manually for Deno compatibility
+    const boundary = "----FormBoundary" + Math.random().toString(36).slice(2);
+    const multipartBody =
+      `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="csv"; filename="mailboxes.csv"\r\n` +
+      `Content-Type: text/csv\r\n\r\n` +
+      bisonCsv +
+      `\r\n--${boundary}--\r\n`;
 
     const bisonSenderRes = await fetch(`${BISON_API}/api/sender-emails/bulk`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${BISON_KEY}`,
+        "Content-Type": `multipart/form-data; boundary=${boundary}`,
       },
-      body: formData,
+      body: multipartBody,
     });
 
     const bisonSenderData = await bisonSenderRes.json();
@@ -264,7 +270,38 @@ Deno.serve(async (req) => {
 
     const campaignUuid = bisonCampaignData?.data?.uuid;
     const campaignId = bisonCampaignData?.data?.id;
-    console.log(`Bison campaign created: ${campaignUuid}`);
+    console.log(`Bison campaign created: ${campaignUuid} (ID: ${campaignId})`);
+
+    // ─── Step 5.5: Attach sender emails to the campaign ─────────────
+    console.log("Step 5.5: Attaching sender emails to campaign");
+
+    const senderEmailIds = bisonSenders.map((s: { id: number }) => s.id);
+
+    if (senderEmailIds.length > 0 && campaignId) {
+      const attachRes = await fetch(
+        `${BISON_API}/api/campaigns/${campaignId}/attach-sender-emails`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${BISON_KEY}`,
+          },
+          body: JSON.stringify({
+            sender_email_ids: senderEmailIds,
+          }),
+        }
+      );
+
+      const attachData = await attachRes.json();
+
+      if (!attachRes.ok) {
+        console.error("Bison attach sender emails failed:", attachData);
+      } else {
+        console.log(
+          `Attached ${senderEmailIds.length} sender emails to campaign ${campaignId}`
+        );
+      }
+    }
 
     // ─── Step 6: Save everything to Supabase ─────────────────────────
     console.log("Step 6: Saving to Supabase");
