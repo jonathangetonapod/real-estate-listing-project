@@ -100,12 +100,12 @@ const leads = [
 
 const navItems = [
   { key: 'dashboard', label: 'Home', subtitle: 'Your daily snapshot', icon: LayoutDashboard },
+  { key: 'email', label: 'Email Accounts', subtitle: 'Domains and mailboxes', icon: Mail },
   { key: 'farm', label: 'Order New Leads', subtitle: 'Get fresh sellers delivered', icon: MapPin },
   { key: 'leads', label: 'Seller Leads', subtitle: 'People who may want to sell', icon: Users },
   { key: 'drafts', label: 'Pitches Sent', subtitle: 'Emails you\'ve sent', icon: Send },
   { key: 'replies', label: 'Inbox', subtitle: 'Seller replies and conversations', icon: Inbox },
   { key: 'pipeline', label: 'My Deals', subtitle: 'Track your progress', icon: GitBranch },
-  { key: 'email', label: 'Email Accounts', subtitle: 'Domains and mailboxes', icon: Mail },
   { key: 'settings', label: 'Settings', subtitle: null, icon: Settings },
 ];
 
@@ -3671,7 +3671,7 @@ function DomainSlideOver({
         <div className="px-6 py-4 border-b border-border flex items-center justify-between gap-4">
           <div className="min-w-0">
             <h3 className="font-heading text-base font-semibold text-charcoal">Find Your Sending Domain</h3>
-            <p className="text-sm text-muted-foreground">Search for an available domain to use for outreach.</p>
+            <p className="text-sm text-muted-foreground">Enter your name or business and we&apos;ll suggest available domains.</p>
           </div>
           <button onClick={onClose} className="rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0">
             <X className="h-5 w-5" />
@@ -3685,7 +3685,7 @@ function DomainSlideOver({
             <div className="space-y-5">
               <div className="flex gap-2">
                 <Input
-                  placeholder="e.g. riverside, jones, premier"
+                  placeholder="Your name or business (e.g. jones, premier realty)"
                   className="h-10 text-sm flex-1"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
