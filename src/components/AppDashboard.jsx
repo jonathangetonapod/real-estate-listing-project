@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { createLeadOrder, getAgentOrders, getLeadsByOrder } from '@/lib/leads';
+import { suggestDomains } from '@/lib/winnr';
 import {
   LayoutDashboard,
   Users,
@@ -3075,16 +3076,33 @@ function EmailAccountsTab() {
   };
   const [newUsers, setNewUsers] = useState(() => [generateUser(), generateUser()]);
 
-  const handleDomainSearch = () => {
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  const handleDomainSearch = async () => {
     if (!searchQuery.trim()) return;
-    const q = searchQuery.trim().toLowerCase().replace(/\s+/g, '');
-    setSearchResults([
-      { domain: `${q}-homes.com`, available: true, price: 12.99 },
-      { domain: `${q}-realty.com`, available: true, price: 14.99 },
-      { domain: `${q}-listings.com`, available: true, price: 11.99 },
-      { domain: `get${q}.com`, available: false, price: null },
-      { domain: `${q}-properties.com`, available: true, price: 13.99 },
-    ]);
+    setSearchLoading(true);
+    setSearchResults([]);
+    try {
+      const response = await suggestDomains(searchQuery.trim());
+      if (response?.data) {
+        setSearchResults(response.data.map(d => ({
+          domain: d.domain,
+          available: d.available,
+          price: d.price,
+        })));
+      }
+    } catch (err) {
+      console.error('Domain search failed:', err);
+      // Fallback to mock results if API fails
+      const q = searchQuery.trim().toLowerCase().replace(/\s+/g, '');
+      setSearchResults([
+        { domain: `${q}-homes.com`, available: true, price: 12.99 },
+        { domain: `${q}-realty.com`, available: true, price: 14.99 },
+        { domain: `${q}-listings.com`, available: true, price: 11.99 },
+        { domain: `${q}-properties.com`, available: true, price: 13.99 },
+      ]);
+    }
+    setSearchLoading(false);
   };
 
   const handleSelectDomain = (d) => {
@@ -3208,7 +3226,7 @@ function EmailAccountsTab() {
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               searchResults={searchResults}
-              onSearch={handleDomainSearch}
+              onSearch={handleDomainSearch} searchLoading={searchLoading}
               onSelect={handleSelectDomain}
               selectedDomain={selectedDomain}
               onBuy={handleBuyDomain}
@@ -3451,7 +3469,7 @@ function EmailAccountsTab() {
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             searchResults={searchResults}
-            onSearch={handleDomainSearch}
+            onSearch={handleDomainSearch} searchLoading={searchLoading}
             onSelect={handleSelectDomain}
             selectedDomain={selectedDomain}
             onBuy={handleBuyDomain}
@@ -3637,7 +3655,7 @@ function EmailAccountsTab() {
 
 function DomainSlideOver({
   domainStep, setDomainStep, searchQuery, setSearchQuery,
-  searchResults, onSearch, onSelect, selectedDomain,
+  searchResults, onSearch, searchLoading, onSelect, selectedDomain,
   onBuy, provisioningChecks, onComplete, onClose,
 }) {
   const provisioningSteps = [
@@ -3695,9 +3713,13 @@ function DomainSlideOver({
                 <Button
                   className="bg-orange text-white hover:bg-orange-hover rounded-lg h-10 px-4 text-sm font-medium shrink-0"
                   onClick={onSearch}
-                  disabled={!searchQuery.trim()}
+                  disabled={!searchQuery.trim() || searchLoading}
                 >
-                  <Search className="h-4 w-4 mr-1.5" />Search
+                  {searchLoading ? (
+                    <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" />Searching...</>
+                  ) : (
+                    <><Search className="h-4 w-4 mr-1.5" />Search</>
+                  )}
                 </Button>
               </div>
 
