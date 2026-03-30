@@ -3466,19 +3466,8 @@ function EmailAccountsTab() {
                         <p className="font-sans text-sm font-semibold text-charcoal truncate group-hover:text-orange transition-colors">{mb.email}</p>
                         <p className="font-sans text-xs text-gray-500 truncate">{mb.displayName}</p>
                       </div>
-                      <div className="hidden sm:flex items-center gap-5">
-                        <div className="text-right shrink-0">
-                          <p className={cn('font-mono text-sm font-bold leading-tight', healthColor(mb.healthScore))}>{mb.healthScore}</p>
-                          <p className="text-[9px] uppercase text-gray-400 tracking-wider">Health</p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="font-mono text-xs font-medium text-gray-700">{mb.inboxRate}%</p>
-                          <p className="text-[9px] uppercase text-gray-400 tracking-wider">Inbox</p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="font-mono text-xs font-medium text-gray-700">{mb.emailsSent}</p>
-                          <p className="text-[9px] uppercase text-gray-400 tracking-wider">Sent</p>
-                        </div>
+                      <div className="hidden sm:flex items-center gap-3">
+                        <span className="text-xs text-muted-foreground">{mb.dailyLimit} emails/day</span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {statusBadge(mb.status)}
@@ -3498,65 +3487,18 @@ function EmailAccountsTab() {
                         className="overflow-hidden"
                       >
                         <div className="px-5 pb-5 pt-0">
-                          <div className="border-t border-gray-100 pt-4 space-y-5">
-                            {/* Daily Send Limit */}
-                            <div>
-                              <div className="flex items-center justify-between mb-1.5">
-                                <span className="text-xs font-medium text-charcoal">Daily Send Limit</span>
-                                <span className="text-xs text-muted-foreground">{mb.sentToday} / {mb.dailyLimit} emails today</span>
+                          <div className="border-t border-gray-100 pt-4 space-y-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-xs font-medium text-charcoal">Daily Send Limit</p>
+                                <p className="text-[10px] text-gray-400 mt-0.5">Up to {mb.dailyLimit} emails per day to maintain high deliverability.</p>
                               </div>
-                              <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-                                <div
-                                  className="h-full rounded-full bg-success transition-all duration-500"
-                                  style={{ width: `${(mb.sentToday / mb.dailyLimit) * 100}%` }}
-                                />
-                              </div>
-                              <p className="text-[10px] text-gray-400 mt-1.5">Your mailbox can send up to 10 emails per day to maintain high deliverability.</p>
+                              <span className="font-mono text-sm font-bold text-charcoal">{mb.dailyLimit}</span>
                             </div>
-
-                            {/* Health score large */}
-                            <div className="flex items-center gap-4">
-                              <div className="text-center">
-                                <p className={cn('font-mono text-3xl font-bold', healthColor(mb.healthScore))}>{mb.healthScore}</p>
-                                <p className="text-[10px] uppercase text-gray-400 tracking-wider mt-0.5">Health Score</p>
-                              </div>
-                              <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                <div className="rounded-lg bg-gray-50 p-2.5 text-center">
-                                  <p className="font-mono text-sm font-bold text-charcoal">{mb.inboxRate}%</p>
-                                  <p className="text-[9px] uppercase text-gray-400 tracking-wider">Inbox Rate</p>
-                                </div>
-                                <div className="rounded-lg bg-gray-50 p-2.5 text-center">
-                                  <p className="font-mono text-sm font-bold text-charcoal">{mb.spamRate}%</p>
-                                  <p className="text-[9px] uppercase text-gray-400 tracking-wider">Spam Rate</p>
-                                </div>
-                                <div className="rounded-lg bg-gray-50 p-2.5 text-center">
-                                  <p className="font-mono text-sm font-bold text-charcoal">{mb.dailySends[mb.dailySends.length - 1]}</p>
-                                  <p className="text-[9px] uppercase text-gray-400 tracking-wider">Sent Today</p>
-                                </div>
-                                <div className="rounded-lg bg-gray-50 p-2.5 text-center">
-                                  <p className="font-mono text-sm font-bold text-charcoal">{mb.emailsSent}</p>
-                                  <p className="text-[9px] uppercase text-gray-400 tracking-wider">Total Sent</p>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Daily send volume chart */}
-                            <div>
-                              <p className="text-xs font-medium text-charcoal mb-2">Daily Send Volume (last 7 days)</p>
-                              <div className="flex items-end gap-1.5 h-16">
-                                {mb.dailySends.map((count, i) => {
-                                  const maxSend = Math.max(...mb.dailySends, 1);
-                                  const pct = (count / maxSend) * 100;
-                                  return (
-                                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                                      <div
-                                        className="w-full rounded-t bg-success/70 transition-all duration-300"
-                                        style={{ height: `${Math.max(pct, 4)}%` }}
-                                      />
-                                      <span className="text-[9px] text-gray-400">D{i + 1}</span>
-                                    </div>
-                                  );
-                                })}
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-xs font-medium text-charcoal">Created</p>
+                                <p className="text-[10px] text-gray-400 mt-0.5">{new Date(mb.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                               </div>
                             </div>
                           </div>
@@ -3582,38 +3524,19 @@ function EmailAccountsTab() {
         </Button>
 
         {/* Status banner */}
-        {mailboxes.length > 0 && (() => {
-          const avgHealth = Math.round(mailboxes.reduce((sum, m) => sum + m.healthScore, 0) / mailboxes.length);
-          const totalDailyLimit = mailboxes.length * 10;
-
-          return (
-            <div className="rounded-xl border border-success/20 bg-success/[0.03] p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                  <CheckCircle2 className="h-5 w-5 text-success" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-charcoal">You&apos;re all set!</p>
-                  <p className="text-xs text-gray-500">Your mailboxes are active and ready to send.</p>
-                </div>
+        {mailboxes.length > 0 && (
+          <div className="rounded-xl border border-success/20 bg-success/[0.03] p-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                <CheckCircle2 className="h-5 w-5 text-success" />
               </div>
-              <div className="flex items-center gap-4 mt-3 pt-3 border-t border-success/10">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-success" />
-                  <span className="text-xs text-gray-600">{mailboxes.length} {mailboxes.length === 1 ? 'mailbox' : 'mailboxes'} active</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Shield className="h-3.5 w-3.5 text-success" />
-                  <span className="text-xs text-gray-600">{totalDailyLimit} emails/day limit</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Mail className="h-3.5 w-3.5 text-success" />
-                  <span className="text-xs text-gray-600">{mailboxes.reduce((sum, m) => sum + m.emailsSent, 0)} total emails sent</span>
-                </div>
+              <div>
+                <p className="text-sm font-semibold text-charcoal">You&apos;re all set!</p>
+                <p className="text-xs text-gray-500">Your {mailboxes.length} {mailboxes.length === 1 ? 'mailbox is' : 'mailboxes are'} active and ready to start sending.</p>
               </div>
             </div>
-          );
-        })()}
+          </div>
+        )}
       </div>
 
       <div className="h-12" />
