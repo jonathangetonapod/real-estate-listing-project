@@ -2262,52 +2262,49 @@ function EmailInfraView() {
       }
       setAgentMap(agentNameMap);
 
-      // 3. Enrich with Winnr data for domains that belong to OffMarket agents
+      // 3. Build from Supabase as primary source (only OffMarket data)
+      let enrichedDomains = agentDomainsList.map((ad) => ({
+        id: ad.winnr_domain_id || ad.id,
+        name: ad.domain_name,
+        status: ad.status || 'active',
+        created_at: ad.purchased_at || ad.created_at,
+        dns_status: { mx: ad.mx_verified, spf: ad.spf_verified, dkim: ad.dkim_verified },
+        agent_id: ad.agent_id,
+      }));
+
+      let enrichedMailboxes = agentMailboxesList.map((am) => ({
+        id: am.winnr_user_id || am.id,
+        email: am.email,
+        name: am.display_name,
+        domain: am.email?.split('@')[1],
+        status: am.status || 'active',
+        daily_send_limit: am.daily_limit,
+      }));
+
+      // 4. Optionally enrich domains with Winnr DNS status
       const winnrDomainIds = agentDomainsList.map((d) => d.winnr_domain_id).filter(Boolean);
-      let enrichedDomains = [];
-      let enrichedMailboxes = [];
-
       if (winnrDomainIds.length > 0) {
-        // Fetch all Winnr domains and filter to only OffMarket ones
-        const [domainsRes, usersRes] = await Promise.all([
-          listDomains(100),
-          listEmailUsers(null, 100),
-        ]);
+        try {
+          const domainsRes = await listDomains(100);
+          const allWinnrDomains = unwrap(domainsRes);
+          const winnrMap = {};
+          allWinnrDomains.forEach((d) => { winnrMap[d.id] = d; });
 
-        const allWinnrDomains = unwrap(domainsRes);
-        const allWinnrUsers = unwrap(usersRes);
-        const offmarketDomainNames = new Set(agentDomainsList.map((d) => d.domain_name));
-
-        enrichedDomains = allWinnrDomains.filter((d) =>
-          winnrDomainIds.includes(d.id) || offmarketDomainNames.has(d.name || d.domain)
-        );
-        enrichedMailboxes = allWinnrUsers.filter((u) => {
-          const userDomain = u.email?.split('@')[1] || u.domain;
-          return offmarketDomainNames.has(userDomain);
-        });
-      }
-
-      // 4. If no Winnr data, build domains from Supabase records
-      if (enrichedDomains.length === 0 && agentDomainsList.length > 0) {
-        enrichedDomains = agentDomainsList.map((ad) => ({
-          id: ad.winnr_domain_id || ad.id,
-          name: ad.domain_name,
-          status: ad.status || 'active',
-          created_at: ad.purchased_at || ad.created_at,
-          dns_status: { mx: ad.mx_verified, spf: ad.spf_verified, dkim: ad.dkim_verified },
-        }));
-      }
-
-      // 5. If no Winnr mailbox data, build from Supabase
-      if (enrichedMailboxes.length === 0 && agentMailboxesList.length > 0) {
-        enrichedMailboxes = agentMailboxesList.map((am) => ({
-          id: am.winnr_user_id || am.id,
-          email: am.email,
-          name: am.display_name,
-          domain: am.email?.split('@')[1],
-          status: am.status || 'active',
-          daily_send_limit: am.daily_limit,
-        }));
+          enrichedDomains = enrichedDomains.map((ed) => {
+            const winnr = winnrMap[ed.id];
+            if (winnr) {
+              return {
+                ...ed,
+                status: winnr.status || ed.status,
+                dns_status: winnr.dns_status || { mx: true, spf: true, dkim: true },
+                created_at: winnr.created_at || ed.created_at,
+              };
+            }
+            return ed;
+          });
+        } catch {
+          // Winnr enrichment failed — keep Supabase data as-is
+        }
       }
 
       // Fetch Winnr usage for the overview cards
