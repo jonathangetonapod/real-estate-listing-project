@@ -3059,6 +3059,7 @@ function EmailAccountsTab() {
   const { user, profile } = useAuth();
   console.log('EmailAccountsTab mounted. user:', user?.id, 'profile:', profile?.id);
   const [domain, setDomain] = useState(null);
+  const [domainLoading, setDomainLoading] = useState(true);
   const [mailboxes, setMailboxes] = useState([]);
   const [showDomainFlow, setShowDomainFlow] = useState(false);
   const [showAddMailbox, setShowAddMailbox] = useState(false);
@@ -3167,6 +3168,7 @@ function EmailAccountsTab() {
       } catch (err) {
         console.error('Failed to load domain:', err);
       }
+      setDomainLoading(false);
     })();
   }, [user?.id]);
 
@@ -3334,6 +3336,21 @@ function EmailAccountsTab() {
     if (score >= 50) return 'text-orange';
     return 'text-danger';
   };
+
+  // ---- Loading state ----
+  if (domainLoading) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div>
+          <h1 className="font-heading text-2xl font-bold text-charcoal">Email Accounts</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage your sending domain and mailboxes.</p>
+        </div>
+        <div className="rounded-xl border border-border bg-white p-8 flex items-center justify-center">
+          <div className="animate-spin h-6 w-6 border-2 border-orange border-t-transparent rounded-full" />
+        </div>
+      </div>
+    );
+  }
 
   // ---- Empty state ----
   if (!domain && !showDomainFlow) {
