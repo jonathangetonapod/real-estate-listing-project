@@ -2464,7 +2464,6 @@ function EmailInfraView() {
           { label: 'Agents', value: uniqueAgents, icon: Users, color: 'text-charcoal', bg: 'bg-charcoal/5' },
           { label: 'Domains', value: totalDomains, icon: Globe, color: 'text-charcoal', bg: 'bg-charcoal/5' },
           { label: 'Mailboxes', value: totalMailboxes, icon: Mail, color: 'text-orange', bg: 'bg-orange/5' },
-          { label: 'Per Mailbox', value: '10/day', icon: Shield, color: 'text-charcoal', bg: 'bg-charcoal/5' },
         ].map((stat) => (
           <div
             key={stat.label}
@@ -2627,9 +2626,7 @@ function EmailInfraView() {
                                 {mailboxes.map((user) => {
                                   const email = user.email || `${user.username}@${user.domain}`;
                                   const displayName = user.name || user.display_name || '—';
-                                  const dailyLimit = user.daily_send_limit ?? '—';
                                   const isDeleting = deletingUser === user.id;
-                                  const isEditingLim = editingLimit === user.id;
                                   const isActionLoading = actionLoading === user.id;
 
                                   return (
@@ -2639,9 +2636,6 @@ function EmailInfraView() {
                                           <p className="text-sm font-medium text-foreground truncate">{email}</p>
                                           <div className="flex items-center gap-3 mt-0.5">
                                             <span className="text-xs text-muted-foreground">{displayName}</span>
-                                            <span className="text-xs text-muted-foreground">
-                                              Limit: {isEditingLim ? '' : dailyLimit}/day
-                                            </span>
                                             {user.status && (
                                               <span className={cn(
                                                 'inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-medium',
@@ -2655,28 +2649,13 @@ function EmailInfraView() {
                                           </div>
                                         </div>
                                         <div className="flex items-center gap-1.5 shrink-0">
-                                          {/* Edit limit button */}
-                                          {!isEditingLim && !isDeleting && (
-                                            <button
-                                              className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                                              title="Edit daily limit"
-                                              onClick={() => {
-                                                setEditingLimit(user.id);
-                                                setEditLimitValue(String(dailyLimit === '—' ? '' : dailyLimit));
-                                                setDeletingUser(null);
-                                              }}
-                                            >
-                                              <Edit3 className="w-3.5 h-3.5" />
-                                            </button>
-                                          )}
                                           {/* Delete button */}
-                                          {!isDeleting && !isEditingLim && (
+                                          {!isDeleting && (
                                             <button
                                               className="rounded-lg p-1.5 text-muted-foreground hover:bg-danger/5 hover:text-danger transition-colors"
                                               title="Delete mailbox"
                                               onClick={() => {
                                                 setDeletingUser(user.id);
-                                                setEditingLimit(null);
                                               }}
                                             >
                                               <Trash2 className="w-3.5 h-3.5" />
@@ -2685,45 +2664,8 @@ function EmailInfraView() {
                                         </div>
                                       </div>
 
-                                      {/* Inline edit limit */}
+                                      {/* No inline edit limit — controlled via Bison */}
                                       <AnimatePresence>
-                                        {isEditingLim && (
-                                          <motion.div
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: 'auto', opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            transition={{ duration: 0.15 }}
-                                            className="overflow-hidden"
-                                          >
-                                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border">
-                                              <label className="text-[10px] font-medium text-muted-foreground whitespace-nowrap">Daily Limit:</label>
-                                              <input
-                                                type="number"
-                                                min="0"
-                                                value={editLimitValue}
-                                                onChange={(e) => setEditLimitValue(e.target.value)}
-                                                className="w-20 rounded-md border border-border bg-white px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange/30"
-                                                autoFocus
-                                              />
-                                              <Button
-                                                size="sm"
-                                                className="rounded-lg bg-orange text-white hover:bg-orange/90 text-xs h-7 px-2"
-                                                disabled={isActionLoading}
-                                                onClick={() => handleUpdateLimit(user)}
-                                              >
-                                                {isActionLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                                              </Button>
-                                              <Button
-                                                size="sm"
-                                                variant="outline"
-                                                className="rounded-lg text-xs h-7 px-2"
-                                                onClick={() => { setEditingLimit(null); setEditLimitValue(''); }}
-                                              >
-                                                <X className="w-3 h-3" />
-                                              </Button>
-                                            </div>
-                                          </motion.div>
-                                        )}
                                       </AnimatePresence>
 
                                       {/* Delete confirmation */}
