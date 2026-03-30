@@ -14,46 +14,22 @@ export function AuthProvider({ children }) {
   const [initialResolved, setInitialResolved] = useState(false)
   const initialResolvedRef = useRef(false)
 
-  const fetchProfile = useCallback(async (userId) => {
-    try {
-      console.log(`[AuthContext] fetchProfile for ${userId}`)
+  const buildProfile = useCallback((sessionUser) => {
+    if (!sessionUser) return null
 
-      // Direct REST call bypasses PostgREST .single() wrapper that causes
-      // the Postgres planner to hang when evaluating RLS policies with
-      // SECURITY DEFINER functions. The raw REST endpoint returns an array
-      // which doesn't trigger the problematic JSON aggregate wrapper.
-      const { data: { session: currentSession } } = await supabase.auth.getSession()
-      if (!currentSession?.access_token) {
-        console.log('[AuthContext] No session token available')
-        return null
-      }
-
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-      const res = await fetch(
-        `${supabaseUrl}/rest/v1/users?id=eq.${userId}&select=*`,
-        {
-          headers: {
-            'apikey': supabaseAnonKey,
-            'Authorization': `Bearer ${currentSession.access_token}`,
-          },
-        }
-      )
-
-      if (!res.ok) {
-        console.log(`[AuthContext] fetchProfile failed: ${res.status}`)
-        return null
-      }
-
-      const rows = await res.json()
-      const profile = rows?.[0] || null
-      console.log(`[AuthContext] fetchProfile success:`, profile?.role)
-      return profile
-    } catch (err) {
-      console.error('[AuthContext] fetchProfile error:', err.message)
-      return null
+    // Read role from JWT app_metadata — no database query needed.
+    // This eliminates the RLS hang caused by PostgREST .single() wrapper
+    // evaluating SECURITY DEFINER functions for every row.
+    const role = sessionUser.app_metadata?.role || 'agent'
+    const profile = {
+      id: sessionUser.id,
+      email: sessionUser.email,
+      full_name: sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || '',
+      avatar_url: sessionUser.user_metadata?.avatar_url || '',
+      role,
     }
+    console.log(`[AuthContext] buildProfile:`, profile.role)
+    return profile
   }, [])
 
   useEffect(() => {
@@ -74,9 +50,9 @@ export function AuthProvider({ children }) {
         }
 
         if (newSession?.user) {
-          const profileData = await fetchProfile(newSession.user.id)
+          const profileData = buildProfile(newSession.user)
           if (mounted) {
-            console.log('[AuthContext] Profile fetched:', profileData?.role)
+            console.log('[AuthContext] Profile built:', profileData?.role)
             setProfile(profileData)
           }
         } else {
@@ -141,7 +117,7 @@ export function AuthProvider({ children }) {
       subscription.unsubscribe()
       clearTimeout(timeout)
     }
-  }, [fetchProfile])
+  }, [buildProfile])
 
   const signIn = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
