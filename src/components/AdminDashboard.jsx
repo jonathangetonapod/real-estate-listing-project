@@ -1771,434 +1771,318 @@ function UploadLeadsView({ preselectedAgent, sourceRequest, agentsList }) {
 }
 
 // ---------------------------------------------------------------------------
-// View: Agents Management
+// View: Agents Management — Table View
 // ---------------------------------------------------------------------------
 
 function AgentsView({ onUploadForAgent, agentsList, setAgentsList }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedAgent, setExpandedAgent] = useState(null);
-  const [editingAgent, setEditingAgent] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', email: '', market: '' });
-  const [deactivatingAgent, setDeactivatingAgent] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [addForm, setAddForm] = useState({ name: '', email: '', market: '', plan: 'Starter' });
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [sortBy, setSortBy] = useState('name');
+  const [sortDir, setSortDir] = useState('asc');
+  const [agentDomains, setAgentDomains] = useState([]);
+  const [agentMailboxes, setAgentMailboxes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [realAgents, setRealAgents] = useState([]);
+
+  // Load real agents from Supabase
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const [usersRes, domainsRes, mailboxesRes] = await Promise.all([
+          supabase.from('users').select('*').eq('role', 'agent').order('full_name'),
+          supabase.from('agent_domains').select('domain_name, agent_id, status'),
+          supabase.from('agent_mailboxes').select('email, agent_id, status'),
+        ]);
+
+        if (!cancelled) {
+          const dbAgents = (usersRes.data || []).map((u) => ({
+            id: u.id,
+            name: u.full_name || u.email?.split('@')[0] || 'Unknown',
+            initials: (u.full_name || 'U').split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2),
+            email: u.email,
+            market: u.market || '—',
+            plan: u.plan || 'Starter',
+            leadsPerMonth: u.leads_per_month || 0,
+            status: capitalize(u.status || 'active'),
+            lastLogin: u.last_login,
+            createdAt: u.created_at,
+          }));
+
+          // Use DB agents if available, otherwise fall back to mock
+          if (dbAgents.length > 0) {
+            setRealAgents(dbAgents);
+          } else {
+            setRealAgents(agentsList);
+          }
+
+          setAgentDomains(domainsRes.data || []);
+          setAgentMailboxes(mailboxesRes.data || []);
+        }
+      } catch {
+        if (!cancelled) setRealAgents(agentsList);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  function capitalize(s) {
+    return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+  }
+
+  function getDomainForAgent(agentId) {
+    return agentDomains.find((d) => d.agent_id === agentId);
+  }
+
+  function getMailboxCountForAgent(agentId) {
+    return agentMailboxes.filter((m) => m.agent_id === agentId).length;
+  }
 
   const filteredAgents = useMemo(() => {
-    if (!searchQuery.trim()) return agentsList;
-    const q = searchQuery.toLowerCase();
-    return agentsList.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        a.email.toLowerCase().includes(q) ||
-        a.market.toLowerCase().includes(q)
-    );
-  }, [searchQuery, agentsList]);
+    let list = realAgents;
 
-  const totalAgents = agentsList.length;
-  const activeCount = agentsList.filter((a) => a.status === 'Active').length;
-  const trialCount = agentsList.filter((a) => a.status === 'Trial').length;
-  const expiredCount = agentsList.filter((a) => a.status === 'Expired').length;
+    if (statusFilter !== 'All') {
+      list = list.filter((a) => a.status === statusFilter);
+    }
 
-  function handleStartEdit(agent, e) {
-    e.stopPropagation();
-    setEditingAgent(agent.id);
-    setEditForm({ name: agent.name, email: agent.email, market: agent.market });
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (a) =>
+          a.name.toLowerCase().includes(q) ||
+          a.email.toLowerCase().includes(q) ||
+          (a.market || '').toLowerCase().includes(q)
+      );
+    }
+
+    list = [...list].sort((a, b) => {
+      const aVal = (a[sortBy] || '').toString().toLowerCase();
+      const bVal = (b[sortBy] || '').toString().toLowerCase();
+      return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+
+    return list;
+  }, [searchQuery, statusFilter, realAgents, sortBy, sortDir]);
+
+  const totalAgents = realAgents.length;
+  const activeCount = realAgents.filter((a) => a.status === 'Active').length;
+  const trialCount = realAgents.filter((a) => a.status === 'Trial').length;
+  const expiredCount = realAgents.filter((a) => a.status === 'Expired').length;
+
+  function handleSort(column) {
+    if (sortBy === column) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortDir('asc');
+    }
   }
 
-  function handleSaveEdit(agentId, e) {
-    e.stopPropagation();
-    setAgentsList((prev) =>
-      prev.map((a) =>
-        a.id === agentId
-          ? { ...a, name: editForm.name, email: editForm.email, market: editForm.market, initials: editForm.name.split(' ').map((n) => n[0]).join('').toUpperCase() }
-          : a
-      )
+  function SortHeader({ column, label, className: cls }) {
+    const isActive = sortBy === column;
+    return (
+      <th
+        className={cn('px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer select-none hover:text-charcoal transition-colors', cls)}
+        onClick={() => handleSort(column)}
+      >
+        <span className="inline-flex items-center gap-1">
+          {label}
+          {isActive && (
+            <ChevronDown className={cn('w-3 h-3 transition-transform', sortDir === 'desc' && 'rotate-180')} />
+          )}
+        </span>
+      </th>
     );
-    setEditingAgent(null);
   }
 
-  function handleDeactivate(agentId, e) {
-    e.stopPropagation();
-    setAgentsList((prev) =>
-      prev.map((a) => (a.id === agentId ? { ...a, status: 'Expired' } : a))
-    );
-    setDeactivatingAgent(null);
-  }
+  const statusFilters = [
+    { key: 'All', count: totalAgents },
+    { key: 'Active', count: activeCount },
+    { key: 'Trial', count: trialCount },
+    { key: 'Expired', count: expiredCount },
+  ];
 
-  function handleAddAgent(e) {
-    e.preventDefault();
-    if (!addForm.name.trim() || !addForm.email.trim()) return;
-    const initials = addForm.name.split(' ').map((n) => n[0]).join('').toUpperCase();
-    const newAgent = {
-      id: Math.max(...agentsList.map((a) => a.id)) + 1,
-      name: addForm.name,
-      initials,
-      email: addForm.email,
-      market: addForm.market || 'Unassigned',
-      plan: addForm.plan,
-      leadsPerMonth: addForm.plan === 'Pro' ? 250 : 100,
-      status: 'Active',
-    };
-    setAgentsList((prev) => [...prev, newAgent]);
-    setShowAddModal(false);
-    setAddForm({ name: '', email: '', market: '', plan: 'Starter' });
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 text-orange animate-spin mb-3" />
+        <p className="text-sm text-muted-foreground">Loading agents...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-5 pb-12">
+      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="font-heading text-2xl font-bold text-charcoal mb-1">Agents</h2>
-          <p className="font-sans text-base text-gray-500">Manage all registered agents.</p>
+          <p className="font-sans text-sm text-gray-500">{totalAgents} registered agent{totalAgents !== 1 ? 's' : ''}</p>
         </div>
-        <Button className="rounded-lg bg-orange text-white hover:bg-orange/90" onClick={() => setShowAddModal(true)}>
-          Add Agent
-        </Button>
       </div>
 
-      {/* Add Agent Modal */}
-      <AnimatePresence>
-        {showAddModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-            onClick={() => setShowAddModal(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6"
-              onClick={(e) => e.stopPropagation()}
+      {/* Stats + filters row */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        {/* Status filter tabs */}
+        <div className="flex items-center gap-1 bg-muted/30 rounded-lg p-1">
+          {statusFilters.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setStatusFilter(f.key)}
+              className={cn(
+                'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+                statusFilter === f.key
+                  ? 'bg-white text-charcoal shadow-sm'
+                  : 'text-muted-foreground hover:text-charcoal'
+              )}
             >
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-heading text-lg font-semibold text-charcoal">Add New Agent</h3>
-                <button onClick={() => setShowAddModal(false)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <form onSubmit={handleAddAgent} className="space-y-4">
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Name</label>
-                  <input
-                    type="text"
-                    value={addForm.name}
-                    onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
-                    placeholder="Full name"
-                    className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange/40"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Email</label>
-                  <input
-                    type="email"
-                    value={addForm.email}
-                    onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
-                    placeholder="agent@email.com"
-                    className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange/40"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Market</label>
-                  <input
-                    type="text"
-                    value={addForm.market}
-                    onChange={(e) => setAddForm({ ...addForm, market: e.target.value })}
-                    placeholder="e.g., Miami"
-                    className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange/40"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Plan</label>
-                  <select
-                    value={addForm.plan}
-                    onChange={(e) => setAddForm({ ...addForm, plan: e.target.value })}
-                    className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange/40"
-                  >
-                    <option value="Starter">Starter</option>
-                    <option value="Pro">Pro</option>
-                  </select>
-                </div>
-                <div className="flex items-center gap-2 pt-2">
-                  <Button type="submit" className="rounded-lg bg-orange text-white hover:bg-orange/90 flex-1">
-                    Add Agent
-                  </Button>
-                  <Button type="button" variant="outline" className="rounded-lg" onClick={() => setShowAddModal(false)}>
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {f.key} <span className="text-[10px] opacity-60">({f.count})</span>
+            </button>
+          ))}
+        </div>
 
-      {/* Summary stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          { label: 'Total', value: totalAgents, color: 'text-charcoal', bg: 'bg-charcoal/5' },
-          { label: 'Active', value: activeCount, color: 'text-success', bg: 'bg-success/5' },
-          { label: 'Trial', value: trialCount, color: 'text-orange', bg: 'bg-orange/5' },
-          { label: 'Expired', value: expiredCount, color: 'text-danger', bg: 'bg-danger/5' },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className={cn('rounded-xl border border-gray-100 bg-white p-3', stat.bg)}
-          >
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-              {stat.label}
-            </p>
-            <p className={cn('text-2xl font-heading font-bold leading-none', stat.color)}>
-              {stat.value}
+        {/* Search */}
+        <div className="relative w-full sm:w-72">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search agents..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-border bg-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange/40 transition-all"
+          />
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-xl border border-border bg-white overflow-hidden">
+        {filteredAgents.length === 0 ? (
+          <div className="py-16 text-center">
+            <Users className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">
+              {searchQuery || statusFilter !== 'All' ? 'No agents match your filters.' : 'No agents yet.'}
             </p>
           </div>
-        ))}
-      </div>
-
-      {/* Search bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search by name, email, or market..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-border bg-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange/40 transition-all"
-        />
-      </div>
-
-      {/* Agent cards */}
-      <div className="space-y-2">
-        {filteredAgents.length === 0 ? (
-          <Card className="rounded-xl">
-            <CardContent className="py-12 text-center">
-              <p className="text-sm text-muted-foreground">No agents match your search.</p>
-            </CardContent>
-          </Card>
         ) : (
-          filteredAgents.map((agent) => {
-            const isExpanded = expandedAgent === agent.id;
-            return (
-              <Card
-                key={agent.id}
-                className={cn(
-                  'rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group',
-                  'hover:shadow-md hover:-translate-y-0.5',
-                  isExpanded && 'ring-1 ring-orange/20 shadow-md'
-                )}
-                onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}
-              >
-                <CardContent className="p-0">
-                  {/* Collapsed row */}
-                  <div className="flex items-center gap-3 px-4 py-3.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-charcoal text-[11px] font-semibold text-white">
-                      {agent.initials}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-sm text-foreground">{agent.name}</span>
-                        <span className="text-xs text-muted-foreground hidden sm:inline">{agent.email}</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-muted-foreground">{agent.market}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span
-                        className={cn(
-                          'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium hidden md:inline-flex',
-                          planBadgeClass(agent.plan)
-                        )}
-                      >
-                        {agent.plan}
-                      </span>
-                      <span className="font-mono text-xs text-muted-foreground hidden lg:block">
-                        {agent.leadsPerMonth}/mo
-                      </span>
-                      <span
-                        className={cn(
-                          'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium',
-                          statusBadgeClass(agent.status)
-                        )}
-                      >
-                        {agent.status}
-                      </span>
-                      <ChevronDown
-                        className={cn(
-                          'w-4 h-4 text-muted-foreground transition-transform duration-200',
-                          isExpanded && 'rotate-180'
-                        )}
-                      />
-                    </div>
-                  </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-muted/20">
+                  <SortHeader column="name" label="Agent" />
+                  <SortHeader column="email" label="Email" className="hidden sm:table-cell" />
+                  <SortHeader column="market" label="Market" className="hidden md:table-cell" />
+                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hidden lg:table-cell">Domain</th>
+                  <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hidden lg:table-cell">Mailboxes</th>
+                  <SortHeader column="plan" label="Plan" className="hidden md:table-cell" />
+                  <SortHeader column="status" label="Status" />
+                  <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filteredAgents.map((agent) => {
+                  const domain = getDomainForAgent(agent.id);
+                  const mailboxCount = getMailboxCountForAgent(agent.id);
 
-                  {/* Expanded details */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2, ease: 'easeInOut' }}
-                        className="overflow-hidden"
-                      >
-                        <div className="border-t border-border px-4 py-4 bg-muted/10">
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-                            <div>
-                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Email</p>
-                              <p className="text-sm text-foreground truncate">{agent.email}</p>
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Market</p>
-                              <p className="text-sm font-medium text-foreground">{agent.market}</p>
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Plan</p>
-                              <span
-                                className={cn(
-                                  'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium',
-                                  planBadgeClass(agent.plan)
-                                )}
-                              >
-                                {agent.plan}
-                              </span>
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Leads/Month</p>
-                              <p className="text-sm font-mono text-foreground">{agent.leadsPerMonth}</p>
-                            </div>
+                  return (
+                    <tr key={agent.id} className="hover:bg-muted/10 transition-colors">
+                      {/* Agent name + avatar */}
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-charcoal text-[10px] font-semibold text-white">
+                            {agent.initials}
                           </div>
-
-                          {/* Recent activity for this agent */}
-                          <div className="mb-4">
-                            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2">Recent Activity</p>
-                            <div className="rounded-lg border border-border bg-white divide-y divide-border">
-                              <div className="px-3 py-2 flex items-center justify-between">
-                                <span className="text-xs text-gray-600">Last lead upload</span>
-                                <span className="text-[11px] font-mono text-muted-foreground">3d ago</span>
-                              </div>
-                              <div className="px-3 py-2 flex items-center justify-between">
-                                <span className="text-xs text-gray-600">Last login</span>
-                                <span className="text-[11px] font-mono text-muted-foreground">1d ago</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Inline edit form */}
-                          <AnimatePresence>
-                            {editingAgent === agent.id && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.15 }}
-                                className="overflow-hidden mb-4"
-                              >
-                                <div className="rounded-lg border border-border bg-white p-3 space-y-3" onClick={(e) => e.stopPropagation()}>
-                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Edit Agent</p>
-                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                    <div>
-                                      <label className="text-[10px] font-medium text-muted-foreground mb-1 block">Name</label>
-                                      <input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="w-full rounded-md border border-border bg-white px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-orange/30" />
-                                    </div>
-                                    <div>
-                                      <label className="text-[10px] font-medium text-muted-foreground mb-1 block">Email</label>
-                                      <input type="text" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} className="w-full rounded-md border border-border bg-white px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-orange/30" />
-                                    </div>
-                                    <div>
-                                      <label className="text-[10px] font-medium text-muted-foreground mb-1 block">Market</label>
-                                      <input type="text" value={editForm.market} onChange={(e) => setEditForm({ ...editForm, market: e.target.value })} className="w-full rounded-md border border-border bg-white px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-orange/30" />
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Button size="sm" className="rounded-lg bg-orange text-white hover:bg-orange/90 text-xs" onClick={(e) => handleSaveEdit(agent.id, e)}>
-                                      Save Changes
-                                    </Button>
-                                    <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={(e) => { e.stopPropagation(); setEditingAgent(null); }}>
-                                      Cancel
-                                    </Button>
-                                  </div>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-
-                          {/* Deactivate confirmation */}
-                          <AnimatePresence>
-                            {deactivatingAgent === agent.id && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.15 }}
-                                className="overflow-hidden mb-4"
-                              >
-                                <div className="rounded-lg border border-danger/20 bg-danger/[0.02] p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
-                                  <p className="text-sm text-charcoal">
-                                    Are you sure you want to deactivate <span className="font-semibold">{agent.name}</span>?
-                                  </p>
-                                  <div className="flex items-center gap-2">
-                                    <Button size="sm" className="rounded-lg bg-danger text-white hover:bg-danger/90 text-xs" onClick={(e) => handleDeactivate(agent.id, e)}>
-                                      Confirm Deactivate
-                                    </Button>
-                                    <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={(e) => { e.stopPropagation(); setDeactivatingAgent(null); }}>
-                                      Cancel
-                                    </Button>
-                                  </div>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-
-                          {/* Quick actions */}
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Button
-                              size="sm"
-                              className="rounded-lg bg-orange text-white hover:bg-orange/90 text-xs"
-                              onClick={(e) => { e.stopPropagation(); onUploadForAgent(agent); }}
-                            >
-                              <Upload className="w-3 h-3 mr-1" />
-                              Upload Leads
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="rounded-lg text-xs"
-                              onClick={(e) => handleStartEdit(agent, e)}
-                            >
-                              <Wrench className="w-3 h-3 mr-1" />
-                              Edit
-                            </Button>
-                            {agent.status !== 'Expired' ? (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="rounded-lg text-xs text-danger border-danger/20 hover:bg-danger/5"
-                                onClick={(e) => { e.stopPropagation(); setDeactivatingAgent(agent.id); }}
-                              >
-                                <Power className="w-3 h-3 mr-1" />
-                                Deactivate
-                              </Button>
-                            ) : (
-                              <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium bg-danger/10 text-danger border-danger/20">
-                                Deactivated
-                              </span>
-                            )}
-                          </div>
+                          <span className="text-sm font-medium text-foreground">{agent.name}</span>
                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </CardContent>
-              </Card>
-            );
-          })
+                      </td>
+
+                      {/* Email */}
+                      <td className="px-4 py-3 hidden sm:table-cell">
+                        <span className="text-sm text-muted-foreground truncate block max-w-[200px]">{agent.email}</span>
+                      </td>
+
+                      {/* Market */}
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        <span className="text-sm text-foreground">{agent.market}</span>
+                      </td>
+
+                      {/* Domain */}
+                      <td className="px-4 py-3 hidden lg:table-cell">
+                        {domain ? (
+                          <span className="text-xs font-mono text-foreground">{domain.domain_name}</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">No domain</span>
+                        )}
+                      </td>
+
+                      {/* Mailboxes */}
+                      <td className="px-4 py-3 text-center hidden lg:table-cell">
+                        <span className={cn(
+                          'inline-flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-semibold',
+                          mailboxCount > 0 ? 'bg-orange/10 text-orange' : 'bg-gray-100 text-gray-400'
+                        )}>
+                          {mailboxCount}
+                        </span>
+                      </td>
+
+                      {/* Plan */}
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        <span className={cn(
+                          'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium',
+                          planBadgeClass(agent.plan)
+                        )}>
+                          {agent.plan}
+                        </span>
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-4 py-3">
+                        <span className={cn(
+                          'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium',
+                          statusBadgeClass(agent.status)
+                        )}>
+                          {agent.status}
+                        </span>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            className="rounded-lg p-1.5 text-muted-foreground hover:bg-orange/5 hover:text-orange transition-colors"
+                            title="Upload leads"
+                            onClick={() => onUploadForAgent(agent)}
+                          >
+                            <Upload className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                            title="View details"
+                            onClick={() => onUploadForAgent(agent)}
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
+
+      {/* Table footer */}
+      {filteredAgents.length > 0 && (
+        <div className="flex items-center justify-between px-1">
+          <p className="text-xs text-muted-foreground">
+            Showing {filteredAgents.length} of {totalAgents} agent{totalAgents !== 1 ? 's' : ''}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
