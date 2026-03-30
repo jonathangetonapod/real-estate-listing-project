@@ -14,33 +14,38 @@ export function AuthProvider({ children }) {
   const [initialResolved, setInitialResolved] = useState(false)
   const initialResolvedRef = useRef(false)
 
-  const fetchProfile = useCallback(async (userId, retries = 3) => {
+  const fetchProfile = useCallback(async (userId, retries = 5) => {
     for (let i = 0; i < retries; i++) {
+      const delay = i === 0 ? 100 : 600 * i
+      await new Promise(r => setTimeout(r, delay))
+
       try {
+        console.log(`[AuthContext] fetchProfile attempt ${i + 1} for ${userId}`)
+
+        // Ensure session is set before querying
+        const { data: { session: currentSession } } = await supabase.auth.getSession()
+        if (!currentSession) {
+          console.log(`[AuthContext] No session yet on attempt ${i + 1}`)
+          continue
+        }
+
         const { data, error } = await supabase
           .from('users')
           .select('*')
           .eq('id', userId)
           .single()
 
-        if (error) {
-          if (i < retries - 1) {
-            await new Promise(r => setTimeout(r, 500 * (i + 1)))
-            continue
-          }
-          console.error('Error fetching profile:', error.message)
-          return null
+        if (data && !error) {
+          console.log(`[AuthContext] fetchProfile success:`, data?.role)
+          return data
         }
-        return data
+
+        console.log(`[AuthContext] fetchProfile attempt ${i + 1} failed:`, error?.message || 'no data')
       } catch (err) {
-        if (i < retries - 1) {
-          await new Promise(r => setTimeout(r, 500 * (i + 1)))
-          continue
-        }
-        console.error('Error fetching profile:', err)
-        return null
+        console.log(`[AuthContext] fetchProfile attempt ${i + 1} exception:`, err.message)
       }
     }
+    console.error('[AuthContext] fetchProfile exhausted all retries')
     return null
   }, [])
 
