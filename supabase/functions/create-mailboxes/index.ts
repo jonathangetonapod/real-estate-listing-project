@@ -272,10 +272,25 @@ Deno.serve(async (req) => {
     const campaignId = bisonCampaignData?.data?.id;
     console.log(`Bison campaign created: ${campaignUuid} (ID: ${campaignId})`);
 
-    // ─── Step 5.5: Attach sender emails to the campaign ─────────────
-    console.log("Step 5.5: Attaching sender emails to campaign");
+    // ─── Step 5.5: Look up each sender email by address and attach to campaign ─
+    console.log("Step 5.5: Looking up sender email IDs and attaching to campaign");
 
-    const senderEmailIds = bisonSenders.map((s: { id: number }) => s.id);
+    const senderEmailIds: number[] = [];
+    for (const m of mailboxes) {
+      const emailAddr = `${m.username}@${domainName}`;
+      const lookupRes = await fetch(
+        `${BISON_API}/api/sender-emails/${encodeURIComponent(emailAddr)}`,
+        { headers: { Authorization: `Bearer ${BISON_KEY}` } }
+      );
+      if (lookupRes.ok) {
+        const lookupData = await lookupRes.json();
+        if (lookupData?.data?.id) {
+          senderEmailIds.push(lookupData.data.id);
+        }
+      }
+    }
+
+    console.log(`Found ${senderEmailIds.length} sender emails for ${domainName}`);
 
     if (senderEmailIds.length > 0 && campaignId) {
       const attachRes = await fetch(
