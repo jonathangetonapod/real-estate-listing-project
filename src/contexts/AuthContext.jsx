@@ -14,39 +14,40 @@ export function AuthProvider({ children }) {
   const [initialResolved, setInitialResolved] = useState(false)
   const initialResolvedRef = useRef(false)
 
-  const fetchProfile = useCallback(async (userId, retries = 5) => {
-    for (let i = 0; i < retries; i++) {
-      const delay = i === 0 ? 100 : 600 * i
-      await new Promise(r => setTimeout(r, delay))
+  const fetchProfile = useCallback(async (userId) => {
+    try {
+      console.log(`[AuthContext] fetchProfile for ${userId}`)
 
-      try {
-        console.log(`[AuthContext] fetchProfile attempt ${i + 1} for ${userId}`)
-
-        // Ensure session is set before querying
-        const { data: { session: currentSession } } = await supabase.auth.getSession()
-        if (!currentSession) {
-          console.log(`[AuthContext] No session yet on attempt ${i + 1}`)
-          continue
-        }
-
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', userId)
-          .single()
-
-        if (data && !error) {
-          console.log(`[AuthContext] fetchProfile success:`, data?.role)
-          return data
-        }
-
-        console.log(`[AuthContext] fetchProfile attempt ${i + 1} failed:`, error?.message || 'no data')
-      } catch (err) {
-        console.log(`[AuthContext] fetchProfile attempt ${i + 1} exception:`, err.message)
+      // Use direct REST API call with the user's JWT to avoid RLS hanging issues
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      if (!currentSession?.access_token) {
+        console.log('[AuthContext] No session token available')
+        return null
       }
+
+      const res = await fetch(
+        `https://qtoptwgmqulrumyojtjv.supabase.co/rest/v1/users?id=eq.${userId}&select=*`,
+        {
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0b3B0d2dtcXVscnVteW9qdGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Mzk2MTAsImV4cCI6MjA5MDMxNTYxMH0.qeRXNytcgBKc4fyFpTqnUkhGdtHEBYAi0_AU-9AFF74',
+            'Authorization': `Bearer ${currentSession.access_token}`,
+          },
+        }
+      )
+
+      if (!res.ok) {
+        console.log(`[AuthContext] fetchProfile REST failed: ${res.status}`)
+        return null
+      }
+
+      const rows = await res.json()
+      const profile = rows?.[0] || null
+      console.log(`[AuthContext] fetchProfile success:`, profile?.role)
+      return profile
+    } catch (err) {
+      console.error('[AuthContext] fetchProfile error:', err.message)
+      return null
     }
-    console.error('[AuthContext] fetchProfile exhausted all retries')
-    return null
   }, [])
 
   useEffect(() => {
