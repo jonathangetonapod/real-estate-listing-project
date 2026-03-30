@@ -2236,11 +2236,17 @@ function EmailInfraView() {
         listEmailUsers(null, 100),
       ]);
 
-      setUsage(usageRes.data || usageRes);
-      const rawDomains = domainsRes.data || domainsRes;
-      setDomains(Array.isArray(rawDomains) ? rawDomains : []);
-      const rawUsers = usersRes.data || usersRes;
-      setEmailUsers(Array.isArray(rawUsers) ? rawUsers : []);
+      // Winnr wraps responses as { data: { data: [...] } } or { data: [...] }
+      const unwrap = (res) => {
+        const d = res?.data ?? res;
+        if (Array.isArray(d)) return d;
+        if (d?.data && Array.isArray(d.data)) return d.data;
+        return [];
+      };
+
+      setUsage(usageRes?.data?.data || usageRes?.data || usageRes);
+      setDomains(unwrap(domainsRes));
+      setEmailUsers(unwrap(usersRes));
 
       // Load agent_domains from Supabase to map domains to agents
       const { data: adData } = await supabase
