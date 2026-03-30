@@ -14,6 +14,14 @@ import {
   insertLeads,
   logCsvUpload,
 } from '@/lib/leads';
+import { supabase } from '@/lib/supabase';
+import {
+  getUsage,
+  listDomains,
+  listEmailUsers,
+  deleteEmailUser,
+  updateEmailUser,
+} from '@/lib/winnr';
 import {
   LayoutDashboard,
   Users,
@@ -46,6 +54,14 @@ import {
   Tag,
   Calendar,
   MessageSquare,
+  Globe,
+  Trash2,
+  Edit3,
+  Server,
+  Shield,
+  RefreshCw,
+  Loader2,
+  Check,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -247,6 +263,7 @@ const navItems = [
   { key: 'agents', label: 'Agents', icon: Users },
   { key: 'requests', label: 'Lead Requests', icon: ClipboardList },
   { key: 'upload', label: 'Upload Leads', icon: FileUp },
+  { key: 'email-infra', label: 'Email Infra', icon: Mail },
   { key: 'payments', label: 'Payments', icon: CreditCard },
   { key: 'settings', label: 'Settings', icon: Settings },
 ];
@@ -2186,6 +2203,533 @@ function AgentsView({ onUploadForAgent, agentsList, setAgentsList }) {
 }
 
 // ---------------------------------------------------------------------------
+// Email Infrastructure View
+// ---------------------------------------------------------------------------
+
+function EmailInfraView() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [usage, setUsage] = useState(null);
+  const [domains, setDomains] = useState([]);
+  const [emailUsers, setEmailUsers] = useState([]);
+  const [agentDomains, setAgentDomains] = useState([]);
+  const [agentMap, setAgentMap] = useState({});
+  const [expandedDomain, setExpandedDomain] = useState(null);
+  const [deletingUser, setDeletingUser] = useState(null);
+  const [editingLimit, setEditingLimit] = useState(null);
+  const [editLimitValue, setEditLimitValue] = useState('');
+  const [toast, setToast] = useState(null);
+  const [actionLoading, setActionLoading] = useState(null);
+
+  function showToast(message, type = 'success') {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }
+
+  async function loadData() {
+    setLoading(true);
+    setError(null);
+    try {
+      const [usageRes, domainsRes, usersRes] = await Promise.all([
+        getUsage(),
+        listDomains(100),
+        listEmailUsers(null, 100),
+      ]);
+
+      setUsage(usageRes.data || usageRes);
+      setDomains(domainsRes.data || []);
+      setEmailUsers(usersRes.data || []);
+
+      // Load agent_domains from Supabase to map domains to agents
+      const { data: adData } = await supabase
+        .from('agent_domains')
+        .select('domain_name, agent_id, winnr_domain_id');
+
+      setAgentDomains(adData || []);
+
+      // Get unique agent IDs and fetch their names
+      const agentIds = [...new Set((adData || []).map((d) => d.agent_id).filter(Boolean))];
+      if (agentIds.length > 0) {
+        const { data: usersData } = await supabase
+          .from('users')
+          .select('id, full_name')
+          .in('id', agentIds);
+
+        const map = {};
+        (usersData || []).forEach((u) => {
+          map[u.id] = u.full_name;
+        });
+        setAgentMap(map);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to load email infrastructure data');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  function getAgentForDomain(domainName) {
+    const ad = agentDomains.find((d) => d.domain_name === domainName);
+    if (!ad) return null;
+    return agentMap[ad.agent_id] || null;
+  }
+
+  function getMailboxesForDomain(domainName) {
+    return emailUsers.filter((u) => {
+      const userDomain = u.email?.split('@')[1] || u.domain;
+      return userDomain === domainName;
+    });
+  }
+
+  async function handleDeleteUser(user) {
+    const winnrId = user.id;
+    setActionLoading(winnrId);
+    try {
+      await deleteEmailUser(winnrId);
+
+      // Also delete from Supabase agent_mailboxes
+      const email = user.email || `${user.username}@${user.domain}`;
+      await supabase
+        .from('agent_mailboxes')
+        .delete()
+        .eq('email', email);
+
+      // Remove from local state
+      setEmailUsers((prev) => prev.filter((u) => u.id !== winnrId));
+      setDeletingUser(null);
+      showToast(`Deleted ${email}`);
+    } catch (err) {
+      showToast(err.message || 'Failed to delete mailbox', 'danger');
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleUpdateLimit(user) {
+    const winnrId = user.id;
+    const newLimit = parseInt(editLimitValue, 10);
+    if (isNaN(newLimit) || newLimit < 0) {
+      showToast('Please enter a valid number', 'danger');
+      return;
+    }
+    setActionLoading(winnrId);
+    try {
+      await updateEmailUser(winnrId, { daily_send_limit: newLimit });
+
+      // Update local state
+      setEmailUsers((prev) =>
+        prev.map((u) =>
+          u.id === winnrId ? { ...u, daily_send_limit: newLimit } : u
+        )
+      );
+      setEditingLimit(null);
+      setEditLimitValue('');
+      showToast(`Updated daily limit to ${newLimit}`);
+    } catch (err) {
+      showToast(err.message || 'Failed to update limit', 'danger');
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 text-orange animate-spin mb-3" />
+        <p className="text-sm text-muted-foreground">Loading email infrastructure...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto text-center py-20 pb-12">
+        <AlertCircle className="w-12 h-12 text-danger mx-auto mb-4" />
+        <h2 className="font-heading text-2xl font-bold text-charcoal mb-2">Failed to Load</h2>
+        <p className="font-sans text-base text-gray-400 mb-4">{error}</p>
+        <Button
+          className="rounded-lg bg-orange text-white hover:bg-orange/90"
+          onClick={loadData}
+        >
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  const totalDomains = usage?.domains_count ?? domains.length;
+  const totalMailboxes = usage?.email_users_count ?? emailUsers.length;
+  const domainsLimit = usage?.domains_limit ?? '—';
+  const mailboxesLimit = usage?.email_users_limit ?? '—';
+
+  return (
+    <div className="space-y-6 pb-12">
+      {/* Toast notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-4 right-4 z-50"
+          >
+            <div className={cn(
+              'rounded-xl border px-4 py-3 shadow-lg flex items-center gap-2',
+              toast.type === 'danger' ? 'bg-white border-danger/20 text-danger' : 'bg-white border-success/20 text-success'
+            )}>
+              {toast.type === 'danger' ? <XCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+              <span className="text-sm font-medium">{toast.message}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="font-heading text-2xl font-bold text-charcoal mb-1">Email Infrastructure</h2>
+          <p className="font-sans text-base text-gray-500">Manage domains, mailboxes, and Winnr account usage.</p>
+        </div>
+        <Button
+          className="rounded-lg bg-orange text-white hover:bg-orange/90"
+          onClick={loadData}
+        >
+          <RefreshCw className="w-4 h-4 mr-1" />
+          Refresh
+        </Button>
+      </div>
+
+      {/* Overview cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: 'Domains', value: totalDomains, icon: Globe, color: 'text-charcoal', bg: 'bg-charcoal/5' },
+          { label: 'Mailboxes', value: totalMailboxes, icon: Mail, color: 'text-orange', bg: 'bg-orange/5' },
+          { label: 'Domain Limit', value: domainsLimit, icon: Server, color: 'text-charcoal', bg: 'bg-charcoal/5' },
+          { label: 'Mailbox Limit', value: mailboxesLimit, icon: Shield, color: 'text-charcoal', bg: 'bg-charcoal/5' },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            className={cn('rounded-xl border border-gray-100 bg-white p-3', stat.bg)}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <stat.icon className="w-3.5 h-3.5 text-muted-foreground" />
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {stat.label}
+              </p>
+            </div>
+            <p className={cn('text-2xl font-heading font-bold leading-none', stat.color)}>
+              {stat.value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Domains list */}
+      <div>
+        <h3 className="font-heading text-lg font-semibold text-charcoal mb-3">Domains</h3>
+        {domains.length === 0 ? (
+          <Card className="rounded-xl">
+            <CardContent className="py-12 text-center">
+              <Globe className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No domains found.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-2">
+            {domains.map((domain) => {
+              const domainName = domain.name || domain.domain;
+              const isExpanded = expandedDomain === domain.id;
+              const mailboxes = getMailboxesForDomain(domainName);
+              const agentName = getAgentForDomain(domainName);
+              const dnsStatus = domain.dns_status || domain.dns || {};
+
+              return (
+                <Card
+                  key={domain.id}
+                  className={cn(
+                    'rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group',
+                    'hover:shadow-md hover:-translate-y-0.5',
+                    isExpanded && 'ring-1 ring-orange/20 shadow-md'
+                  )}
+                  onClick={() => setExpandedDomain(isExpanded ? null : domain.id)}
+                >
+                  <CardContent className="p-0">
+                    {/* Domain row */}
+                    <div className="flex items-center gap-3 px-4 py-3.5">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-charcoal/5">
+                        <Globe className="w-4 h-4 text-charcoal" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-sm text-foreground">{domainName}</span>
+                          {agentName && (
+                            <span className="text-xs text-muted-foreground">
+                              Agent: {agentName}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 mt-0.5">
+                          <span className="text-xs text-muted-foreground">
+                            {mailboxes.length} mailbox{mailboxes.length !== 1 ? 'es' : ''}
+                          </span>
+                          {domain.created_at && (
+                            <span className="text-xs text-muted-foreground">
+                              Created {new Date(domain.created_at).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {/* DNS indicators */}
+                        <div className="hidden sm:flex items-center gap-1">
+                          <span className={cn(
+                            'inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-medium',
+                            dnsStatus.mx || dnsStatus.mx_verified ? 'bg-success/10 text-success border-success/20' : 'bg-gray-50 text-gray-400 border-gray-200'
+                          )}>
+                            MX
+                          </span>
+                          <span className={cn(
+                            'inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-medium',
+                            dnsStatus.spf || dnsStatus.spf_verified ? 'bg-success/10 text-success border-success/20' : 'bg-gray-50 text-gray-400 border-gray-200'
+                          )}>
+                            SPF
+                          </span>
+                          <span className={cn(
+                            'inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-medium',
+                            dnsStatus.dkim || dnsStatus.dkim_verified ? 'bg-success/10 text-success border-success/20' : 'bg-gray-50 text-gray-400 border-gray-200'
+                          )}>
+                            DKIM
+                          </span>
+                        </div>
+                        <span
+                          className={cn(
+                            'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium',
+                            domain.status === 'active' || domain.status === 'verified'
+                              ? 'bg-success/10 text-success border-success/20'
+                              : domain.status === 'pending'
+                              ? 'bg-orange/10 text-orange border-orange/20'
+                              : 'bg-gray-50 text-gray-500 border-gray-200'
+                          )}
+                        >
+                          {domain.status || 'unknown'}
+                        </span>
+                        <ChevronDown
+                          className={cn(
+                            'w-4 h-4 text-muted-foreground transition-transform duration-200',
+                            isExpanded && 'rotate-180'
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Expanded: mailboxes */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: 'easeInOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div className="border-t border-border px-4 py-4 bg-muted/10">
+                            {/* DNS badges for mobile */}
+                            <div className="flex sm:hidden items-center gap-1 mb-3">
+                              <span className={cn(
+                                'inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-medium',
+                                dnsStatus.mx || dnsStatus.mx_verified ? 'bg-success/10 text-success border-success/20' : 'bg-gray-50 text-gray-400 border-gray-200'
+                              )}>
+                                MX
+                              </span>
+                              <span className={cn(
+                                'inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-medium',
+                                dnsStatus.spf || dnsStatus.spf_verified ? 'bg-success/10 text-success border-success/20' : 'bg-gray-50 text-gray-400 border-gray-200'
+                              )}>
+                                SPF
+                              </span>
+                              <span className={cn(
+                                'inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-medium',
+                                dnsStatus.dkim || dnsStatus.dkim_verified ? 'bg-success/10 text-success border-success/20' : 'bg-gray-50 text-gray-400 border-gray-200'
+                              )}>
+                                DKIM
+                              </span>
+                            </div>
+
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                              Mailboxes ({mailboxes.length})
+                            </p>
+
+                            {mailboxes.length === 0 ? (
+                              <div className="rounded-lg border border-border bg-white px-3 py-4 text-center">
+                                <p className="text-xs text-muted-foreground">No mailboxes on this domain.</p>
+                              </div>
+                            ) : (
+                              <div className="rounded-lg border border-border bg-white divide-y divide-border">
+                                {mailboxes.map((user) => {
+                                  const email = user.email || `${user.username}@${user.domain}`;
+                                  const displayName = user.name || user.display_name || '—';
+                                  const dailyLimit = user.daily_send_limit ?? '—';
+                                  const isDeleting = deletingUser === user.id;
+                                  const isEditingLim = editingLimit === user.id;
+                                  const isActionLoading = actionLoading === user.id;
+
+                                  return (
+                                    <div key={user.id} className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="min-w-0 flex-1">
+                                          <p className="text-sm font-medium text-foreground truncate">{email}</p>
+                                          <div className="flex items-center gap-3 mt-0.5">
+                                            <span className="text-xs text-muted-foreground">{displayName}</span>
+                                            <span className="text-xs text-muted-foreground">
+                                              Limit: {isEditingLim ? '' : dailyLimit}/day
+                                            </span>
+                                            {user.status && (
+                                              <span className={cn(
+                                                'inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-medium',
+                                                user.status === 'active'
+                                                  ? 'bg-success/10 text-success border-success/20'
+                                                  : 'bg-gray-50 text-gray-500 border-gray-200'
+                                              )}>
+                                                {user.status}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                          {/* Edit limit button */}
+                                          {!isEditingLim && !isDeleting && (
+                                            <button
+                                              className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                              title="Edit daily limit"
+                                              onClick={() => {
+                                                setEditingLimit(user.id);
+                                                setEditLimitValue(String(dailyLimit === '—' ? '' : dailyLimit));
+                                                setDeletingUser(null);
+                                              }}
+                                            >
+                                              <Edit3 className="w-3.5 h-3.5" />
+                                            </button>
+                                          )}
+                                          {/* Delete button */}
+                                          {!isDeleting && !isEditingLim && (
+                                            <button
+                                              className="rounded-lg p-1.5 text-muted-foreground hover:bg-danger/5 hover:text-danger transition-colors"
+                                              title="Delete mailbox"
+                                              onClick={() => {
+                                                setDeletingUser(user.id);
+                                                setEditingLimit(null);
+                                              }}
+                                            >
+                                              <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Inline edit limit */}
+                                      <AnimatePresence>
+                                        {isEditingLim && (
+                                          <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.15 }}
+                                            className="overflow-hidden"
+                                          >
+                                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border">
+                                              <label className="text-[10px] font-medium text-muted-foreground whitespace-nowrap">Daily Limit:</label>
+                                              <input
+                                                type="number"
+                                                min="0"
+                                                value={editLimitValue}
+                                                onChange={(e) => setEditLimitValue(e.target.value)}
+                                                className="w-20 rounded-md border border-border bg-white px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange/30"
+                                                autoFocus
+                                              />
+                                              <Button
+                                                size="sm"
+                                                className="rounded-lg bg-orange text-white hover:bg-orange/90 text-xs h-7 px-2"
+                                                disabled={isActionLoading}
+                                                onClick={() => handleUpdateLimit(user)}
+                                              >
+                                                {isActionLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                                              </Button>
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="rounded-lg text-xs h-7 px-2"
+                                                onClick={() => { setEditingLimit(null); setEditLimitValue(''); }}
+                                              >
+                                                <X className="w-3 h-3" />
+                                              </Button>
+                                            </div>
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+
+                                      {/* Delete confirmation */}
+                                      <AnimatePresence>
+                                        {isDeleting && (
+                                          <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.15 }}
+                                            className="overflow-hidden"
+                                          >
+                                            <div className="rounded-lg border border-danger/20 bg-danger/[0.02] p-2.5 mt-2 space-y-2">
+                                              <p className="text-xs text-charcoal">
+                                                Delete <span className="font-semibold">{email}</span> from Winnr? This cannot be undone.
+                                              </p>
+                                              <div className="flex items-center gap-2">
+                                                <Button
+                                                  size="sm"
+                                                  className="rounded-lg bg-danger text-white hover:bg-danger/90 text-xs h-7"
+                                                  disabled={isActionLoading}
+                                                  onClick={() => handleDeleteUser(user)}
+                                                >
+                                                  {isActionLoading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Trash2 className="w-3 h-3 mr-1" />}
+                                                  Delete
+                                                </Button>
+                                                <Button
+                                                  size="sm"
+                                                  variant="outline"
+                                                  className="rounded-lg text-xs h-7"
+                                                  onClick={() => setDeletingUser(null)}
+                                                >
+                                                  Cancel
+                                                </Button>
+                                              </div>
+                                            </div>
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main: AdminDashboard
 // ---------------------------------------------------------------------------
 
@@ -2408,6 +2952,9 @@ export function AdminDashboard() {
                 sourceRequest={sourceRequest}
                 agentsList={agentsList}
               />
+            )}
+            {activeNav === 'email-infra' && (
+              <EmailInfraView />
             )}
             {activeNav === 'payments' && (
               <div className="max-w-2xl mx-auto text-center py-20 pb-12">
