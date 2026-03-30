@@ -44,7 +44,12 @@ function ProtectedRoute({ children, requireAdmin = false }) {
 
   if (loading) return <LoadingScreen />
   if (!user) return <Navigate to="/login" />
-  if (requireAdmin && profile?.role !== 'admin') return <Navigate to="/app" />
+
+  // If admin is required, wait for profile to load before deciding
+  if (requireAdmin) {
+    if (!profile) return <LoadingScreen />
+    if (profile.role !== 'admin') return <Navigate to="/app" />
+  }
 
   return children
 }
