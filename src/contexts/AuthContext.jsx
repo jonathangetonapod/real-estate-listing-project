@@ -18,19 +18,38 @@ export function AuthProvider({ children }) {
     try {
       console.log(`[AuthContext] fetchProfile for ${userId}`)
 
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single()
-
-      if (data && !error) {
-        console.log(`[AuthContext] fetchProfile success:`, data?.role)
-        return data
+      // Direct REST call bypasses PostgREST .single() wrapper that causes
+      // the Postgres planner to hang when evaluating RLS policies with
+      // SECURITY DEFINER functions. The raw REST endpoint returns an array
+      // which doesn't trigger the problematic JSON aggregate wrapper.
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      if (!currentSession?.access_token) {
+        console.log('[AuthContext] No session token available')
+        return null
       }
 
-      console.log(`[AuthContext] fetchProfile failed:`, error?.message || 'no data')
-      return null
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+      const res = await fetch(
+        `${supabaseUrl}/rest/v1/users?id=eq.${userId}&select=*`,
+        {
+          headers: {
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${currentSession.access_token}`,
+          },
+        }
+      )
+
+      if (!res.ok) {
+        console.log(`[AuthContext] fetchProfile failed: ${res.status}`)
+        return null
+      }
+
+      const rows = await res.json()
+      const profile = rows?.[0] || null
+      console.log(`[AuthContext] fetchProfile success:`, profile?.role)
+      return profile
     } catch (err) {
       console.error('[AuthContext] fetchProfile error:', err.message)
       return null
