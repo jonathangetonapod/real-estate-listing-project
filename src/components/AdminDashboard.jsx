@@ -2230,13 +2230,6 @@ function EmailInfraView() {
     setLoading(true);
     setError(null);
     try {
-      const [usageRes, domainsRes, usersRes] = await Promise.all([
-        getUsage(),
-        listDomains(100),
-        listEmailUsers(null, 100),
-      ]);
-
-      // Winnr wraps responses as { data: { data: [...] } } or { data: [...] }
       const unwrap = (res) => {
         const d = res?.data ?? res;
         if (Array.isArray(d)) return d;
@@ -2244,31 +2237,89 @@ function EmailInfraView() {
         return [];
       };
 
-      setUsage(usageRes?.data?.data || usageRes?.data || usageRes);
-      setDomains(unwrap(domainsRes));
-      setEmailUsers(unwrap(usersRes));
+      // 1. Load agent domains + mailboxes from Supabase (source of truth for OffMarket)
+      const [{ data: adData }, { data: amData }] = await Promise.all([
+        supabase.from('agent_domains').select('*'),
+        supabase.from('agent_mailboxes').select('*'),
+      ]);
 
-      // Load agent_domains from Supabase to map domains to agents
-      const { data: adData } = await supabase
-        .from('agent_domains')
-        .select('domain_name, agent_id, winnr_domain_id');
+      const agentDomainsList = adData || [];
+      const agentMailboxesList = amData || [];
+      setAgentDomains(agentDomainsList);
 
-      setAgentDomains(adData || []);
-
-      // Get unique agent IDs and fetch their names
-      const agentIds = [...new Set((adData || []).map((d) => d.agent_id).filter(Boolean))];
+      // 2. Get agent names
+      const agentIds = [...new Set(agentDomainsList.map((d) => d.agent_id).filter(Boolean))];
+      let agentNameMap = {};
       if (agentIds.length > 0) {
         const { data: usersData } = await supabase
           .from('users')
           .select('id, full_name')
           .in('id', agentIds);
 
-        const map = {};
         (usersData || []).forEach((u) => {
-          map[u.id] = u.full_name;
+          agentNameMap[u.id] = u.full_name;
         });
-        setAgentMap(map);
       }
+      setAgentMap(agentNameMap);
+
+      // 3. Enrich with Winnr data for domains that belong to OffMarket agents
+      const winnrDomainIds = agentDomainsList.map((d) => d.winnr_domain_id).filter(Boolean);
+      let enrichedDomains = [];
+      let enrichedMailboxes = [];
+
+      if (winnrDomainIds.length > 0) {
+        // Fetch all Winnr domains and filter to only OffMarket ones
+        const [domainsRes, usersRes] = await Promise.all([
+          listDomains(100),
+          listEmailUsers(null, 100),
+        ]);
+
+        const allWinnrDomains = unwrap(domainsRes);
+        const allWinnrUsers = unwrap(usersRes);
+        const offmarketDomainNames = new Set(agentDomainsList.map((d) => d.domain_name));
+
+        enrichedDomains = allWinnrDomains.filter((d) =>
+          winnrDomainIds.includes(d.id) || offmarketDomainNames.has(d.name || d.domain)
+        );
+        enrichedMailboxes = allWinnrUsers.filter((u) => {
+          const userDomain = u.email?.split('@')[1] || u.domain;
+          return offmarketDomainNames.has(userDomain);
+        });
+      }
+
+      // 4. If no Winnr data, build domains from Supabase records
+      if (enrichedDomains.length === 0 && agentDomainsList.length > 0) {
+        enrichedDomains = agentDomainsList.map((ad) => ({
+          id: ad.winnr_domain_id || ad.id,
+          name: ad.domain_name,
+          status: ad.status || 'active',
+          created_at: ad.purchased_at || ad.created_at,
+          dns_status: { mx: ad.mx_verified, spf: ad.spf_verified, dkim: ad.dkim_verified },
+        }));
+      }
+
+      // 5. If no Winnr mailbox data, build from Supabase
+      if (enrichedMailboxes.length === 0 && agentMailboxesList.length > 0) {
+        enrichedMailboxes = agentMailboxesList.map((am) => ({
+          id: am.winnr_user_id || am.id,
+          email: am.email,
+          name: am.display_name,
+          domain: am.email?.split('@')[1],
+          status: am.status || 'active',
+          daily_send_limit: am.daily_limit,
+        }));
+      }
+
+      // Fetch Winnr usage for the overview cards
+      try {
+        const usageRes = await getUsage();
+        setUsage(usageRes?.data?.data || usageRes?.data || usageRes);
+      } catch {
+        // Non-critical — overview cards just show counts from local data
+      }
+
+      setDomains(enrichedDomains);
+      setEmailUsers(enrichedMailboxes);
     } catch (err) {
       setError(err.message || 'Failed to load email infrastructure data');
     } finally {
@@ -2370,10 +2421,10 @@ function EmailInfraView() {
     );
   }
 
-  const totalDomains = usage?.domains_count ?? domains.length;
-  const totalMailboxes = usage?.email_users_count ?? emailUsers.length;
+  const totalDomains = domains.length;
+  const totalMailboxes = emailUsers.length;
+  const uniqueAgents = [...new Set(agentDomains.map((d) => d.agent_id))].length;
   const domainsLimit = usage?.domains_limit ?? '—';
-  const mailboxesLimit = usage?.email_users_limit ?? '—';
 
   return (
     <div className="space-y-6 pb-12">
@@ -2415,10 +2466,10 @@ function EmailInfraView() {
       {/* Overview cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
+          { label: 'Agents', value: uniqueAgents, icon: Users, color: 'text-charcoal', bg: 'bg-charcoal/5' },
           { label: 'Domains', value: totalDomains, icon: Globe, color: 'text-charcoal', bg: 'bg-charcoal/5' },
           { label: 'Mailboxes', value: totalMailboxes, icon: Mail, color: 'text-orange', bg: 'bg-orange/5' },
-          { label: 'Domain Limit', value: domainsLimit, icon: Server, color: 'text-charcoal', bg: 'bg-charcoal/5' },
-          { label: 'Mailbox Limit', value: mailboxesLimit, icon: Shield, color: 'text-charcoal', bg: 'bg-charcoal/5' },
+          { label: 'Winnr Limit', value: domainsLimit, icon: Server, color: 'text-charcoal', bg: 'bg-charcoal/5' },
         ].map((stat) => (
           <div
             key={stat.label}
