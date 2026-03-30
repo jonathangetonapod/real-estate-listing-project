@@ -82,6 +82,14 @@ function LandingPage() {
   )
 }
 
+function AuthCallback() {
+  const { user, profile, loading, initialResolved } = useAuth()
+  if (loading || !initialResolved) return <LoadingScreen />
+  if (!user) return <Navigate to="/login" replace />
+  if (profile?.role === 'admin') return <Navigate to="/admin" replace />
+  return <Navigate to="/app" replace />
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -91,6 +99,7 @@ function App() {
           <Route path="/waitlist" element={<WaitlistPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/app" element={
             <ProtectedRoute>
               <AppDashboard />

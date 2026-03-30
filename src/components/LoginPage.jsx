@@ -86,6 +86,9 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { user, profile, isAdmin, loading: authLoading, initialResolved, signIn } = useAuth();
+  const [forgotMode, setForgotMode] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSent, setResetSent] = useState(false);
 
   // Redirect if already logged in — wait for profile to load so we know the correct destination
   useEffect(() => {
@@ -121,11 +124,26 @@ export default function LoginPage() {
       await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/app`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
     } catch (err) {
       setError(err.message || 'Failed to sign in with Google');
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!resetEmail.trim()) return;
+    setError('');
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/login`,
+      });
+      if (resetError) throw resetError;
+      setResetSent(true);
+    } catch (err) {
+      setError(err.message || 'Failed to send reset email');
     }
   };
 
@@ -215,7 +233,11 @@ export default function LoginPage() {
                 <label className="font-sans text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Password
                 </label>
-                <button type="button" className="font-sans text-xs text-orange hover:text-orange-hover transition-colors">
+                <button
+                  type="button"
+                  onClick={() => { setForgotMode(true); setResetEmail(email); setResetSent(false); setError(''); }}
+                  className="font-sans text-xs text-orange hover:text-orange-hover transition-colors"
+                >
                   Forgot password?
                 </button>
               </div>
@@ -238,17 +260,51 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Remember me */}
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="remember"
-                className="w-4 h-4 rounded border-gray-300 text-orange focus:ring-orange/20 cursor-pointer"
-              />
-              <label htmlFor="remember" className="font-sans text-sm text-gray-500 cursor-pointer select-none">
-                Keep me signed in
-              </label>
-            </div>
+            {/* Forgot password modal overlay */}
+            {forgotMode && (
+              <div className="rounded-xl border border-orange/20 bg-orange/[0.02] p-4 space-y-3">
+                {resetSent ? (
+                  <div className="text-center space-y-2">
+                    <p className="text-sm font-medium text-charcoal">Reset link sent</p>
+                    <p className="text-xs text-gray-500">Check your inbox at <span className="font-medium">{resetEmail}</span></p>
+                    <button
+                      type="button"
+                      onClick={() => { setForgotMode(false); setResetSent(false); }}
+                      className="text-xs text-orange hover:text-orange-hover transition-colors"
+                    >
+                      Back to sign in
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-charcoal">Reset your password</p>
+                    <input
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      className="w-full h-10 rounded-lg border border-gray-200 bg-white px-4 font-sans text-sm text-charcoal placeholder:text-gray-400 outline-none focus:border-orange focus:ring-2 focus:ring-orange/10"
+                    />
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        className="flex-1 h-9 rounded-lg bg-orange text-white text-xs font-semibold hover:bg-orange/90 transition-colors"
+                      >
+                        Send reset link
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setForgotMode(false)}
+                        className="h-9 px-3 rounded-lg border border-gray-200 text-xs text-gray-500 hover:text-charcoal transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Submit */}
             <button
