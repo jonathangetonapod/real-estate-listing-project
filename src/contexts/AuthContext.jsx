@@ -9,23 +9,34 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchProfile = useCallback(async (userId) => {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single()
+  const fetchProfile = useCallback(async (userId, retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .single()
 
-      if (error) {
-        console.error('Error fetching profile:', error.message)
+        if (error) {
+          if (i < retries - 1) {
+            await new Promise(r => setTimeout(r, 500 * (i + 1)))
+            continue
+          }
+          console.error('Error fetching profile:', error.message)
+          return null
+        }
+        return data
+      } catch (err) {
+        if (i < retries - 1) {
+          await new Promise(r => setTimeout(r, 500 * (i + 1)))
+          continue
+        }
+        console.error('Error fetching profile:', err)
         return null
       }
-      return data
-    } catch (err) {
-      console.error('Error fetching profile:', err)
-      return null
     }
+    return null
   }, [])
 
   useEffect(() => {
