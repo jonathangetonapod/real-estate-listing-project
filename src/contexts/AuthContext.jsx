@@ -42,31 +42,17 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let mounted = true
 
-    // Check existing session on mount
-    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
-      if (!mounted) return
-      setSession(currentSession)
-      setUser(currentSession?.user ?? null)
-
-      if (currentSession?.user) {
-        const profileData = await fetchProfile(currentSession.user.id)
-        if (mounted) setProfile(profileData)
-      }
-
-      if (mounted) setLoading(false)
-    }).catch(() => {
-      if (mounted) setLoading(false)
-    })
-
-    // Subscribe to auth state changes
+    // Use onAuthStateChange with INITIAL_SESSION instead of separate getSession()
+    // This avoids double lock acquisition and race conditions
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         if (!mounted) return
+
         setSession(newSession)
         setUser(newSession?.user ?? null)
 
         // Clean up the # fragment left by OAuth redirect
-        if (event === 'SIGNED_IN' && window.location.hash) {
+        if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && window.location.hash) {
           window.history.replaceState(null, '', window.location.pathname)
         }
 
@@ -77,14 +63,17 @@ export function AuthProvider({ children }) {
           setProfile(null)
         }
 
-        setLoading(false)
+        // INITIAL_SESSION is the definitive signal that session restoration is complete
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          setLoading(false)
+        }
       }
     )
 
-    // Safety timeout — never stay loading forever
+    // Safety timeout — only fires if INITIAL_SESSION never comes (unlikely)
     const timeout = setTimeout(() => {
-      if (mounted && loading) setLoading(false)
-    }, 5000)
+      if (mounted) setLoading(false)
+    }, 10000)
 
     return () => {
       mounted = false
