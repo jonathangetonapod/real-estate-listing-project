@@ -62,6 +62,7 @@ import {
   RefreshCw,
   Loader2,
   Check,
+  LogOut,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -2819,6 +2820,7 @@ export function AdminDashboard() {
     agents: 'Agents',
     requests: 'Lead Requests',
     upload: 'Upload Leads',
+    'email-infra': 'Email Infrastructure',
     payments: 'Payments',
     settings: 'Settings',
   };
@@ -2889,10 +2891,20 @@ export function AdminDashboard() {
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange text-sm font-semibold text-white">
               {adminInitials}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-white truncate">{adminName}</p>
               <p className="text-xs text-white/50 truncate">Admin</p>
             </div>
+            <button
+              onClick={async () => {
+                await signOut();
+                navigate('/login');
+              }}
+              className="rounded-lg p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </aside>
