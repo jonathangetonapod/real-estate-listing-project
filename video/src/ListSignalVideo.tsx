@@ -223,7 +223,7 @@ function ProblemScene() {
             OffMarket
           </div>
           <div style={{ fontFamily: monoFont, fontSize: 72, fontWeight: 700, color: SUCCESS }}>
-            $99
+            $299
           </div>
           <div style={{ fontFamily: bodyFont, fontSize: 16, color: "#666", marginTop: 12 }}>
             per month
@@ -577,7 +577,7 @@ function CTAScene() {
         </div>
 
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, transform: `scale(${priceEnter})`, marginBottom: 16 }}>
-          <span style={{ fontFamily: monoFont, fontSize: 72, fontWeight: 700, color: ORANGE }}>$99</span>
+          <span style={{ fontFamily: monoFont, fontSize: 72, fontWeight: 700, color: ORANGE }}>$299</span>
           <span style={{ fontFamily: bodyFont, fontSize: 24, color: "rgba(255,255,255,0.4)" }}>/month</span>
         </div>
 
@@ -585,7 +585,7 @@ function CTAScene() {
           fontFamily: bodyFont, fontSize: 20, color: "rgba(255,255,255,0.5)",
           marginBottom: 48, opacity: foundingOpacity,
         }}>
-          Founding members: <span style={{ color: ORANGE }}>$79/mo for life</span>
+          Founding members: <span style={{ color: ORANGE }}>$299/mo</span>
         </div>
 
         <div style={{
