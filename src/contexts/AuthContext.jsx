@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 
 const AuthContext = createContext(null)
@@ -8,6 +8,11 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  // Track whether we've completed the initial auth + profile resolution.
+  // This prevents premature redirects when INITIAL_SESSION fires with a
+  // null session before Supabase restores the token from storage/URL.
+  const [initialResolved, setInitialResolved] = useState(false)
+  const initialResolvedRef = useRef(false)
 
   const fetchProfile = useCallback(async (userId, retries = 3) => {
     for (let i = 0; i < retries; i++) {
@@ -42,11 +47,11 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let mounted = true
 
-    // Use onAuthStateChange with INITIAL_SESSION instead of separate getSession()
-    // This avoids double lock acquisition and race conditions
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         if (!mounted) return
+
+        console.log('[AuthContext] onAuthStateChange:', event, newSession?.user?.id ?? 'no-user')
 
         setSession(newSession)
         setUser(newSession?.user ?? null)
@@ -58,21 +63,65 @@ export function AuthProvider({ children }) {
 
         if (newSession?.user) {
           const profileData = await fetchProfile(newSession.user.id)
-          if (mounted) setProfile(profileData)
+          if (mounted) {
+            console.log('[AuthContext] Profile fetched:', profileData?.role)
+            setProfile(profileData)
+          }
         } else {
           setProfile(null)
         }
 
-        // INITIAL_SESSION is the definitive signal that session restoration is complete
-        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-          setLoading(false)
+        // Only mark loading as done for definitive auth events.
+        // For INITIAL_SESSION: if the session is null, Supabase may still
+        // fire SIGNED_IN shortly after (token refresh / OAuth redirect).
+        // We mark as resolved but keep loading=true if we expect a follow-up.
+        if (event === 'INITIAL_SESSION') {
+          if (newSession?.user) {
+            // Session was restored immediately — profile is fetched above, we're done
+            if (mounted) {
+              setLoading(false)
+              setInitialResolved(true)
+              initialResolvedRef.current = true
+            }
+          } else {
+            // No session on INITIAL_SESSION. This could mean:
+            // (a) User is genuinely not authenticated, OR
+            // (b) Supabase is about to fire SIGNED_IN with a restored session
+            // Give Supabase a short window to fire SIGNED_IN before resolving.
+            setTimeout(() => {
+              if (mounted && !initialResolvedRef.current) {
+                console.log('[AuthContext] No SIGNED_IN after INITIAL_SESSION — resolving as unauthenticated')
+                setLoading(false)
+                setInitialResolved(true)
+                initialResolvedRef.current = true
+              }
+            }, 1000)
+          }
+        } else if (event === 'SIGNED_IN') {
+          // SIGNED_IN with profile already fetched above — resolve now
+          if (mounted) {
+            setLoading(false)
+            setInitialResolved(true)
+            initialResolvedRef.current = true
+          }
+        } else if (event === 'SIGNED_OUT') {
+          if (mounted) {
+            setLoading(false)
+            setInitialResolved(true)
+            initialResolvedRef.current = true
+          }
         }
       }
     )
 
     // Safety timeout — only fires if INITIAL_SESSION never comes (unlikely)
     const timeout = setTimeout(() => {
-      if (mounted) setLoading(false)
+      if (mounted && !initialResolvedRef.current) {
+        console.log('[AuthContext] Safety timeout — forcing loading=false')
+        setLoading(false)
+        setInitialResolved(true)
+        initialResolvedRef.current = true
+      }
     }, 10000)
 
     return () => {
@@ -135,6 +184,7 @@ export function AuthProvider({ children }) {
     session,
     profile,
     loading,
+    initialResolved,
     signIn,
     signUp,
     signOut,

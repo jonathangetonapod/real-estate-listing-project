@@ -85,14 +85,16 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { user, isAdmin, loading: authLoading, signIn } = useAuth();
+  const { user, profile, isAdmin, loading: authLoading, initialResolved, signIn } = useAuth();
 
-  // Redirect if already logged in
+  // Redirect if already logged in — wait for profile to load so we know the correct destination
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && initialResolved && user) {
+      // Profile may still be loading; wait for it before deciding
+      if (!profile) return;
       navigate(isAdmin ? '/admin' : '/app', { replace: true });
     }
-  }, [user, isAdmin, authLoading, navigate]);
+  }, [user, profile, isAdmin, authLoading, initialResolved, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();

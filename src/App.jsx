@@ -40,11 +40,12 @@ function LoadingScreen() {
 }
 
 function ProtectedRoute({ children, requireAdmin = false }) {
-  const { user, profile, loading } = useAuth()
+  const { user, profile, loading, initialResolved } = useAuth()
 
-  console.log('ProtectedRoute:', { loading, user: user?.id, profileRole: profile?.role, requireAdmin })
+  console.log('ProtectedRoute:', { loading, initialResolved, user: user?.id, profileRole: profile?.role, requireAdmin })
 
-  if (loading) return <LoadingScreen />
+  // Wait until auth + profile are fully resolved before making any routing decisions
+  if (loading || !initialResolved) return <LoadingScreen />
   if (!user) return <Navigate to="/login" />
 
   // If admin is required, wait for profile to load before deciding
