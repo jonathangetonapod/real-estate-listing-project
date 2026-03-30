@@ -2237,8 +2237,10 @@ function EmailInfraView() {
       ]);
 
       setUsage(usageRes.data || usageRes);
-      setDomains(domainsRes.data || []);
-      setEmailUsers(usersRes.data || []);
+      const rawDomains = domainsRes.data || domainsRes;
+      setDomains(Array.isArray(rawDomains) ? rawDomains : []);
+      const rawUsers = usersRes.data || usersRes;
+      setEmailUsers(Array.isArray(rawUsers) ? rawUsers : []);
 
       // Load agent_domains from Supabase to map domains to agents
       const { data: adData } = await supabase
