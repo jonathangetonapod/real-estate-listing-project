@@ -173,6 +173,9 @@ Deno.serve(async (req) => {
     const bisonHeader =
       "Name,Email,Password,IMAP Server,IMAP Port,SMTP Server,SMTP Port,Daily Limit,SMTP Secure,IMAP Secure";
 
+    // Parse CSV into structured data and build password map
+    const credentialsMap: Record<string, { password: string; imapHost: string; imapPort: string; smtpHost: string; smtpPort: string }> = {};
+
     const bisonRows = winnrRows
       .filter((row) => row.trim())
       .map((row) => {
@@ -187,12 +190,21 @@ Deno.serve(async (req) => {
         const smtpPort = cols[10];
         const dailyLimit = cols[11];
 
+        // Save credentials for later storage
+        credentialsMap[email] = {
+          password: imapPassword,
+          imapHost,
+          imapPort,
+          smtpHost,
+          smtpPort,
+        };
+
         return `${firstName} ${lastName},${email},${imapPassword},${imapHost},${imapPort},${smtpHost},${smtpPort},${dailyLimit},true,true`;
       });
 
     const bisonCsv = bisonHeader + "\n" + bisonRows.join("\n");
 
-    console.log(`Transformed ${bisonRows.length} rows to Bison format`);
+    console.log(`Transformed ${bisonRows.length} rows, saved ${Object.keys(credentialsMap).length} credentials`);
 
     // ─── Step 4: Upload CSV to Bison as sender emails ───────────────
     console.log("Step 4: Uploading sender emails to Bison");
@@ -390,6 +402,48 @@ Deno.serve(async (req) => {
 
     if (campaignSaveError) {
       console.error("Supabase campaign mapping insert failed:", campaignSaveError);
+    }
+
+    // Save email credentials (service role only — agent never sees)
+    const credentialRecords = mailboxes.map(
+      (m: { username: string; name: string }) => {
+        const emailAddr = `${m.username}@${domainName}`;
+        const creds = credentialsMap[emailAddr];
+        const bisonId = senderEmailIds.find((_: number, idx: number) => {
+          const matchEmail = mailboxes[idx]?.username;
+          return matchEmail === m.username;
+        });
+
+        return {
+          agent_id: user.id,
+          email: emailAddr,
+          imap_password: creds?.password || "",
+          imap_host: creds?.imapHost || "inbound.winnr.app",
+          imap_port: parseInt(creds?.imapPort || "993"),
+          smtp_host: creds?.smtpHost || "inbound.winnr.app",
+          smtp_port: parseInt(creds?.smtpPort || "465"),
+          bison_sender_id: null,
+          bison_campaign_id: campaignId,
+        };
+      }
+    );
+
+    // Look up bison sender IDs for each credential
+    for (const cred of credentialRecords) {
+      const matchedId = senderEmailIds.find(async (id: number) => {
+        // We already have the IDs from step 5.5
+        return true;
+      });
+    }
+
+    const { error: credInsertError } = await supabaseAdmin
+      .from("email_credentials")
+      .insert(credentialRecords);
+
+    if (credInsertError) {
+      console.error("Supabase credentials insert failed:", credInsertError);
+    } else {
+      console.log(`Saved ${credentialRecords.length} email credentials`);
     }
 
     // ─── Done ────────────────────────────────────────────────────────
