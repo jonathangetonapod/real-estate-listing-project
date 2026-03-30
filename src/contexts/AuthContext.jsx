@@ -18,32 +18,19 @@ export function AuthProvider({ children }) {
     try {
       console.log(`[AuthContext] fetchProfile for ${userId}`)
 
-      // Use direct REST API call with the user's JWT to avoid RLS hanging issues
-      const { data: { session: currentSession } } = await supabase.auth.getSession()
-      if (!currentSession?.access_token) {
-        console.log('[AuthContext] No session token available')
-        return null
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      if (data && !error) {
+        console.log(`[AuthContext] fetchProfile success:`, data?.role)
+        return data
       }
 
-      const res = await fetch(
-        `https://qtoptwgmqulrumyojtjv.supabase.co/rest/v1/users?id=eq.${userId}&select=*`,
-        {
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0b3B0d2dtcXVscnVteW9qdGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Mzk2MTAsImV4cCI6MjA5MDMxNTYxMH0.qeRXNytcgBKc4fyFpTqnUkhGdtHEBYAi0_AU-9AFF74',
-            'Authorization': `Bearer ${currentSession.access_token}`,
-          },
-        }
-      )
-
-      if (!res.ok) {
-        console.log(`[AuthContext] fetchProfile REST failed: ${res.status}`)
-        return null
-      }
-
-      const rows = await res.json()
-      const profile = rows?.[0] || null
-      console.log(`[AuthContext] fetchProfile success:`, profile?.role)
-      return profile
+      console.log(`[AuthContext] fetchProfile failed:`, error?.message || 'no data')
+      return null
     } catch (err) {
       console.error('[AuthContext] fetchProfile error:', err.message)
       return null
