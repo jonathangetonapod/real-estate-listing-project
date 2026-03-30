@@ -2238,13 +2238,16 @@ function EmailInfraView() {
       };
 
       // 1. Load agent domains + mailboxes from Supabase (source of truth for OffMarket)
-      const [{ data: adData }, { data: amData }] = await Promise.all([
+      const [domainResult, mailboxResult] = await Promise.all([
         supabase.from('agent_domains').select('*'),
         supabase.from('agent_mailboxes').select('*'),
       ]);
 
-      const agentDomainsList = adData || [];
-      const agentMailboxesList = amData || [];
+      console.log('[EmailInfra] agent_domains:', domainResult.data?.length, domainResult.error?.message);
+      console.log('[EmailInfra] agent_mailboxes:', mailboxResult.data?.length, mailboxResult.error?.message);
+
+      const agentDomainsList = domainResult.data || [];
+      const agentMailboxesList = mailboxResult.data || [];
       setAgentDomains(agentDomainsList);
 
       // 2. Get agent names
@@ -2307,13 +2310,8 @@ function EmailInfraView() {
         }
       }
 
-      // Fetch Winnr usage for the overview cards
-      try {
-        const usageRes = await getUsage();
-        setUsage(usageRes?.data?.data || usageRes?.data || usageRes);
-      } catch {
-        // Non-critical — overview cards just show counts from local data
-      }
+      // Overview cards use local counts — no Winnr usage fetch needed
+      setUsage(null);
 
       setDomains(enrichedDomains);
       setEmailUsers(enrichedMailboxes);
@@ -2421,7 +2419,6 @@ function EmailInfraView() {
   const totalDomains = domains.length;
   const totalMailboxes = emailUsers.length;
   const uniqueAgents = [...new Set(agentDomains.map((d) => d.agent_id))].length;
-  const domainsLimit = usage?.domains_limit ?? '—';
 
   return (
     <div className="space-y-6 pb-12">
@@ -2466,7 +2463,7 @@ function EmailInfraView() {
           { label: 'Agents', value: uniqueAgents, icon: Users, color: 'text-charcoal', bg: 'bg-charcoal/5' },
           { label: 'Domains', value: totalDomains, icon: Globe, color: 'text-charcoal', bg: 'bg-charcoal/5' },
           { label: 'Mailboxes', value: totalMailboxes, icon: Mail, color: 'text-orange', bg: 'bg-orange/5' },
-          { label: 'Winnr Limit', value: domainsLimit, icon: Server, color: 'text-charcoal', bg: 'bg-charcoal/5' },
+          { label: 'Per Mailbox', value: '10/day', icon: Shield, color: 'text-charcoal', bg: 'bg-charcoal/5' },
         ].map((stat) => (
           <div
             key={stat.label}
