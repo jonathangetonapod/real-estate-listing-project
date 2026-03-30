@@ -29,7 +29,7 @@ const benefits = [
 
 const faqItems = [
   {
-    q: 'What do I get for $99/mo?',
+    q: 'What do I get for $299/mo?',
     a: '250 verified motivated seller leads per month, AI-drafted outreach emails for each lead, managed sending with your name and brand (94% inbox rate), reply tracking in your dashboard, and follow-up sequences. All lead types included: expireds, FSBOs, pre-foreclosures, absentee owners, high equity, and probate.',
   },
   {
@@ -38,7 +38,7 @@ const faqItems = [
   },
   {
     q: 'How is this different from Zillow leads?',
-    a: 'Zillow shares each lead with dozens of agents and charges $1,200+/mo. OffMarket delivers exclusive, verified seller data with AI-drafted pitches for $99/mo. Your leads are yours. No bidding, no sharing.',
+    a: 'Zillow shares each lead with dozens of agents and charges $1,200+/mo. OffMarket delivers exclusive, verified seller data with AI-drafted pitches for $299/mo. Your leads are yours. No bidding, no sharing.',
   },
   {
     q: 'Will this hurt my email reputation?',
@@ -304,7 +304,7 @@ export function WaitlistPage() {
             <span className="block font-sans text-xs text-gray-500 mt-1">inbox placement</span>
           </div>
           <div className="text-center">
-            <span className="font-mono text-2xl font-bold text-charcoal">$99</span>
+            <span className="font-mono text-2xl font-bold text-charcoal">$299</span>
             <span className="block font-sans text-xs text-gray-500 mt-1">per month</span>
           </div>
         </div>
@@ -380,7 +380,7 @@ export function WaitlistPage() {
                 OffMarket
               </span>
               <span className="block font-mono text-2xl font-bold text-orange">
-                $99/mo
+                $299/mo
               </span>
               <span className="block font-sans text-xs text-gray-400 mt-1">
                 Exclusive to your zip code

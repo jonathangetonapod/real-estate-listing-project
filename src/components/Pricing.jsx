@@ -77,7 +77,7 @@ export function Pricing() {
             OffMarket
           </span>
           <span className="block font-mono text-2xl font-bold text-green-600">
-            $99/mo
+            $299/mo
           </span>
           <span className="mt-1 block font-sans text-xs text-gray-400">
             Exclusive to your zip code
@@ -101,7 +101,7 @@ export function Pricing() {
 
             <div className="mt-3 mb-2 flex items-baseline gap-1">
               <span className="font-heading text-5xl md:text-6xl font-bold leading-none text-charcoal">
-                $99
+                $299
               </span>
               <span className="font-sans text-lg text-gray-400">/month</span>
             </div>

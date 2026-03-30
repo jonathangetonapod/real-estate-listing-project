@@ -13,7 +13,7 @@ const faqData = [
   },
   {
     q: 'How is this different from buying Zillow leads?',
-    a: 'Zillow leads are shared with up to 50 agents. OffMarket emails go directly from you to the homeowner. No competition, no bidding, no sharing. And at $99/mo vs $1,200+/mo, the math speaks for itself.',
+    a: 'Zillow leads are shared with up to 50 agents. OffMarket emails go directly from you to the homeowner. No competition, no bidding, no sharing. And at $299/mo vs $1,200+/mo, the math speaks for itself.',
   },
   {
     q: 'Do I need any other tools?',
