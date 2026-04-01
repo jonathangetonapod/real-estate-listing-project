@@ -35,6 +35,7 @@ import {
   Info,
   Inbox,
   ChevronDown,
+  ChevronUp,
 
   XCircle,
   Pencil,
@@ -47,6 +48,19 @@ import {
   Shield,
   Loader2,
   ArrowLeftRight,
+  Gavel,
+  Landmark,
+  Scale,
+  TrendingDown,
+  UserX,
+  Key,
+  Hammer,
+  Timer,
+  Zap,
+  HeartCrack,
+  House,
+  Warehouse,
+  TreePine,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -123,13 +137,52 @@ const tabMap = {
   settings: 'settings',
 };
 
-const leadTypes = [
-  { id: 'expired', label: 'Expired Listings', desc: 'Homes that didn\'t sell. Owners ready for a new approach.' },
-  { id: 'fsbo', label: 'FSBOs', desc: 'For-sale-by-owner listings struggling without professional help.' },
-  { id: 'preforeclosure', label: 'Pre-Foreclosure', desc: 'Homeowners facing financial pressure who need to sell fast.' },
-  { id: 'absentee', label: 'Absentee Owners', desc: 'Landlords and investors who may be ready to offload.' },
-  { id: 'highequity', label: 'High Equity', desc: 'Long-time owners sitting on significant equity.' },
-  { id: 'probate', label: 'Probate / Estate', desc: 'Inherited properties where heirs want a quick sale.' },
+// PropStream Lead Lists — exact match
+const leadLists = [
+  { id: 'auctions', label: 'Auctions', desc: 'Trustee or sheriff sale filed.', icon: Gavel },
+  { id: 'bank-owned', label: 'Bank Owned', desc: 'Lender repossessed after failed auction.', icon: Landmark },
+  { id: 'bankruptcy', label: 'Bankruptcy', desc: 'Active Chapter 7 or Chapter 13 filing.', icon: Scale },
+  { id: 'cash-buyers', label: 'Cash Buyers', desc: 'All-cash purchase, non-owner occupied.', icon: DollarSign },
+  { id: 'divorce', label: 'Divorce', desc: 'Owner flagged with a divorce filing.', icon: HeartCrack },
+  { id: 'failed-listings', label: 'Failed Listings', desc: 'Expired, canceled, or withdrawn from MLS.', icon: XCircle },
+  { id: 'flippers', label: 'Flippers', desc: 'For sale on MLS, purchased within 24 months.', icon: RefreshCw },
+  { id: 'free-clear', label: 'Free & Clear', desc: 'No open mortgages on the property.', icon: Shield },
+  { id: 'high-equity', label: 'High Equity', desc: '50%+ equity or $100K+ in equity.', icon: TrendingDown },
+  { id: 'liens', label: 'Liens', desc: 'Tax, HOA, mechanics, or utility liens.', icon: Hammer },
+  { id: 'on-market', label: 'On Market', desc: 'Active, pending, or contingent on MLS.', icon: Globe },
+  { id: 'pre-foreclosures', label: 'Pre-Foreclosures', desc: 'Missed payments, lender filed default notice.', icon: AlertCircle },
+  { id: 'pre-probate', label: 'Pre-Probate', desc: 'Owner on title identified as deceased.', icon: Key },
+  { id: 'senior-owners', label: 'Senior Owners', desc: '25+ years ownership or senior tax exemption.', icon: Users },
+  { id: 'tax-delinquency', label: 'Tax Delinquency', desc: 'Flagged by county for unpaid property taxes.', icon: AlertCircle },
+  { id: 'tired-landlords', label: 'Tired Landlords', desc: 'Non-owner-occupied rentals, 15+ years owned.', icon: Timer },
+  { id: 'upside-down', label: 'Upside Down', desc: 'Mortgage balance exceeds market value.', icon: TrendingDown },
+  { id: 'vacant', label: 'Vacant', desc: 'Flagged vacant by USPS.', icon: House },
+  { id: 'vacant-land', label: 'Vacant Land', desc: 'Parcels with no physical structures.', icon: TreePine },
+];
+
+// Property classifications (PropStream top-level)
+const propertyClassifications = [
+  { id: 'all', label: 'All' },
+  { id: 'residential', label: 'Residential' },
+  { id: 'commercial', label: 'Commercial' },
+  { id: 'vacant-land', label: 'Vacant Land' },
+  { id: 'other', label: 'Other' },
+];
+
+// MLS status options (PropStream)
+const mlsStatuses = [
+  { id: 'active', label: 'Active' },
+  { id: 'active-under-contract', label: 'Active Under Contract' },
+  { id: 'canceled', label: 'Canceled' },
+  { id: 'coming-soon', label: 'Coming Soon' },
+  { id: 'contingent', label: 'Contingent' },
+  { id: 'deleted', label: 'Deleted' },
+  { id: 'expired', label: 'Expired' },
+  { id: 'failed', label: 'Failed' },
+  { id: 'pending', label: 'Pending' },
+  { id: 'removed', label: 'Removed' },
+  { id: 'sold', label: 'Sold' },
+  { id: 'withdrawn', label: 'Withdrawn' },
 ];
 
 const activityFeed = [
@@ -266,50 +319,227 @@ function HelpCard({ value, label, tip }) {
   );
 }
 
+// Collapsible filter section — consistent 16px padding, 4pt spacing scale
+function FilterSection({ title, subtitle, isOpen, onToggle, activeCount, children }) {
+  return (
+    <div className="border-b border-gray-100 last:border-b-0">
+      <button
+        onClick={onToggle}
+        className={cn(
+          'flex w-full items-center gap-3 px-4 py-4 text-left transition-colors duration-150',
+          isOpen ? 'bg-light-bg' : 'hover:bg-light-bg/50'
+        )}
+      >
+        <ChevronRight className={cn(
+          'h-4 w-4 shrink-0 transition-transform duration-150',
+          isOpen ? 'rotate-90 text-orange' : 'text-gray-400'
+        )} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-sans text-sm font-semibold text-charcoal">{title}</span>
+            {activeCount > 0 && (
+              <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-orange px-1.5 text-xs font-bold text-white">
+                {activeCount}
+              </span>
+            )}
+          </div>
+          {subtitle && <p className="font-sans text-xs text-gray-400 leading-tight mt-1">{subtitle}</p>}
+        </div>
+      </button>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 pt-2">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// Min/Max range — locked to 8px gap, consistent input height
+function RangeInput({ label, minVal, maxVal, onMinChange, onMaxChange }) {
+  return (
+    <div>
+      <label className="font-sans text-xs font-medium text-gray-500 mb-2 block">{label}</label>
+      <div className="flex items-center gap-2">
+        <Input
+          type="text"
+          placeholder="Min"
+          value={minVal}
+          onChange={(e) => onMinChange(e.target.value.replace(/\D/g, ''))}
+          className="rounded-xl font-mono text-xs h-9"
+        />
+        <span className="text-gray-300 text-xs shrink-0">to</span>
+        <Input
+          type="text"
+          placeholder="Max"
+          value={maxVal}
+          onChange={(e) => onMaxChange(e.target.value.replace(/\D/g, ''))}
+          className="rounded-xl font-mono text-xs h-9"
+        />
+      </div>
+    </div>
+  );
+}
+
+// Three-way toggle — proper touch targets (min 32px height)
+function ThreeWayToggle({ label, value, onChange }) {
+  return (
+    <div className="flex items-center justify-between py-2">
+      <span className="font-sans text-xs font-medium text-charcoal">{label}</span>
+      <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+        {['any', 'include', 'exclude'].map(opt => (
+          <button
+            key={opt}
+            onClick={() => onChange(opt)}
+            className={cn(
+              'px-3 py-1.5 text-xs font-medium transition-colors duration-150 capitalize',
+              value === opt
+                ? opt === 'include' ? 'bg-orange text-white' : opt === 'exclude' ? 'bg-charcoal text-white' : 'bg-gray-100 text-charcoal'
+                : 'text-gray-400 hover:text-charcoal hover:bg-gray-50'
+            )}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function FarmAreaTab() {
   const { user } = useAuth();
-  // 'form' | 'pending' | 'delivered'
   const [farmState, setFarmState] = useState('delivered');
   const [zipCodes, setZipCodes] = useState(['92506', '92507']);
   const [newZip, setNewZip] = useState('');
-  const [selectedTypes, setSelectedTypes] = useState(['expired', 'fsbo', 'preforeclosure']);
-  const [priceMin, setPriceMin] = useState('200000');
-  const [priceMax, setPriceMax] = useState('800000');
-  const [orderNotes, setOrderNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [filterSearch, setFilterSearch] = useState('');
 
-  // DB orders state
+  // Which filter section is open
+  const [openSection, setOpenSection] = useState('leadLists');
+
+  // --- Filter state ---
+  // Lead Lists
+  const [selectedLeadLists, setSelectedLeadLists] = useState([]);
+  // Property Details
+  const [propertyClassification, setPropertyClassification] = useState('all');
+  const [beds, setBeds] = useState({ min: '', max: '' });
+  const [baths, setBaths] = useState({ min: '', max: '' });
+  const [sqft, setSqft] = useState({ min: '', max: '' });
+  const [lotSize, setLotSize] = useState({ min: '', max: '' });
+  const [yearBuilt, setYearBuilt] = useState({ min: '', max: '' });
+  const [schoolDistrict, setSchoolDistrict] = useState('');
+  const [units, setUnits] = useState({ min: '', max: '' });
+  const [stories, setStories] = useState({ min: '', max: '' });
+  const [hoa, setHoa] = useState('any');
+  const [pool, setPool] = useState('any');
+  const [garage, setGarage] = useState('any');
+  const [basement, setBasement] = useState('any');
+  const [attic, setAttic] = useState('any');
+  // MLS
+  const [mlsMarketStatus, setMlsMarketStatus] = useState('all');
+  const [mlsListingType, setMlsListingType] = useState('any');
+  const [selectedMlsStatuses, setSelectedMlsStatuses] = useState([]);
+  const [mlsStatusDateFrom, setMlsStatusDateFrom] = useState('');
+  const [mlsStatusDateTo, setMlsStatusDateTo] = useState('');
+  const [daysOnMarket, setDaysOnMarket] = useState({ min: '', max: '' });
+  const [listingAmount, setListingAmount] = useState({ min: '', max: '' });
+  const [listedBelowMarket, setListedBelowMarket] = useState('any');
+  const [mlsKeywords, setMlsKeywords] = useState('');
+  // Pre-Foreclosure & Bank Owned
+  const [preForeclosure, setPreForeclosure] = useState('any');
+  const [recordingDateFrom, setRecordingDateFrom] = useState('');
+  const [recordingDateTo, setRecordingDateTo] = useState('');
+  const [auctionDateFrom, setAuctionDateFrom] = useState('');
+  const [auctionDateTo, setAuctionDateTo] = useState('');
+  const [releaseDateFrom, setReleaseDateFrom] = useState('');
+  const [releaseDateTo, setReleaseDateTo] = useState('');
+  const [openingBid, setOpeningBid] = useState({ min: '', max: '' });
+  const [defaultAmount, setDefaultAmount] = useState({ min: '', max: '' });
+  // Owner Info & Occupancy
+  const [ownerOccupied, setOwnerOccupied] = useState('any');
+  const [vacant, setVacant] = useState('any');
+  const [yearsOwned, setYearsOwned] = useState({ min: '', max: '' });
+  const [selectedOwnerTypes, setSelectedOwnerTypes] = useState([]);
+  const [selectedAbsenteeLocations, setSelectedAbsenteeLocations] = useState([]);
+  const [lastSalePrice, setLastSalePrice] = useState({ min: '', max: '' });
+  const [propertiesOwned, setPropertiesOwned] = useState({ min: '', max: '' });
+  const [lastSaleDateFrom, setLastSaleDateFrom] = useState('');
+  const [lastSaleDateTo, setLastSaleDateTo] = useState('');
+  const [unknownSaleDates, setUnknownSaleDates] = useState('any');
+  const [preProbate, setPreProbate] = useState('any');
+  const [intraFamilyTransfer, setIntraFamilyTransfer] = useState('any');
+  const [selectedTaxExemptions, setSelectedTaxExemptions] = useState([]);
+  // Lien, Bankruptcy, & Divorce
+  const [lienTypes, setLienTypes] = useState([]);
+  const [bankruptcyStatus, setBankruptcyStatus] = useState('any');
+  const [divorceFlag, setDivorceFlag] = useState('any');
+  // Value & Equity
+  const [estimatedValue, setEstimatedValue] = useState({ min: '', max: '' });
+  const [assessedLandValue, setAssessedLandValue] = useState({ min: '', max: '' });
+  const [growthPercent, setGrowthPercent] = useState({ min: '', max: '' });
+  const [wholesalePrice, setWholesalePrice] = useState({ min: '', max: '' });
+  const [rentalIncome, setRentalIncome] = useState({ min: '', max: '' });
+  const [grossYield, setGrossYield] = useState({ min: '', max: '' });
+  const [equityAmount, setEquityAmount] = useState({ min: '', max: '' });
+  const [equityPercent, setEquityPercent] = useState({ min: '', max: '' });
+  const [ltv, setLtv] = useState({ min: '', max: '' });
+  const [assessedTotalValue, setAssessedTotalValue] = useState({ min: '', max: '' });
+  const [assessedImprovementValue, setAssessedImprovementValue] = useState({ min: '', max: '' });
+  const [improvementToTaxPercent, setImprovementToTaxPercent] = useState({ min: '', max: '' });
+  const [unknownEquity, setUnknownEquity] = useState('any');
+  // Mortgage
+  const [openMortgages, setOpenMortgages] = useState({ min: '', max: '' });
+  const [mortgageBalance, setMortgageBalance] = useState({ min: '', max: '' });
+  const [mortgageDateFrom, setMortgageDateFrom] = useState('');
+  const [mortgageDateTo, setMortgageDateTo] = useState('');
+  const [selectedLoanTypes, setSelectedLoanTypes] = useState([]);
+  const [monthlyPayments, setMonthlyPayments] = useState({ min: '', max: '' });
+  const [interestRate, setInterestRate] = useState({ min: '', max: '' });
+  const [selectedRateTypes, setSelectedRateTypes] = useState([]);
+  const [firstLoanLtvPercent, setFirstLoanLtvPercent] = useState({ min: '', max: '' });
+  const [firstLoanLtvEquity, setFirstLoanLtvEquity] = useState({ min: '', max: '' });
+  const [cashBuyer, setCashBuyer] = useState('any');
+  const [freeClear, setFreeClear] = useState('any');
+  const [sellerCarryBack, setSellerCarryBack] = useState('any');
+
+  // DB orders
   const [dbOrders, setDbOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
 
-  // Mock fallback orders
   const mockOrders = [
     { date: 'Mar 28, 2026', zips: '92506, 92507', count: 248, sent: 186, opened: 142, replied: 14, appointments: 3, replyRate: '7.5%', status: 'active' },
     { date: 'Feb 28, 2026', zips: '92506, 92507', count: 250, sent: 250, opened: 198, replied: 18, appointments: 4, replyRate: '7.2%', status: 'done' },
     { date: 'Jan 28, 2026', zips: '92506', count: 243, sent: 243, opened: 171, replied: 12, appointments: 2, replyRate: '4.9%', status: 'done' },
   ];
 
-  // Fetch agent orders from DB (silently — mock data shows while loading)
   useEffect(() => {
     if (!user?.id) return;
     let cancelled = false;
     (async () => {
       try {
         const { data, error } = await getAgentOrders(user.id);
-        if (!cancelled) {
-          if (!error && data && data.length > 0) {
-            setDbOrders(data.map(o => ({
-              id: o.id,
-              date: new Date(o.requested_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-              zips: (o.zip_codes || []).join(', '),
-              count: o.quantity_requested || 250,
-              sent: 0, opened: 0, replied: 0, appointments: 0,
-              replyRate: '0%',
-              status: o.status === 'completed' ? 'done' : 'active',
-              dbStatus: o.status,
-            })));
-          }
+        if (!cancelled && !error && data && data.length > 0) {
+          setDbOrders(data.map(o => ({
+            id: o.id,
+            date: new Date(o.requested_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            zips: (o.zip_codes || []).join(', '),
+            count: o.quantity_requested || 250,
+            sent: 0, opened: 0, replied: 0, appointments: 0,
+            replyRate: '0%',
+            status: o.status === 'completed' ? 'done' : 'active',
+            dbStatus: o.status,
+          })));
         }
       } catch (err) {
         console.error('Failed to fetch orders:', err);
@@ -321,23 +551,130 @@ function FarmAreaTab() {
 
   const displayOrders = dbOrders.length > 0 ? dbOrders : mockOrders;
 
+  // Count active filters per section
+  const filterCounts = {
+    leadLists: selectedLeadLists.length,
+    propertyDetails: (propertyClassification !== 'all' ? 1 : 0) + (beds.min || beds.max ? 1 : 0) + (baths.min || baths.max ? 1 : 0) + (sqft.min || sqft.max ? 1 : 0) + (lotSize.min || lotSize.max ? 1 : 0) + (yearBuilt.min || yearBuilt.max ? 1 : 0) + (schoolDistrict ? 1 : 0) + (units.min || units.max ? 1 : 0) + (stories.min || stories.max ? 1 : 0) + (hoa !== 'any' ? 1 : 0) + (pool !== 'any' ? 1 : 0) + (garage !== 'any' ? 1 : 0) + (basement !== 'any' ? 1 : 0) + (attic !== 'any' ? 1 : 0),
+    mls: (mlsMarketStatus !== 'all' ? 1 : 0) + (mlsListingType !== 'any' ? 1 : 0) + selectedMlsStatuses.length + (mlsStatusDateFrom || mlsStatusDateTo ? 1 : 0) + (daysOnMarket.min || daysOnMarket.max ? 1 : 0) + (listingAmount.min || listingAmount.max ? 1 : 0) + (listedBelowMarket !== 'any' ? 1 : 0) + (mlsKeywords ? 1 : 0),
+    preForeclosure: (preForeclosure !== 'any' ? 1 : 0) + (recordingDateFrom || recordingDateTo ? 1 : 0) + (auctionDateFrom || auctionDateTo ? 1 : 0) + (releaseDateFrom || releaseDateTo ? 1 : 0) + (openingBid.min || openingBid.max ? 1 : 0) + (defaultAmount.min || defaultAmount.max ? 1 : 0),
+    ownerInfo: (ownerOccupied !== 'any' ? 1 : 0) + (vacant !== 'any' ? 1 : 0) + (yearsOwned.min || yearsOwned.max ? 1 : 0) + selectedOwnerTypes.length + selectedAbsenteeLocations.length + (lastSalePrice.min || lastSalePrice.max ? 1 : 0) + (propertiesOwned.min || propertiesOwned.max ? 1 : 0) + (lastSaleDateFrom || lastSaleDateTo ? 1 : 0) + (unknownSaleDates !== 'any' ? 1 : 0) + (preProbate !== 'any' ? 1 : 0) + (intraFamilyTransfer !== 'any' ? 1 : 0) + selectedTaxExemptions.length,
+    lienBankruptcy: lienTypes.length + (bankruptcyStatus !== 'any' ? 1 : 0) + (divorceFlag !== 'any' ? 1 : 0),
+    valueEquity: (estimatedValue.min || estimatedValue.max ? 1 : 0) + (assessedLandValue.min || assessedLandValue.max ? 1 : 0) + (growthPercent.min || growthPercent.max ? 1 : 0) + (wholesalePrice.min || wholesalePrice.max ? 1 : 0) + (rentalIncome.min || rentalIncome.max ? 1 : 0) + (grossYield.min || grossYield.max ? 1 : 0) + (equityAmount.min || equityAmount.max ? 1 : 0) + (equityPercent.min || equityPercent.max ? 1 : 0) + (ltv.min || ltv.max ? 1 : 0) + (assessedTotalValue.min || assessedTotalValue.max ? 1 : 0) + (assessedImprovementValue.min || assessedImprovementValue.max ? 1 : 0) + (improvementToTaxPercent.min || improvementToTaxPercent.max ? 1 : 0) + (unknownEquity !== 'any' ? 1 : 0),
+    mortgage: (openMortgages.min || openMortgages.max ? 1 : 0) + (mortgageBalance.min || mortgageBalance.max ? 1 : 0) + (mortgageDateFrom || mortgageDateTo ? 1 : 0) + selectedLoanTypes.length + (monthlyPayments.min || monthlyPayments.max ? 1 : 0) + (interestRate.min || interestRate.max ? 1 : 0) + selectedRateTypes.length + (firstLoanLtvPercent.min || firstLoanLtvPercent.max ? 1 : 0) + (firstLoanLtvEquity.min || firstLoanLtvEquity.max ? 1 : 0) + (cashBuyer !== 'any' ? 1 : 0) + (freeClear !== 'any' ? 1 : 0) + (sellerCarryBack !== 'any' ? 1 : 0),
+  };
+  const totalFilters = Object.values(filterCounts).reduce((a, b) => a + b, 0);
+
+  const toggleList = (list, setList, id) => {
+    setList(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]);
+  };
+
+  const clearAllFilters = () => {
+    setSelectedLeadLists([]);
+    setPropertyClassification('all');
+    setBeds({ min: '', max: '' });
+    setBaths({ min: '', max: '' });
+    setSqft({ min: '', max: '' });
+    setLotSize({ min: '', max: '' });
+    setYearBuilt({ min: '', max: '' });
+    setSchoolDistrict('');
+    setUnits({ min: '', max: '' });
+    setStories({ min: '', max: '' });
+    setHoa('any');
+    setPool('any');
+    setGarage('any');
+    setBasement('any');
+    setAttic('any');
+    setMlsMarketStatus('all');
+    setMlsListingType('any');
+    setSelectedMlsStatuses([]);
+    setMlsStatusDateFrom('');
+    setMlsStatusDateTo('');
+    setDaysOnMarket({ min: '', max: '' });
+    setListingAmount({ min: '', max: '' });
+    setListedBelowMarket('any');
+    setMlsKeywords('');
+    setPreForeclosure('any');
+    setRecordingDateFrom('');
+    setRecordingDateTo('');
+    setAuctionDateFrom('');
+    setAuctionDateTo('');
+    setReleaseDateFrom('');
+    setReleaseDateTo('');
+    setOpeningBid({ min: '', max: '' });
+    setDefaultAmount({ min: '', max: '' });
+    setOwnerOccupied('any');
+    setVacant('any');
+    setYearsOwned({ min: '', max: '' });
+    setSelectedOwnerTypes([]);
+    setSelectedAbsenteeLocations([]);
+    setLastSalePrice({ min: '', max: '' });
+    setPropertiesOwned({ min: '', max: '' });
+    setLastSaleDateFrom('');
+    setLastSaleDateTo('');
+    setUnknownSaleDates('any');
+    setPreProbate('any');
+    setIntraFamilyTransfer('any');
+    setSelectedTaxExemptions([]);
+    setLienTypes([]);
+    setBankruptcyStatus('any');
+    setDivorceFlag('any');
+    setEstimatedValue({ min: '', max: '' });
+    setAssessedLandValue({ min: '', max: '' });
+    setGrowthPercent({ min: '', max: '' });
+    setWholesalePrice({ min: '', max: '' });
+    setRentalIncome({ min: '', max: '' });
+    setGrossYield({ min: '', max: '' });
+    setEquityAmount({ min: '', max: '' });
+    setEquityPercent({ min: '', max: '' });
+    setLtv({ min: '', max: '' });
+    setAssessedTotalValue({ min: '', max: '' });
+    setAssessedImprovementValue({ min: '', max: '' });
+    setImprovementToTaxPercent({ min: '', max: '' });
+    setUnknownEquity('any');
+    setOpenMortgages({ min: '', max: '' });
+    setMortgageBalance({ min: '', max: '' });
+    setMortgageDateFrom('');
+    setMortgageDateTo('');
+    setSelectedLoanTypes([]);
+    setMonthlyPayments({ min: '', max: '' });
+    setInterestRate({ min: '', max: '' });
+    setSelectedRateTypes([]);
+    setFirstLoanLtvPercent({ min: '', max: '' });
+    setFirstLoanLtvEquity({ min: '', max: '' });
+    setCashBuyer('any');
+    setFreeClear('any');
+    setSellerCarryBack('any');
+  };
+
+  const buildFiltersPayload = () => ({
+    leadLists: selectedLeadLists,
+    propertyClassification,
+    beds, baths, sqft, lotSize, yearBuilt, schoolDistrict, units, stories, hoa, pool, garage, basement, attic,
+    mlsMarketStatus, mlsListingType, mlsStatuses: selectedMlsStatuses, mlsStatusDateFrom, mlsStatusDateTo, daysOnMarket, listingAmount, listedBelowMarket, mlsKeywords,
+    preForeclosure, recordingDateFrom, recordingDateTo, auctionDateFrom, auctionDateTo, releaseDateFrom, releaseDateTo, openingBid, defaultAmount,
+    ownerOccupied, vacant, yearsOwned, ownerTypes: selectedOwnerTypes, absenteeLocations: selectedAbsenteeLocations, lastSalePrice, propertiesOwned, lastSaleDateFrom, lastSaleDateTo, unknownSaleDates, preProbate, intraFamilyTransfer, taxExemptions: selectedTaxExemptions,
+    lienTypes, bankruptcyStatus, divorceFlag,
+    estimatedValue, assessedLandValue, growthPercent, wholesalePrice, rentalIncome, grossYield, equityAmount, equityPercent, ltv, assessedTotalValue, assessedImprovementValue, improvementToTaxPercent, unknownEquity,
+    openMortgages, mortgageBalance, mortgageDateFrom, mortgageDateTo, loanTypes: selectedLoanTypes, monthlyPayments, interestRate, rateTypes: selectedRateTypes, firstLoanLtvPercent, firstLoanLtvEquity, cashBuyer, freeClear, sellerCarryBack,
+  });
+
   const handlePlaceOrder = async () => {
     if (!user?.id) return;
     setSubmitting(true);
     setSubmitError(null);
+    const filters = buildFiltersPayload();
     const { error } = await createLeadOrder({
       agentId: user.id,
       zipCodes,
-      leadTypes: selectedTypes,
-      priceMin: Number(priceMin),
-      priceMax: Number(priceMax),
-      notes: orderNotes,
+      leadTypes: selectedLeadLists,
+      priceMin: Number(estimatedValue.min) || null,
+      priceMax: Number(estimatedValue.max) || null,
+      notes: JSON.stringify(filters),
     });
     setSubmitting(false);
     if (error) {
       setSubmitError(error.message || 'Failed to place order. Please try again.');
     } else {
-      // Refresh orders list
       const { data } = await getAgentOrders(user.id);
       if (data && data.length > 0) {
         setDbOrders(data.map(o => ({
@@ -361,16 +698,9 @@ function FarmAreaTab() {
       setNewZip('');
     }
   };
-
   const removeZip = (zip) => setZipCodes(zipCodes.filter(z => z !== zip));
 
-  const toggleType = (id) => {
-    setSelectedTypes(prev =>
-      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
-    );
-  };
-
-  // State: Delivered — leads are in the system
+  // Delivered state — past orders + CTA
   if (farmState === 'delivered') {
     return (
       <div className="max-w-3xl mx-auto">
@@ -379,7 +709,6 @@ function FarmAreaTab() {
           <p className="font-sans text-sm text-gray-500">Get fresh sellers delivered to your dashboard.</p>
         </div>
 
-        {/* New Order CTA — the exciting part, FIRST */}
         <div className="mb-8">
           <Card className="rounded-xl overflow-visible border-2 border-orange/20">
             <CardContent className="p-0 overflow-visible">
@@ -395,10 +724,8 @@ function FarmAreaTab() {
                       Ready for your next 250 sellers?
                     </h3>
                     <p className="font-sans text-sm text-gray-500 mb-4 max-w-md">
-                      Your last batch had a 7.5% reply rate. That&apos;s 3x the industry average. Request fresh leads to keep your pipeline full.
+                      Your last batch had a 7.5% reply rate. That&apos;s 3x the industry average.
                     </p>
-
-                    {/* Last batch stats */}
                     <div className="flex gap-6 mb-4">
                       <div>
                         <div className="font-mono text-2xl font-bold text-charcoal">248</div>
@@ -414,7 +741,6 @@ function FarmAreaTab() {
                       </div>
                     </div>
                   </div>
-
                   <div className="flex flex-col items-center md:items-end gap-3">
                     <Button
                       onClick={() => setFarmState('form')}
@@ -426,16 +752,14 @@ function FarmAreaTab() {
                     <p className="font-sans text-xs text-gray-400">250 leads included in your plan</p>
                   </div>
                 </div>
-
-                {/* What you'll get preview */}
                 <div className="mt-6 pt-6 border-t border-orange/10 overflow-visible">
                   <p className="font-sans text-xs text-gray-400 uppercase tracking-wide mb-3">What you&apos;ll get</p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 overflow-visible">
                     {[
-                      { label: 'Verified seller leads', value: '250', tip: 'Expireds, FSBOs, pre-foreclosures, absentee owners, high equity, and probate leads in your zip codes. Every contact is verified against public records.' },
-                      { label: 'Email pitches written', value: '250', tip: 'Our AI writes a unique email for every seller based on their property address, asking price, nearby comps, and how long they\'ve been on market. No templates.' },
-                      { label: 'Skip-traced emails', value: 'Included', tip: 'We find the homeowner\'s real email address using skip-tracing databases. No extra charge — it\'s included with every lead.' },
-                      { label: 'Delivered in', value: '12 hours', tip: 'After you place your order, our team pulls your leads, verifies the data, and generates all email pitches. Everything lands in your dashboard within 12 hours.' },
+                      { label: 'Verified seller leads', value: '250', tip: 'Expireds, FSBOs, pre-foreclosures, absentee owners, high equity, and probate leads in your zip codes.' },
+                      { label: 'Email pitches written', value: '250', tip: 'AI writes a unique email for every seller based on their property data.' },
+                      { label: 'Skip-traced emails', value: 'Included', tip: 'We find the homeowner\'s real email using skip-tracing databases.' },
+                      { label: 'Delivered in', value: '12 hours', tip: 'Everything lands in your dashboard within 12 hours.' },
                     ].map((item, i) => (
                       <HelpCard key={i} value={item.value} label={item.label} tip={item.tip} />
                     ))}
@@ -446,37 +770,25 @@ function FarmAreaTab() {
           </Card>
         </div>
 
-        {/* Past Orders — enriched report cards */}
         <h3 className="font-sans text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Past Orders</h3>
-        {(
         <div className="space-y-4">
           {displayOrders.map((order, i) => (
             <Card key={i} className="rounded-xl">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className={cn(
-                      'w-9 h-9 rounded-lg flex items-center justify-center',
-                      order.status === 'active' ? 'bg-orange/10' : 'bg-gray-100'
-                    )}>
+                    <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center', order.status === 'active' ? 'bg-orange/10' : 'bg-gray-100')}>
                       <CheckCircle2 className={cn('w-4.5 h-4.5', order.status === 'active' ? 'text-orange' : 'text-gray-400')} />
                     </div>
                     <div>
-                      <div className="font-sans text-sm font-semibold text-charcoal">{order.count} {order.count === 1 ? 'lead' : 'leads'} delivered</div>
+                      <div className="font-sans text-sm font-semibold text-charcoal">{order.count} leads delivered</div>
                       <div className="font-sans text-xs text-gray-400">{order.date} · Zip: {order.zips}</div>
                     </div>
                   </div>
-                  <Badge className={cn(
-                    'rounded-full text-xs',
-                    order.status === 'active'
-                      ? 'bg-orange/10 text-orange border-orange/20'
-                      : 'bg-gray-100 text-gray-500 border-transparent'
-                  )}>
+                  <Badge className={cn('rounded-full text-xs', order.status === 'active' ? 'bg-orange/10 text-orange border-orange/20' : 'bg-gray-100 text-gray-500 border-transparent')}>
                     {order.status === 'active' ? 'In Progress' : 'Completed'}
                   </Badge>
                 </div>
-
-                {/* Mini funnel stats */}
                 <div className="grid grid-cols-5 gap-2">
                   {[
                     { label: 'Sent', value: order.sent, color: 'text-charcoal' },
@@ -495,20 +807,15 @@ function FarmAreaTab() {
             </Card>
           ))}
         </div>
-        )}
         <div className="h-12" />
       </div>
     );
   }
 
-  // State: Pending — request submitted, waiting for admin
+  // Pending state
   if (farmState === 'pending') {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="max-w-2xl mx-auto text-center py-20"
-      >
+      <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl mx-auto text-center py-20">
         <div className="w-16 h-16 rounded-full bg-orange/10 flex items-center justify-center mx-auto mb-6">
           <Clock className="w-8 h-8 text-orange" />
         </div>
@@ -527,218 +834,777 @@ function FarmAreaTab() {
           </div>
         </div>
         <div className="flex items-center justify-center gap-3 mt-8">
-          <Button
-            variant="outline"
-            className="rounded-lg"
-            onClick={() => setFarmState('delivered')}
-          >
-            <ArrowRight className="w-3 h-3 mr-2 rotate-180" />
-            Back to Orders
+          <Button variant="outline" className="rounded-lg" onClick={() => setFarmState('delivered')}>
+            <ArrowRight className="w-3 h-3 mr-2 rotate-180" /> Back to Orders
           </Button>
-          <Button
-            className="rounded-lg bg-orange hover:bg-orange/90 text-white"
-            onClick={() => setFarmState('delivered')}
-          >
-            View Your Leads
-            <ArrowRight className="w-3 h-3 ml-2" />
+          <Button className="rounded-lg bg-orange hover:bg-orange/90 text-white" onClick={() => setFarmState('delivered')}>
+            View Your Leads <ArrowRight className="w-3 h-3 ml-2" />
           </Button>
         </div>
       </motion.div>
     );
   }
 
-  return (
-    <div className="max-w-3xl mx-auto">
-      <div className="mb-8">
-        <button onClick={() => setFarmState('delivered')} className="font-sans text-sm text-gray-400 hover:text-charcoal transition-colors mb-4 flex items-center gap-1">
-          <ArrowRight className="w-3 h-3 rotate-180" /> Back to Orders
+  // Reusable pill toggle for filter sections
+  const PillGroup = ({ items, selected, onToggle, isMulti = true }) => (
+    <div className="flex flex-wrap gap-2">
+      {items.map(item => {
+        const id = typeof item === 'string' ? item : item.id;
+        const label = typeof item === 'string' ? (item === 'any' ? 'Any' : item.charAt(0).toUpperCase() + item.slice(1)) : item.label;
+        const isActive = isMulti ? selected.includes(id) : selected === id;
+        return (
+          <button key={id} onClick={() => onToggle(id)} className={cn(
+            'rounded-xl px-3 py-1.5 text-xs font-medium border transition-colors duration-150',
+            isActive ? 'border-orange bg-orange/5 text-orange' : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:text-charcoal'
+          )}>{label}</button>
+        );
+      })}
+    </div>
+  );
+
+  // Reusable checkbox row for filter sections
+  const CheckboxRow = ({ items, selected, onToggle }) => (
+    <div className="space-y-2">
+      {items.map(item => (
+        <button
+          key={item.id}
+          onClick={() => onToggle(item.id)}
+          className={cn(
+            'flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors duration-150 text-xs',
+            selected.includes(item.id) ? 'border-orange bg-orange/5' : 'border-gray-200 hover:border-gray-300'
+          )}
+        >
+          <div className={cn(
+            'w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors duration-150',
+            selected.includes(item.id) ? 'border-orange bg-orange' : 'border-gray-300'
+          )}>
+            {selected.includes(item.id) && <Check className="w-2.5 h-2.5 text-white" />}
+          </div>
+          <span className="font-sans font-medium text-charcoal">{item.label}</span>
         </button>
-        <h2 className="font-heading text-2xl font-bold text-charcoal mb-2">Order New Leads</h2>
-        <p className="font-sans text-base text-gray-500">
-          Tell us your market. 250 verified sellers with email pitches, delivered in 12 hours.
-        </p>
+      ))}
+    </div>
+  );
+
+  // Form state — PropStream-style filter layout
+  return (
+    <div className="max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <button onClick={() => setFarmState('delivered')} className="font-sans text-sm text-gray-400 hover:text-charcoal transition-colors duration-150 mb-4 flex items-center gap-1.5">
+          <ArrowRight className="w-3.5 h-3.5 rotate-180" /> Back to Orders
+        </button>
+        <h2 className="font-heading text-2xl font-bold text-charcoal mb-1">Order New Leads</h2>
+        <p className="font-sans text-sm text-gray-500">Set your filters to find the most motivated sellers.</p>
       </div>
 
-      {/* Step 1: Zip Codes */}
-      <Card className="rounded-xl mb-6">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center">
-              <span className="font-mono text-sm font-bold text-orange">1</span>
+      {/* Search bar — zip codes + clear/save */}
+      <div className="flex items-center gap-3 mb-8 rounded-xl border border-gray-200 bg-white px-4 py-3">
+        <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+        <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
+          {zipCodes.map(zip => (
+            <div key={zip} className="inline-flex items-center gap-1.5 rounded-xl bg-charcoal text-white px-3 py-1.5 text-xs font-mono">
+              {zip}
+              <button onClick={() => removeZip(zip)} className="text-white/50 hover:text-white transition-colors duration-150"><X className="w-3 h-3" /></button>
             </div>
-            <div>
-              <h3 className="font-sans text-base font-semibold text-charcoal">Your Zip Codes</h3>
-              <p className="font-sans text-sm text-gray-400">Up to 3 zip codes per farm area</p>
-            </div>
-          </div>
-
-          <div className="flex gap-3 mb-4">
-            <Input
-              type="text"
-              placeholder="Enter zip code"
-              value={newZip}
-              onChange={(e) => setNewZip(e.target.value.replace(/\D/g, '').slice(0, 5))}
-              onKeyDown={(e) => e.key === 'Enter' && addZip()}
-              className="max-w-[200px] rounded-lg"
-              maxLength={5}
-            />
-            <Button
-              variant="outline"
-              onClick={addZip}
-              disabled={newZip.length !== 5 || zipCodes.length >= 3}
-              className="rounded-lg"
-            >
-              <Plus className="w-4 h-4 mr-1" /> Add
-            </Button>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {zipCodes.map(zip => (
-              <div key={zip} className="inline-flex items-center gap-2 rounded-full bg-charcoal text-white px-4 py-1.5 text-sm font-mono">
-                {zip}
-                <button onClick={() => removeZip(zip)} className="text-white/50 hover:text-white transition-colors">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
-            {zipCodes.length === 0 && (
-              <p className="font-sans text-sm text-gray-400">No zip codes added yet.</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Step 2: Lead Types */}
-      <Card className="rounded-xl mb-6">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center">
-              <span className="font-mono text-sm font-bold text-orange">2</span>
-            </div>
-            <div>
-              <h3 className="font-sans text-base font-semibold text-charcoal">Lead Types</h3>
-              <p className="font-sans text-sm text-gray-400">Select which seller types to include</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {leadTypes.map(type => (
-              <button
-                key={type.id}
-                onClick={() => toggleType(type.id)}
-                className={cn(
-                  'flex items-start gap-3 rounded-xl border p-4 text-left transition-all duration-200',
-                  selectedTypes.includes(type.id)
-                    ? 'border-orange bg-orange/[0.03]'
-                    : 'border-gray-200 hover:border-gray-300'
-                )}
-              >
-                <div className={cn(
-                  'mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors',
-                  selectedTypes.includes(type.id)
-                    ? 'border-orange bg-orange'
-                    : 'border-gray-300'
-                )}>
-                  {selectedTypes.includes(type.id) && <Check className="w-3 h-3 text-white" />}
-                </div>
-                <div>
-                  <div className="font-sans text-sm font-semibold text-charcoal">{type.label}</div>
-                  <div className="font-sans text-xs text-gray-400 mt-0.5">{type.desc}</div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Step 3: Price Range */}
-      <Card className="rounded-xl mb-8">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center">
-              <span className="font-mono text-sm font-bold text-orange">3</span>
-            </div>
-            <div>
-              <h3 className="font-sans text-base font-semibold text-charcoal">Price Range</h3>
-              <p className="font-sans text-sm text-gray-400">Filter leads by estimated property value</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <label className="font-sans text-xs text-gray-400 mb-1 block">Min Price</label>
-              <Input
-                type="text"
-                value={`$${Number(priceMin).toLocaleString()}`}
-                onChange={(e) => setPriceMin(e.target.value.replace(/\D/g, ''))}
-                className="rounded-lg font-mono"
-              />
-            </div>
-            <span className="text-gray-300 mt-5">—</span>
-            <div className="flex-1">
-              <label className="font-sans text-xs text-gray-400 mb-1 block">Max Price</label>
-              <Input
-                type="text"
-                value={`$${Number(priceMax).toLocaleString()}`}
-                onChange={(e) => setPriceMax(e.target.value.replace(/\D/g, ''))}
-                className="rounded-lg font-mono"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Summary + Submit */}
-      <div className="rounded-xl border border-orange/20 bg-orange/[0.02] p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-sans text-base font-semibold text-charcoal">Request Summary</h3>
-          <Badge className="bg-orange/10 text-orange border-orange/20 rounded-full font-mono text-xs">
-            ~{zipCodes.length * 80} leads estimated
-          </Badge>
+          ))}
+          <input
+            type="text"
+            placeholder="Add zip code..."
+            value={newZip}
+            onChange={(e) => setNewZip(e.target.value.replace(/\D/g, '').slice(0, 5))}
+            onKeyDown={(e) => e.key === 'Enter' && addZip()}
+            className="bg-transparent text-sm font-sans outline-none placeholder:text-gray-300 min-w-[120px] flex-1"
+            maxLength={5}
+          />
         </div>
-        <div className="grid grid-cols-3 gap-4 text-sm">
-          <div>
-            <div className="font-sans text-xs text-gray-400 mb-1">Zip Codes</div>
-            <div className="font-mono text-charcoal font-semibold">{zipCodes.join(', ') || 'None'}</div>
-          </div>
-          <div>
-            <div className="font-sans text-xs text-gray-400 mb-1">Lead Types</div>
-            <div className="font-sans text-charcoal font-semibold">{selectedTypes.length} of 6 selected</div>
-          </div>
-          <div>
-            <div className="font-sans text-xs text-gray-400 mb-1">Price Range</div>
-            <div className="font-mono text-charcoal font-semibold">${Number(priceMin).toLocaleString()} — ${Number(priceMax).toLocaleString()}</div>
-          </div>
-        </div>
+        {totalFilters > 0 && (
+          <button onClick={clearAllFilters} className="font-sans text-xs text-gray-400 hover:text-charcoal transition-colors duration-150 whitespace-nowrap">
+            Clear Filters
+          </button>
+        )}
       </div>
 
-      {submitError && (
-        <div className="rounded-xl border border-danger/20 bg-danger/[0.03] px-4 py-3 mb-4 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-danger shrink-0" />
-          <p className="text-sm text-danger">{submitError}</p>
+      {/* Active filter tags */}
+      {totalFilters > 0 && (
+        <div className="mb-6 flex flex-wrap items-center gap-2">
+          <span className="font-sans text-xs font-medium text-gray-400 mr-1">Filters:</span>
+          {selectedLeadLists.map(id => {
+            const ll = leadLists.find(l => l.id === id);
+            return ll ? (
+              <motion.span key={`ll-${id}`} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-orange/10 text-orange px-3 py-1.5 text-xs font-medium">
+                {ll.label}
+                <button onClick={() => toggleList(selectedLeadLists, setSelectedLeadLists, id)} className="hover:text-orange/70 transition-colors duration-150"><X className="w-3 h-3" /></button>
+              </motion.span>
+            ) : null;
+          })}
+          {propertyClassification !== 'all' && (
+            <motion.span key="pc" layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-charcoal/10 text-charcoal px-3 py-1.5 text-xs font-medium">
+              {propertyClassifications.find(c => c.id === propertyClassification)?.label}
+              <button onClick={() => setPropertyClassification('all')}><X className="w-3 h-3" /></button>
+            </motion.span>
+          )}
+          {selectedMlsStatuses.map(id => {
+            const s = mlsStatuses.find(m => m.id === id);
+            return s ? (
+              <motion.span key={`mls-${id}`} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-charcoal/5 text-charcoal px-3 py-1.5 text-xs font-medium">
+                MLS: {s.label}
+                <button onClick={() => toggleList(selectedMlsStatuses, setSelectedMlsStatuses, id)}><X className="w-3 h-3" /></button>
+              </motion.span>
+            ) : null;
+          })}
+          {(() => {
+            const shownCount = selectedLeadLists.length + (propertyClassification !== 'all' ? 1 : 0) + selectedMlsStatuses.length;
+            return totalFilters > shownCount ? (
+              <span className="text-xs text-gray-400 font-medium">+{totalFilters - shownCount} more</span>
+            ) : null;
+          })()}
         </div>
       )}
 
-      <Button
-        onClick={handlePlaceOrder}
-        disabled={zipCodes.length === 0 || selectedTypes.length === 0 || submitting}
-        className="w-full h-auto rounded-xl bg-orange text-white font-sans text-base font-semibold py-4 hover:bg-orange/90 transition-colors disabled:opacity-50"
-      >
-        {submitting ? (
-          <>
-            <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-            Submitting...
-          </>
-        ) : (
-          <>
-            Place My Order <ArrowRight className="w-4 h-4 ml-2" />
-          </>
-        )}
-      </Button>
+      {/* Two-column layout: nav sidebar + filter content */}
+      <div className="flex gap-8">
+        {/* Left: Category navigation only */}
+        <div className="w-[280px] shrink-0">
+          <Card className="rounded-xl overflow-hidden sticky top-20 border-gray-200">
+            {[
+              { key: 'leadLists', title: 'Lead Lists', subtitle: 'Quickly search & strategize your next move' },
+              { key: 'propertyDetails', title: 'Property Details', subtitle: 'Beds, baths, property types, building size, etc.' },
+              { key: 'mls', title: 'MLS', subtitle: 'MLS Status, Listing Date and Amount, etc.' },
+              { key: 'preForeclosure', title: 'Pre-Foreclosure & Bank Owned', subtitle: 'Pre-Foreclosure Type, Recording Date, etc.' },
+              { key: 'ownerInfo', title: 'Owner Information & Occupancy', subtitle: 'Owner Type, Location, Last Sale date and Price, etc.' },
+              { key: 'lienBankruptcy', title: 'Lien, Bankruptcy, & Divorce', subtitle: 'Lien, Bankruptcy, and Divorce info' },
+              { key: 'valueEquity', title: 'Value & Equity', subtitle: 'Estimated Value, Equity %, Equity Amount' },
+              { key: 'mortgage', title: 'Mortgage', subtitle: 'Loan Type, Interest Rate, Reverse Mortgage' },
+            ].map(cat => (
+              <button
+                key={cat.key}
+                onClick={() => setOpenSection(openSection === cat.key ? null : cat.key)}
+                className={cn(
+                  'flex w-full items-center gap-3 px-4 py-4 text-left transition-colors duration-150 border-b border-gray-100 last:border-b-0',
+                  openSection === cat.key ? 'bg-light-bg' : 'hover:bg-light-bg/50'
+                )}
+              >
+                <ChevronRight className={cn(
+                  'h-4 w-4 shrink-0 transition-transform duration-150',
+                  openSection === cat.key ? 'rotate-90 text-orange' : 'text-gray-400'
+                )} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-sans text-sm font-semibold text-charcoal">{cat.title}</span>
+                    {filterCounts[cat.key] > 0 && (
+                      <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-orange px-1.5 text-xs font-bold text-white">
+                        {filterCounts[cat.key]}
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-sans text-xs text-gray-400 leading-tight mt-1">{cat.subtitle}</p>
+                </div>
+              </button>
+            ))}
+          </Card>
+        </div>
 
-      <p className="font-sans text-xs text-gray-400 text-center mt-3">
-        Leads delivered within 12 hours. 250 verified leads included in your plan.
-      </p>
+        {/* Right: Filter controls for selected category */}
+        <div className="flex-1 min-w-0">
+          {/* Lead Lists */}
+          {openSection === 'leadLists' && (
+            <div>
+              <h3 className="font-heading text-xl font-bold text-charcoal mb-6">Lead Lists</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {leadLists.map(ll => {
+                  const Icon = ll.icon;
+                  const isSelected = selectedLeadLists.includes(ll.id);
+                  return (
+                    <button
+                      key={ll.id}
+                      onClick={() => toggleList(selectedLeadLists, setSelectedLeadLists, ll.id)}
+                      className={cn(
+                        'flex items-center gap-4 rounded-xl border-2 p-4 text-left transition-all duration-150',
+                        isSelected ? 'border-orange bg-orange text-white shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'
+                      )}
+                    >
+                      <div className={cn(
+                        'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+                        isSelected ? 'bg-white/20' : 'bg-light-bg'
+                      )}>
+                        <Icon className={cn('w-5 h-5', isSelected ? 'text-white' : 'text-gray-500')} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className={cn('font-sans text-sm font-semibold leading-tight', isSelected ? 'text-white' : 'text-charcoal')}>{ll.label}</div>
+                        <div className={cn('font-sans text-xs leading-tight mt-1', isSelected ? 'text-white/70' : 'text-gray-400')}>{ll.desc}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Property Details */}
+          {openSection === 'propertyDetails' && (
+            <Card className="rounded-xl">
+              <CardContent className="p-6 space-y-6">
+                <h3 className="font-heading text-xl font-bold text-charcoal">Property Details</h3>
+
+                {/* Property Classification */}
+                <div>
+                  <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Property Classification(s)</label>
+                  <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+                    {propertyClassifications.map(c => (
+                      <button
+                        key={c.id}
+                        onClick={() => setPropertyClassification(c.id)}
+                        className={cn(
+                          'flex-1 py-2.5 text-xs font-medium transition-colors duration-150 text-center',
+                          propertyClassification === c.id ? 'bg-charcoal text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-charcoal'
+                        )}
+                      >
+                        {c.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="font-sans text-xs text-gray-400 mt-2 text-center">Select Residential, Commercial, Vacant Land or Other to see more options</p>
+                </div>
+
+                {/* Bedrooms / Bathrooms */}
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Bedrooms" minVal={beds.min} maxVal={beds.max} onMinChange={v => setBeds(p => ({...p, min: v}))} onMaxChange={v => setBeds(p => ({...p, max: v}))} />
+                  <RangeInput label="Bathrooms" minVal={baths.min} maxVal={baths.max} onMinChange={v => setBaths(p => ({...p, min: v}))} onMaxChange={v => setBaths(p => ({...p, max: v}))} />
+                </div>
+
+                {/* Building Size / Lot Size */}
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Building Size (SqFt)" minVal={sqft.min} maxVal={sqft.max} onMinChange={v => setSqft(p => ({...p, min: v}))} onMaxChange={v => setSqft(p => ({...p, max: v}))} />
+                  <RangeInput label="Lot Size (SqFt)" minVal={lotSize.min} maxVal={lotSize.max} onMinChange={v => setLotSize(p => ({...p, min: v}))} onMaxChange={v => setLotSize(p => ({...p, max: v}))} />
+                </div>
+
+                {/* Year Built / School District */}
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Year Built" minVal={yearBuilt.min} maxVal={yearBuilt.max} onMinChange={v => setYearBuilt(p => ({...p, min: v}))} onMaxChange={v => setYearBuilt(p => ({...p, max: v}))} />
+                  <div>
+                    <label className="font-sans text-xs font-medium text-gray-500 mb-2 block">School District</label>
+                    <Input
+                      type="text"
+                      placeholder="Enter text"
+                      value={schoolDistrict}
+                      onChange={(e) => setSchoolDistrict(e.target.value)}
+                      className="rounded-xl font-sans text-xs h-9"
+                    />
+                  </div>
+                </div>
+
+                {/* Number of Units / Number of Stories */}
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Number of Units" minVal={units.min} maxVal={units.max} onMinChange={v => setUnits(p => ({...p, min: v}))} onMaxChange={v => setUnits(p => ({...p, max: v}))} />
+                  <RangeInput label="Number of Stories" minVal={stories.min} maxVal={stories.max} onMinChange={v => setStories(p => ({...p, min: v}))} onMaxChange={v => setStories(p => ({...p, max: v}))} />
+                </div>
+
+                {/* Three-way toggles */}
+                <ThreeWayToggle label="Association (HOA/COA)" value={hoa} onChange={setHoa} />
+                <ThreeWayToggle label="Pool" value={pool} onChange={setPool} />
+                <ThreeWayToggle label="Garage" value={garage} onChange={setGarage} />
+                <ThreeWayToggle label="Basement" value={basement} onChange={setBasement} />
+                <ThreeWayToggle label="Attic" value={attic} onChange={setAttic} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* MLS */}
+          {openSection === 'mls' && (
+            <Card className="rounded-xl">
+              <CardContent className="p-6 space-y-6">
+                <h3 className="font-heading text-xl font-bold text-charcoal">MLS</h3>
+
+                {/* On or Off Market / Listing Type */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">On or Off Market</label>
+                    <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+                      {[{ id: 'all', label: 'All' }, { id: 'on-market', label: 'On Market' }, { id: 'off-market', label: 'Off Market' }].map(o => (
+                        <button key={o.id} onClick={() => setMlsMarketStatus(o.id)} className={cn(
+                          'flex-1 py-2.5 text-xs font-medium transition-colors duration-150 text-center',
+                          mlsMarketStatus === o.id ? 'bg-charcoal text-white' : 'text-gray-500 hover:bg-gray-50'
+                        )}>{o.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Listing Type</label>
+                    <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+                      {[{ id: 'any', label: 'Any' }, { id: 'for-sale', label: 'For Sale' }, { id: 'for-rent', label: 'For Rent' }].map(o => (
+                        <button key={o.id} onClick={() => setMlsListingType(o.id)} className={cn(
+                          'flex-1 py-2.5 text-xs font-medium transition-colors duration-150 text-center',
+                          mlsListingType === o.id ? 'bg-charcoal text-white' : 'text-gray-500 hover:bg-gray-50'
+                        )}>{o.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-gray-100" />
+
+                {/* MLS Status */}
+                <div>
+                  <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">MLS Status</label>
+                  <PillGroup items={mlsStatuses} selected={selectedMlsStatuses} onToggle={(id) => toggleList(selectedMlsStatuses, setSelectedMlsStatuses, id)} />
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-gray-100" />
+
+                {/* MLS Status Date */}
+                <div>
+                  <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">MLS Status Date</label>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-0 flex-1 rounded-xl border border-gray-200 overflow-hidden">
+                      <Input type="date" value={mlsStatusDateFrom} onChange={e => setMlsStatusDateFrom(e.target.value)} className="border-0 rounded-none font-mono text-xs h-9 shadow-none" placeholder="From" />
+                      <Input type="date" value={mlsStatusDateTo} onChange={e => setMlsStatusDateTo(e.target.value)} className="border-0 border-l border-gray-200 rounded-none font-mono text-xs h-9 shadow-none" placeholder="To" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Days on Market / MLS Listing Amount */}
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Days On Market" minVal={daysOnMarket.min} maxVal={daysOnMarket.max} onMinChange={v => setDaysOnMarket(p => ({...p, min: v}))} onMaxChange={v => setDaysOnMarket(p => ({...p, max: v}))} />
+                  <RangeInput label="MLS Listing Amount" minVal={listingAmount.min} maxVal={listingAmount.max} onMinChange={v => setListingAmount(p => ({...p, min: v}))} onMaxChange={v => setListingAmount(p => ({...p, max: v}))} />
+                </div>
+
+                {/* Listed Below Market Price / MLS Keywords */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Listed Below Market Price</label>
+                    <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+                      {[{ id: 'any', label: 'Any' }, { id: 'yes', label: 'Yes' }, { id: 'no', label: 'No' }].map(o => (
+                        <button key={o.id} onClick={() => setListedBelowMarket(o.id)} className={cn(
+                          'flex-1 py-2.5 text-xs font-medium transition-colors duration-150 text-center',
+                          listedBelowMarket === o.id ? 'bg-charcoal text-white' : 'text-gray-500 hover:bg-gray-50'
+                        )}>{o.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">MLS Keyword(s)</label>
+                    <Input
+                      type="text"
+                      placeholder="Enter MLS Keywords"
+                      value={mlsKeywords}
+                      onChange={(e) => setMlsKeywords(e.target.value)}
+                      className="rounded-xl font-sans text-xs h-9"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Pre-Foreclosure & Bank Owned */}
+          {openSection === 'preForeclosure' && (
+            <Card className="rounded-xl">
+              <CardContent className="p-6 space-y-6">
+                <h3 className="font-heading text-xl font-bold text-charcoal">Pre-Foreclosure & Bank Owned</h3>
+
+                {/* Pre-Foreclosure toggle */}
+                <ThreeWayToggle label="Pre-Foreclosure" value={preForeclosure} onChange={setPreForeclosure} />
+
+                {/* Recording Date */}
+                <div>
+                  <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Recording Date</label>
+                  <div className="flex items-center gap-0 rounded-xl border border-gray-200 overflow-hidden">
+                    <Input type="date" value={recordingDateFrom} onChange={e => setRecordingDateFrom(e.target.value)} className="border-0 rounded-none font-mono text-xs h-9 shadow-none" />
+                    <Input type="date" value={recordingDateTo} onChange={e => setRecordingDateTo(e.target.value)} className="border-0 border-l border-gray-200 rounded-none font-mono text-xs h-9 shadow-none" />
+                  </div>
+                </div>
+
+                {/* Auction Date */}
+                <div>
+                  <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Auction Date</label>
+                  <div className="flex items-center gap-0 rounded-xl border border-gray-200 overflow-hidden">
+                    <Input type="date" value={auctionDateFrom} onChange={e => setAuctionDateFrom(e.target.value)} className="border-0 rounded-none font-mono text-xs h-9 shadow-none" />
+                    <Input type="date" value={auctionDateTo} onChange={e => setAuctionDateTo(e.target.value)} className="border-0 border-l border-gray-200 rounded-none font-mono text-xs h-9 shadow-none" />
+                  </div>
+                </div>
+
+                {/* Pre-Foreclosure Release Date */}
+                <div>
+                  <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Pre-Foreclosure Release Date</label>
+                  <div className="flex items-center gap-0 rounded-xl border border-gray-200 overflow-hidden">
+                    <Input type="date" value={releaseDateFrom} onChange={e => setReleaseDateFrom(e.target.value)} className="border-0 rounded-none font-mono text-xs h-9 shadow-none" />
+                    <Input type="date" value={releaseDateTo} onChange={e => setReleaseDateTo(e.target.value)} className="border-0 border-l border-gray-200 rounded-none font-mono text-xs h-9 shadow-none" />
+                  </div>
+                </div>
+
+                {/* Opening Bid / Default Amount */}
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Opening Bid Amount" minVal={openingBid.min} maxVal={openingBid.max} onMinChange={v => setOpeningBid(p => ({...p, min: v}))} onMaxChange={v => setOpeningBid(p => ({...p, max: v}))} />
+                  <RangeInput label="Default Amount" minVal={defaultAmount.min} maxVal={defaultAmount.max} onMinChange={v => setDefaultAmount(p => ({...p, min: v}))} onMaxChange={v => setDefaultAmount(p => ({...p, max: v}))} />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Owner Information & Occupancy */}
+          {openSection === 'ownerInfo' && (
+            <Card className="rounded-xl">
+              <CardContent className="p-6 space-y-6">
+                <h3 className="font-heading text-xl font-bold text-charcoal">Owner Information & Occupancy</h3>
+
+                {/* Owner Occupied / Vacant */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Owner Occupied</label>
+                    <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+                      {[{ id: 'any', label: 'Any' }, { id: 'yes', label: 'Yes' }, { id: 'no', label: 'No' }].map(o => (
+                        <button key={o.id} onClick={() => setOwnerOccupied(o.id)} className={cn(
+                          'flex-1 py-2.5 text-xs font-medium transition-colors duration-150 text-center',
+                          ownerOccupied === o.id ? 'bg-charcoal text-white' : 'text-gray-500 hover:bg-gray-50'
+                        )}>{o.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Vacant</label>
+                    <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+                      {[{ id: 'any', label: 'Any' }, { id: 'yes', label: 'Yes' }, { id: 'no', label: 'No' }].map(o => (
+                        <button key={o.id} onClick={() => setVacant(o.id)} className={cn(
+                          'flex-1 py-2.5 text-xs font-medium transition-colors duration-150 text-center',
+                          vacant === o.id ? 'bg-charcoal text-white' : 'text-gray-500 hover:bg-gray-50'
+                        )}>{o.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-100" />
+
+                {/* Years of Ownership */}
+                <RangeInput label="Years of Ownership" minVal={yearsOwned.min} maxVal={yearsOwned.max} onMinChange={v => setYearsOwned(p => ({...p, min: v}))} onMaxChange={v => setYearsOwned(p => ({...p, max: v}))} />
+
+                <div className="border-t border-gray-100" />
+
+                {/* Owner Type */}
+                <div>
+                  <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Owner Type</label>
+                  <PillGroup items={[
+                    { id: 'individual', label: 'Individual' },
+                    { id: 'corporate', label: 'Corporate' },
+                    { id: 'mixed', label: 'Mixed' },
+                    { id: 'trust', label: 'Trust' },
+                  ]} selected={selectedOwnerTypes} onToggle={(id) => toggleList(selectedOwnerTypes, setSelectedOwnerTypes, id)} />
+                </div>
+
+                <div className="border-t border-gray-100" />
+
+                {/* Absentee Owner Location */}
+                <div>
+                  <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Absentee Owner Location</label>
+                  <PillGroup items={[
+                    { id: 'out-of-state', label: 'Out of State' },
+                    { id: 'out-of-county', label: 'Out of County' },
+                    { id: 'local', label: 'Local' },
+                  ]} selected={selectedAbsenteeLocations} onToggle={(id) => toggleList(selectedAbsenteeLocations, setSelectedAbsenteeLocations, id)} />
+                </div>
+
+                <div className="border-t border-gray-100" />
+
+                {/* Last Sale Price / Number of Properties Owned */}
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Last Sale Price" minVal={lastSalePrice.min} maxVal={lastSalePrice.max} onMinChange={v => setLastSalePrice(p => ({...p, min: v}))} onMaxChange={v => setLastSalePrice(p => ({...p, max: v}))} />
+                  <RangeInput label="Number of Properties Owned" minVal={propertiesOwned.min} maxVal={propertiesOwned.max} onMinChange={v => setPropertiesOwned(p => ({...p, min: v}))} onMaxChange={v => setPropertiesOwned(p => ({...p, max: v}))} />
+                </div>
+
+                {/* Last Sale Date */}
+                <div>
+                  <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Last Sale Date</label>
+                  <div className="flex items-center gap-0 rounded-xl border border-gray-200 overflow-hidden">
+                    <Input type="date" value={lastSaleDateFrom} onChange={e => setLastSaleDateFrom(e.target.value)} className="border-0 rounded-none font-mono text-xs h-9 shadow-none" />
+                    <Input type="date" value={lastSaleDateTo} onChange={e => setLastSaleDateTo(e.target.value)} className="border-0 border-l border-gray-200 rounded-none font-mono text-xs h-9 shadow-none" />
+                  </div>
+                </div>
+
+                {/* Include Unknown Sales Dates / Pre-Probate */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Include Unknown Sales Dates</label>
+                    <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+                      {['any', 'include', 'exclude'].map(o => (
+                        <button key={o} onClick={() => setUnknownSaleDates(o)} className={cn(
+                          'flex-1 py-2.5 text-xs font-medium transition-colors duration-150 text-center capitalize',
+                          unknownSaleDates === o
+                            ? o === 'include' ? 'bg-charcoal text-white' : o === 'exclude' ? 'bg-charcoal text-white' : 'bg-charcoal text-white'
+                            : 'text-gray-500 hover:bg-gray-50'
+                        )}>{o}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Pre-Probate (Deceased Owners)</label>
+                    <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+                      {['any', 'include', 'exclude'].map(o => (
+                        <button key={o} onClick={() => setPreProbate(o)} className={cn(
+                          'flex-1 py-2.5 text-xs font-medium transition-colors duration-150 text-center capitalize',
+                          preProbate === o ? 'bg-charcoal text-white' : 'text-gray-500 hover:bg-gray-50'
+                        )}>{o}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Intra-Family Transfer */}
+                <ThreeWayToggle label="Intra-Family Transfer" value={intraFamilyTransfer} onChange={setIntraFamilyTransfer} />
+
+                <div className="border-t border-gray-100" />
+
+                {/* Tax Exemption Status */}
+                <div>
+                  <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Tax Exemption Status</label>
+                  <PillGroup items={[
+                    { id: 'cemetery', label: 'Cemetery' },
+                    { id: 'disabled', label: 'Disabled' },
+                    { id: 'homestead', label: 'Homestead' },
+                    { id: 'hospital', label: 'Hospital' },
+                    { id: 'library', label: 'Library' },
+                    { id: 'religious', label: 'Religious' },
+                    { id: 'senior', label: 'Senior' },
+                    { id: 'veteran', label: 'Veteran' },
+                  ]} selected={selectedTaxExemptions} onToggle={(id) => toggleList(selectedTaxExemptions, setSelectedTaxExemptions, id)} />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Lien, Bankruptcy, & Divorce */}
+          {openSection === 'lienBankruptcy' && (
+            <Card className="rounded-xl">
+              <CardContent className="p-6 space-y-6">
+                <h3 className="font-heading text-xl font-bold text-charcoal">Lien, Bankruptcy, & Divorce</h3>
+                <div>
+                  <label className="font-sans text-xs font-medium text-gray-500 mb-2 block">Lien Type</label>
+                  <CheckboxRow
+                    items={[
+                      { id: 'tax-lien', label: 'Tax Lien' },
+                      { id: 'hoa-lien', label: 'HOA Lien' },
+                      { id: 'mechanics-lien', label: 'Mechanics Lien' },
+                      { id: 'utility-lien', label: 'Utility Lien' },
+                    ]}
+                    selected={lienTypes}
+                    onToggle={(id) => toggleList(lienTypes, setLienTypes, id)}
+                  />
+                </div>
+                <div>
+                  <label className="font-sans text-xs font-medium text-gray-500 mb-2 block">Bankruptcy</label>
+                  <PillGroup items={[
+                    { id: 'any', label: 'Any' },
+                    { id: 'chapter-7', label: 'Chapter 7' },
+                    { id: 'chapter-13', label: 'Chapter 13' },
+                    { id: 'dismissed', label: 'Dismissed' },
+                  ]} selected={bankruptcyStatus} onToggle={setBankruptcyStatus} isMulti={false} />
+                </div>
+                <ThreeWayToggle label="Divorce" value={divorceFlag} onChange={setDivorceFlag} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Value & Equity */}
+          {openSection === 'valueEquity' && (
+            <Card className="rounded-xl">
+              <CardContent className="p-6 space-y-6">
+                <h3 className="font-heading text-xl font-bold text-charcoal">Value & Equity</h3>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Estimated Value" minVal={estimatedValue.min} maxVal={estimatedValue.max} onMinChange={v => setEstimatedValue(p => ({...p, min: v}))} onMaxChange={v => setEstimatedValue(p => ({...p, max: v}))} />
+                  <RangeInput label="Assessed Land Value" minVal={assessedLandValue.min} maxVal={assessedLandValue.max} onMinChange={v => setAssessedLandValue(p => ({...p, min: v}))} onMaxChange={v => setAssessedLandValue(p => ({...p, max: v}))} />
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Growth %" minVal={growthPercent.min} maxVal={growthPercent.max} onMinChange={v => setGrowthPercent(p => ({...p, min: v}))} onMaxChange={v => setGrowthPercent(p => ({...p, max: v}))} />
+                  <RangeInput label="Estimated Wholesale Price" minVal={wholesalePrice.min} maxVal={wholesalePrice.max} onMinChange={v => setWholesalePrice(p => ({...p, min: v}))} onMaxChange={v => setWholesalePrice(p => ({...p, max: v}))} />
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Estimated Rental Income" minVal={rentalIncome.min} maxVal={rentalIncome.max} onMinChange={v => setRentalIncome(p => ({...p, min: v}))} onMaxChange={v => setRentalIncome(p => ({...p, max: v}))} />
+                  <RangeInput label="Gross Yield %" minVal={grossYield.min} maxVal={grossYield.max} onMinChange={v => setGrossYield(p => ({...p, min: v}))} onMaxChange={v => setGrossYield(p => ({...p, max: v}))} />
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Estimated Equity $ Amount" minVal={equityAmount.min} maxVal={equityAmount.max} onMinChange={v => setEquityAmount(p => ({...p, min: v}))} onMaxChange={v => setEquityAmount(p => ({...p, max: v}))} />
+                  <RangeInput label="Estimated Equity %" minVal={equityPercent.min} maxVal={equityPercent.max} onMinChange={v => setEquityPercent(p => ({...p, min: v}))} onMaxChange={v => setEquityPercent(p => ({...p, max: v}))} />
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Loan to Value (LTV) %" minVal={ltv.min} maxVal={ltv.max} onMinChange={v => setLtv(p => ({...p, min: v}))} onMaxChange={v => setLtv(p => ({...p, max: v}))} />
+                  <RangeInput label="Assessed Total Value" minVal={assessedTotalValue.min} maxVal={assessedTotalValue.max} onMinChange={v => setAssessedTotalValue(p => ({...p, min: v}))} onMaxChange={v => setAssessedTotalValue(p => ({...p, max: v}))} />
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Assessed Improvement Value" minVal={assessedImprovementValue.min} maxVal={assessedImprovementValue.max} onMinChange={v => setAssessedImprovementValue(p => ({...p, min: v}))} onMaxChange={v => setAssessedImprovementValue(p => ({...p, max: v}))} />
+                  <RangeInput label="Improvement to Tax Value %" minVal={improvementToTaxPercent.min} maxVal={improvementToTaxPercent.max} onMinChange={v => setImprovementToTaxPercent(p => ({...p, min: v}))} onMaxChange={v => setImprovementToTaxPercent(p => ({...p, max: v}))} />
+                </div>
+
+                <ThreeWayToggle label="Include Unknown Equity" value={unknownEquity} onChange={setUnknownEquity} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Mortgage Info */}
+          {openSection === 'mortgage' && (
+            <Card className="rounded-xl">
+              <CardContent className="p-6 space-y-6">
+                <h3 className="font-heading text-xl font-bold text-charcoal">Mortgage Info</h3>
+
+                {/* Number of Open Mortgages / Open Mortgage Remaining Balance */}
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Number of Open Mortgages" minVal={openMortgages.min} maxVal={openMortgages.max} onMinChange={v => setOpenMortgages(p => ({...p, min: v}))} onMaxChange={v => setOpenMortgages(p => ({...p, max: v}))} />
+                  <RangeInput label="Open Mortgage Remaining Balance" minVal={mortgageBalance.min} maxVal={mortgageBalance.max} onMinChange={v => setMortgageBalance(p => ({...p, min: v}))} onMaxChange={v => setMortgageBalance(p => ({...p, max: v}))} />
+                </div>
+
+                {/* Mortgage Recording Date */}
+                <div>
+                  <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Mortgage Recording Date</label>
+                  <div className="flex items-center gap-0 rounded-xl border border-gray-200 overflow-hidden">
+                    <Input type="date" value={mortgageDateFrom} onChange={e => setMortgageDateFrom(e.target.value)} className="border-0 rounded-none font-mono text-xs h-9 shadow-none" />
+                    <Input type="date" value={mortgageDateTo} onChange={e => setMortgageDateTo(e.target.value)} className="border-0 border-l border-gray-200 rounded-none font-mono text-xs h-9 shadow-none" />
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-100" />
+
+                {/* Loan Types */}
+                <div>
+                  <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Loan Types</label>
+                  <PillGroup items={[
+                    { id: 'conventional', label: 'Conventional' },
+                    { id: 'fha', label: 'FHA' },
+                    { id: 'va', label: 'VA' },
+                    { id: 'credit-line', label: 'Credit Line' },
+                    { id: 'reverse-mortgage', label: 'Reverse Mortgage' },
+                    { id: 'commercial', label: 'Commercial' },
+                    { id: 'usda', label: 'USDA' },
+                    { id: 'seller-carry', label: 'Seller Carry' },
+                    { id: 'other', label: 'Other' },
+                  ]} selected={selectedLoanTypes} onToggle={(id) => toggleList(selectedLoanTypes, setSelectedLoanTypes, id)} />
+                </div>
+
+                <div className="border-t border-gray-100" />
+
+                {/* Total Monthly Payments / Interest Rate % */}
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="Total Monthly Payments" minVal={monthlyPayments.min} maxVal={monthlyPayments.max} onMinChange={v => setMonthlyPayments(p => ({...p, min: v}))} onMaxChange={v => setMonthlyPayments(p => ({...p, max: v}))} />
+                  <RangeInput label="Interest Rate % (Est.)" minVal={interestRate.min} maxVal={interestRate.max} onMinChange={v => setInterestRate(p => ({...p, min: v}))} onMaxChange={v => setInterestRate(p => ({...p, max: v}))} />
+                </div>
+
+                <div className="border-t border-gray-100" />
+
+                {/* Interest Rate Types */}
+                <div>
+                  <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Interest Rate Types</label>
+                  <PillGroup items={[
+                    { id: 'adjustable', label: 'Adjustable Rate' },
+                    { id: 'fixed', label: 'Fixed Rate' },
+                    { id: 'step', label: 'Step Interest Rate' },
+                    { id: 'variable', label: 'Variable Rate' },
+                    { id: 'other', label: 'Other' },
+                  ]} selected={selectedRateTypes} onToggle={(id) => toggleList(selectedRateTypes, setSelectedRateTypes, id)} />
+                </div>
+
+                <div className="border-t border-gray-100" />
+
+                {/* 1st Loan to Current Value */}
+                <div className="grid grid-cols-2 gap-6">
+                  <RangeInput label="1st Loan to Current Value (1LTV) %" minVal={firstLoanLtvPercent.min} maxVal={firstLoanLtvPercent.max} onMinChange={v => setFirstLoanLtvPercent(p => ({...p, min: v}))} onMaxChange={v => setFirstLoanLtvPercent(p => ({...p, max: v}))} />
+                  <RangeInput label="1st Loan to Current Value (1LTV) Equity $" minVal={firstLoanLtvEquity.min} maxVal={firstLoanLtvEquity.max} onMinChange={v => setFirstLoanLtvEquity(p => ({...p, min: v}))} onMaxChange={v => setFirstLoanLtvEquity(p => ({...p, max: v}))} />
+                </div>
+
+                {/* Cash Buyer / Free & Clear */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Cash Buyer</label>
+                    <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+                      {[{ id: 'any', label: 'Any' }, { id: 'yes', label: 'Yes' }, { id: 'no', label: 'No' }].map(o => (
+                        <button key={o.id} onClick={() => setCashBuyer(o.id)} className={cn(
+                          'flex-1 py-2.5 text-xs font-medium transition-colors duration-150 text-center',
+                          cashBuyer === o.id ? 'bg-charcoal text-white' : 'text-gray-500 hover:bg-gray-50'
+                        )}>{o.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="font-sans text-sm font-semibold text-charcoal mb-3 block">Free & Clear</label>
+                    <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+                      {['any', 'include', 'exclude'].map(o => (
+                        <button key={o} onClick={() => setFreeClear(o)} className={cn(
+                          'flex-1 py-2.5 text-xs font-medium transition-colors duration-150 text-center capitalize',
+                          freeClear === o ? 'bg-charcoal text-white' : 'text-gray-500 hover:bg-gray-50'
+                        )}>{o}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Seller Carry Back */}
+                <ThreeWayToggle label="Seller Carry Back" value={sellerCarryBack} onChange={setSellerCarryBack} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Empty state */}
+          {!openSection && (
+            <div className="rounded-xl border border-gray-200 bg-light-bg/50 p-12 text-center">
+              <Search className="w-6 h-6 text-gray-300 mx-auto mb-4" />
+              <p className="font-sans text-sm text-gray-400">Select a filter category on the left to start building your lead list.</p>
+            </div>
+          )}
+
+          {/* Order summary — sticky bottom card */}
+          <div className="mt-8">
+            <Card className="rounded-xl border-orange/20">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-sans text-sm font-semibold text-charcoal">Order Summary</h3>
+                  <Badge className="bg-orange/10 text-orange border-orange/20 rounded-xl font-mono text-xs">
+                    ~{zipCodes.length * 80} leads estimated
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-3 gap-6 text-xs mb-6">
+                  <div>
+                    <div className="font-sans text-gray-400 mb-1">Zip Codes</div>
+                    <div className="font-mono text-charcoal font-semibold">{zipCodes.join(', ') || 'None'}</div>
+                  </div>
+                  <div>
+                    <div className="font-sans text-gray-400 mb-1">Lead Lists</div>
+                    <div className="font-sans text-charcoal font-semibold">{selectedLeadLists.length || 'None'} selected</div>
+                  </div>
+                  <div>
+                    <div className="font-sans text-gray-400 mb-1">Total Filters</div>
+                    <div className="font-sans text-charcoal font-semibold">{totalFilters} applied</div>
+                  </div>
+                </div>
+
+                {submitError && (
+                  <div className="rounded-xl border border-danger/20 bg-danger/[0.03] px-4 py-3 mb-4 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-danger shrink-0" />
+                    <p className="font-sans text-sm text-danger">{submitError}</p>
+                  </div>
+                )}
+
+                <Button
+                  onClick={handlePlaceOrder}
+                  disabled={zipCodes.length === 0 || totalFilters === 0 || submitting}
+                  className="w-full h-auto rounded-xl bg-orange text-white font-sans text-base font-semibold py-4 hover:bg-orange/90 transition-colors duration-150 disabled:opacity-50"
+                >
+                  {submitting ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Submitting...</>
+                  ) : (
+                    <>Place My Order <ArrowRight className="w-4 h-4 ml-2" /></>
+                  )}
+                </Button>
+                <p className="font-sans text-xs text-gray-400 text-center mt-3">
+                  Leads delivered within 12 hours. 250 verified leads included in your plan.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
       <div className="h-12" />
     </div>
   );
