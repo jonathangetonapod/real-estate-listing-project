@@ -63,6 +63,7 @@ import {
   Loader2,
   Check,
   LogOut,
+  ArrowLeftRight,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -2710,6 +2711,17 @@ export function AdminDashboard() {
             );
           })}
         </nav>
+
+        {/* View switcher */}
+        <div className="px-4 py-3 border-t border-white/10">
+          <button
+            onClick={() => navigate('/app')}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white/80 transition-colors"
+          >
+            <ArrowLeftRight className="h-4 w-4 shrink-0" />
+            <span>Switch to Agent View</span>
+          </button>
+        </div>
 
         {/* Admin card */}
         <div className="px-4 py-5 border-t border-white/10">

@@ -46,6 +46,7 @@ import {
   Globe,
   Shield,
   Loader2,
+  ArrowLeftRight,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -4204,7 +4205,7 @@ function SettingsTab() {
 }
 
 export default function AppDashboard() {
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [activeNav, setActiveNav] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -4338,6 +4339,19 @@ export default function AppDashboard() {
             </div>
           ) : null;
         })()}
+
+        {/* View switcher — admin only */}
+        {isAdmin && (
+          <div className="px-4 py-3 border-t border-white/10">
+            <button
+              onClick={() => navigate('/admin')}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white/80 transition-colors"
+            >
+              <ArrowLeftRight className="h-5 w-5 shrink-0" />
+              <span>Switch to Admin View</span>
+            </button>
+          </div>
+        )}
 
         {/* Agent card */}
         <div className="px-4 py-5 border-t border-white/10">
